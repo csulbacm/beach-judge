@@ -2,14 +2,18 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <sstream>
 
 //- Beach Judge -
 #include <BeachJudge/Base.h>
+#include <BeachJudge/HTTP.h>
 #include <BeachJudge/Thread.h>
 #include <BeachJudge/Socket.h>
 
 using namespace std;
 using namespace beachjudge;
+
+const char *helloWorld = "<html>\r\n<head>\r\n<title>Hello, world!</title>\r\n</head>\r\n<body>\r\n<h1>Hello, world!</h1>\r\n</body>\r\n</html>\r\n\r\n";
 
 void *serverFunc(void *arg)
 {
@@ -19,7 +23,9 @@ void *serverFunc(void *arg)
 	server->Listen(16);
 
 	char sbuff[8192];
-	const char *writeStr = "Must test, wow.";
+	string page = "";
+	HTTP::AppendHeader_OK(page);
+	page.append(helloWorld);
 	while(true)
 	{
 		Socket *client = server->Accept();
@@ -39,10 +45,19 @@ void *serverFunc(void *arg)
 				ipPtr++;
 			}
 
-			print("Receiving Msg: %d.%d.%d.%d:%d %d\n", (unsigned short)ip[0], (unsigned short)ip[1], (unsigned short)ip[2], (unsigned short)ip[3], port,  len);
+			stringstream stream(sbuff);
+			string method;
+			stream >> method;
+			print("Receiving Msg: %d.%d.%d.%d:%d %d\r\n", (unsigned short)ip[0], (unsigned short)ip[1], (unsigned short)ip[2], (unsigned short)ip[3], port,  len);
 			cout << sbuff << endl;
-			
-			client->Write((char *)writeStr, strlen(writeStr));
+
+			if(!method.compare("GET"))
+			{
+				string file;
+				stream >> file;
+//				print("Accessing File: %s\r\n", file.c_str());
+				client->Write((char *)page.c_str(), page.length());
+			}
 
 			client->Shutdown();
 			delete client;
