@@ -11,6 +11,7 @@ namespace beachjudge
 {
 	//- Time -
 	void sleepMS(unsigned long timeMS);
+	unsigned long getRunTimeMS();
 
 	//- File IO -
 	bool fileExists(const char *file);

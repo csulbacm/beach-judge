@@ -106,4 +106,29 @@ namespace beachjudge
 			Sleep(timeMS);
 		#endif
 	}
+	unsigned long g_startTimeMS = getRunTimeMS(); //- TODO: Verify if we can get away with doing this -
+	unsigned long getRunTimeMS()
+	{
+		unsigned long currTimeMS;
+
+		#ifdef linux
+			struct timeval currTime;
+			gettimeofday(&currTime, 0);
+			currTimeMS = currTime.tv_sec * 1000 + currTime.tv_usec / 1000;
+		#endif
+
+		#ifdef _WIN32
+			LARGE_INTEGER frequency;
+			if(QueryPerformanceFrequency(&frequency))
+			{
+				LARGE_INTEGER count;
+				QueryPerformanceCounter(&count);
+				currTimeMS = (unsigned long)((1000 * count.QuadPart) / frequency.QuadPart);
+			}
+			else
+				currTimeMS = GetTickCount();
+		#endif
+
+		return currTimeMS - g_startTimeMS;
+	}
 }
