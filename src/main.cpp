@@ -1,6 +1,7 @@
 //- Standard Library -
 #include <iostream>
 #include <string>
+#include <cstring>
 
 //- Beach Judge -
 #include <BeachJudge/Base.h>
@@ -31,7 +32,14 @@ void *serverFunc(void *arg)
 
 			memset(sbuff, 0, 8192);
 			unsigned short len = client->Read(sbuff, 8191);
-			print("Receiving Msg: %d.%d.%d.%d:%d %d\n", (addr & 0xFF000000 >> 24), (addr & 0x00FF0000 >> 16), (addr & 0x0000FF00 >> 8), (addr & 0x000000FF), port,  len);
+			unsigned char ip[4], *ipPtr = (unsigned char *)&addr;
+			for(unsigned char a = 0; a < 4; a++)
+			{
+				ip[a] = *ipPtr & 0xFF;
+				ipPtr++;
+			}
+
+			print("Receiving Msg: %d.%d.%d.%d:%d %d\n", (unsigned short)ip[0], (unsigned short)ip[1], (unsigned short)ip[2], (unsigned short)ip[3], port,  len);
 			cout << sbuff << endl;
 			
 			client->Write((char *)writeStr, strlen(writeStr));
