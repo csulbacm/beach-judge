@@ -1,0 +1,45 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# Generated CMake files
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+CMakeFiles
+
+# Sublime Text 2 Project files
+*.sublime-*
+
+# Visual Studio Project Files
+*.vcproj*
+*.vcxproj*
+*.sln
+*.sdf
+*.suo
+*.opensdf
+*/Release
+*/Debug
+*/MinSizeRel
+*/RelWithDebInfo
+Release
+Debug
+Win32
+ipch
+*.dir
+
+# Compiled files
+bin
+
+# Generated Files
+include/BeachJudge/Config.h
