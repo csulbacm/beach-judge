@@ -1,5 +1,6 @@
 //- Standard Library -
 #include <iostream>
+#include <string>
 
 //- Beach Judge -
 #include <BeachJudge/Base.h>
@@ -9,23 +10,6 @@
 using namespace std;
 using namespace beachjudge;
 
-void *clientFunc(void *arg)
-{
-	Socket *client = Socket::Create(Socket::IP4, Socket::Stream, Socket::TCP);
-
-	client->Connect("127.0.0.1", 1234);
-
-	const char *msg = "Hello World!";
-	print("Sending Msg: %s\n", msg);
-	client->Write((char *)msg, strlen(msg));
-
-	client->Shutdown();
-	delete client;
-
-	Thread::Exit(NULL);
-	return 0;
-}
-
 void *serverFunc(void *arg)
 {
 	Socket *server = Socket::Create(Socket::IP4, Socket::Stream, Socket::TCP);
@@ -33,16 +17,20 @@ void *serverFunc(void *arg)
 	server->Bind(1234);
 	server->Listen(16);
 
-	char sbuff[256];
+	char sbuff[8192];
+	const char *writeStr = "Must test, wow.";
 	while(true)
 	{
 		Socket *client = server->Accept();
 
 		if(client)
 		{
-			memset(sbuff, 0, 256);
-			unsigned short len = client->Read(sbuff, 256);
-			print("Receiving Msg: %d %s\n", len, sbuff);
+			memset(sbuff, 0, 8192);
+			unsigned short len = client->Read(sbuff, 8191);
+			print("Receiving Msg: %d\n", len);
+			cout << sbuff << endl;
+			
+			client->Write((char *)writeStr, strlen(writeStr));
 
 			client->Shutdown();
 			delete client;
@@ -61,15 +49,12 @@ int main(int argc, char **argv)
 {
 	print("Beach Judge v%s\n", getVersionString().c_str());
 
-	Thread threadA(&serverFunc), threadB(&clientFunc);
+	Thread threadA(&serverFunc);
 
 	print("o-> Main Started\n");//
 	threadA.Start((void *)"Thread A");
-	sleepMS(1000);
-	threadB.Start((void *)"Thread B");
 
 	threadA.Join();
-	threadB.Join();
 
 	print("o-> Main Ended\n");
 	Thread::Exit(NULL);
