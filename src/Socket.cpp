@@ -260,4 +260,22 @@ namespace beachjudge
 		m_isBlocking = isBlocking;
 		return true;
 	}
+	void Socket::GetIP4Info(unsigned long *addr, unsigned short *port)
+	{
+		#if BEACHJUDGE_USEPOSIXSOCKET
+			struct sockaddr_in Addr;
+			int AddrLen = sizeof(Addr);
+			getsockname(m_socket, (sockaddr *)&Addr, &AddrLen);
+			*addr = Addr.sin_addr.S_un.S_addr;
+			*port = Addr.sin_port;
+		#endif
+
+		#if BEACHJUDGE_USEWINSOCKET
+			struct sockaddr_in Addr;
+			int AddrLen = sizeof(Addr);
+			getsockname(m_socket, (sockaddr *)&Addr, &AddrLen);
+			*addr = Addr.sin_addr.S_un.S_addr;
+			*port = Addr.sin_port;
+		#endif
+	}
 }

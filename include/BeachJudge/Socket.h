@@ -42,6 +42,7 @@ namespace beachjudge
 		int Read(char *buffer, unsigned int length);
 		int Write(char *buffer, unsigned int length);
 		bool SetBlocking(bool isBlocking);
+		void GetIP4Info(unsigned long *addr, unsigned short *port);
 	};
 }
 
