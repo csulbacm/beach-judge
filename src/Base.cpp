@@ -8,6 +8,7 @@
 #ifdef linux
 	//- Linux -
 	#include <unistd.h>
+	#include <sys/time.h>
 #endif
 
 #ifdef _WIN32
