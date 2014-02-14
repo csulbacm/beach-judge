@@ -28,7 +28,7 @@ void *serverFunc(void *arg)
 		{
 			unsigned short port = 0;
 			unsigned long addr = 0;
-			client->GetIP4Info(&addr, &port);
+			client->GetPeerIP4Info(&addr, &port);
 
 			memset(sbuff, 0, 8192);
 			unsigned short len = client->Read(sbuff, 8191);
