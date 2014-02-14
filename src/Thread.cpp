@@ -2,17 +2,17 @@
 #include <cassert>
 #include <vector>
 
-#if BEACHJUDGE_USEPOSIXTHREAD
-	//- POSIX -
-	#include <pthread.h>
-#endif
-
 #ifdef _WIN32
 	#include <windows.h>
 #endif
 
 //- Beach Judge -
 #include <BeachJudge/Thread.h>
+
+#if BEACHJUDGE_USEPOSIXTHREAD
+	//- POSIX -
+	#include <pthread.h>
+#endif
 
 using namespace std;
 
