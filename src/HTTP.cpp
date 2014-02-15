@@ -3,6 +3,9 @@
 #include <map>
 #include <queue>
 #include <algorithm>
+#include <sstream>
+#include <iostream>
+#include <fstream>
 
 //- Beach Judge -
 #include <BeachJudge/HTTP.h>
@@ -16,6 +19,47 @@ const char *header_OK = "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-type: t
 
 namespace beachjudge
 {
+	map<string, Page *> g_pageMap;
+
+	Page *Page::Create(string file)
+	{
+		if(!fileExists(file.c_str()))
+			return 0;
+
+		if(g_pageMap.count(file))
+			return g_pageMap[file];
+
+		string html, lineIn;
+		ifstream inFile(file.c_str());
+		while(getline(inFile, lineIn))
+			html = html.append(lineIn);
+
+		Page *page = new Page();
+		page->m_fileSource = file;
+		page->m_html = html;
+		g_pageMap[file] = page;
+		return page;
+	}
+	void Page::Cleanup()
+	{
+		while(g_pageMap.size())
+			delete g_pageMap.begin()->second;
+	}
+
+	Page::Page()
+	{
+	}
+	Page::~Page()
+	{
+		g_pageMap.erase(m_fileSource);
+	}
+	void Page::AddToStream(stringstream &stream, Socket *client, Session *session)
+	{
+		stream << m_html;
+
+		delete this;
+	}
+
 	bool SessionExpireComp(Session *sessA, Session *sessB)
 	{
 		return sessA->GetExpireTimeMS() > sessB->GetExpireTimeMS();
@@ -25,7 +69,7 @@ namespace beachjudge
 	map<unsigned short, Session *> g_sessionIDMap;
 	vector<Session *> g_sessionVec;
 
-	Session *Session::Create(unsigned long address, unsigned short port)
+	Session *Session::Create(unsigned long address, unsigned short port, unsigned short userID)
 	{
 		Session *session = 0;
 		if(g_sessionMap.count(address))
@@ -49,8 +93,15 @@ namespace beachjudge
 
 		session->m_expireTimeMS = getRunTimeMS() + BEACHJUDGE_SESSION_EXPIREMS;
 		session->m_port = port;
+		session->m_userID = userID;
 		sort(g_sessionVec.begin(), g_sessionVec.end(), SessionExpireComp);
 		return session;
+	}
+	Session *Session::Lookup(unsigned long address)
+	{
+		if(g_sessionMap.count(address))
+			return g_sessionMap[address];
+		return 0;
 	}
 	void Session::Cleanup(bool deleteAll)
 	{
@@ -66,6 +117,7 @@ namespace beachjudge
 	Session::Session()
 	{
 		m_id = 0;
+		m_userID = 0;
 		m_expireTimeMS = 0;
 	}
 	Session::~Session()
@@ -82,7 +134,81 @@ namespace beachjudge
 	{
 		return m_id;
 	}
+	unsigned short Session::GetUserID() const
+	{
+		return m_userID;
+	}
 
+	void HTTP::HandleRequest(Socket *client, std::string &request)
+	{
+		unsigned short port = 0;
+		unsigned long addr = 0;
+		client->GetPeerIP4Info(&addr, &port);
+
+		unsigned char ip[4], *ipPtr = (unsigned char *)&addr;
+		for(unsigned char a = 0; a < 4; a++)
+		{
+			ip[a] = *ipPtr & 0xFF;
+			ipPtr++;
+		}
+
+		Session *session = Session::Create(addr, port, 5);
+		stringstream stream(request);
+		string method;
+		stream >> method;
+		print("[%d: %d %d] Receiving Msg: %d.%d.%d.%d:%d %d\r\n", getRunTimeMS(), session, session->GetID(), (unsigned short)ip[0], (unsigned short)ip[1], (unsigned short)ip[2], (unsigned short)ip[3], port);
+		cout << request << endl;
+
+		if(!method.compare("GET"))
+		{
+			string arguments;
+			stream >> arguments;
+
+			stringstream argStream(arguments);
+			string arg;
+			while(getline(argStream, arg, '/'))
+			{
+				cout << arg << " | ";
+			}
+			cout << endl;
+
+			string in;
+			while(stream >> in)
+			{
+				if(!in.compare("Cookie:"))
+				{
+					string cookie;
+					while(getline(stream, cookie, '='))
+					{
+						string value;
+						stream >> value;
+						if(value.back() == ';')
+							value.pop_back();
+
+						if(!cookie.compare(" BEACHJUDGESESSID"))
+						{
+							print("Beach Judge Sess ID: %s\r\n", value.c_str());
+						}
+					}
+
+					break;
+				}
+			}
+
+//				print("Accessing File: %s\r\n", file.c_str());
+
+			stringstream webPageStream;
+			webPageStream << header_OK;
+//			client->Write((char *)header_OK, strlen(header_OK));
+
+			Page *index = Page::Create("../www/index.html");
+			print("%d\n", index);
+			index->AddToStream(webPageStream, client, session);
+
+			string webPage = webPageStream.str();
+			client->Write((char *)webPage.c_str(), webPage.length());
+		}
+	}
 	void HTTP::AppendHeader_OK(string &str)
 	{
 		str.append(header_OK);
