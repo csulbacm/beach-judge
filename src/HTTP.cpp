@@ -206,8 +206,9 @@ namespace beachjudge
 					{
 						string value;
 						stream >> value;
-						if(*value.rbegin() == ';')
-							value.erase(value.end());
+						if(!value.empty())
+							if(*value.rbegin() == ';')
+								value = value.substr(0, value.size() - 1);
 
 						if(!cookie.compare(" BEACHJUDGESESSID"))
 						{
