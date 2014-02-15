@@ -107,6 +107,7 @@ namespace beachjudge
 			Sleep(timeMS);
 		#endif
 	}
+
 	unsigned long g_startTimeMS = getRunTimeMS(); //- TODO: Verify if we can get away with doing this -
 	unsigned long getRunTimeMS()
 	{

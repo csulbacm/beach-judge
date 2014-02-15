@@ -40,6 +40,7 @@ namespace beachjudge
 	public:
 		static Page *Create(string file);
 		static void Cleanup();
+		static void RegisterTemplate(string entry, void (*func)(stringstream &, Socket *, Session *));
 
 		~Page();
 

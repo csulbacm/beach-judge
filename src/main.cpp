@@ -16,6 +16,11 @@
 using namespace std;
 using namespace beachjudge;
 
+void TestFunc(stringstream &stream, Socket *socket, Session *session)
+{
+	stream << "[HOLY POOP IT WORKED]";
+}
+
 void *webServerFunc(void *arg)
 {
 	srand((unsigned int)time(0));
@@ -56,6 +61,7 @@ int main(int argc, char **argv)
 
 	print("Beach Judge v%s\n", getVersionString().c_str());
 
+	Page::RegisterTemplate("test", &TestFunc);
 	Thread webServerThread(&webServerFunc);
 
 	webServerThread.Start(0);

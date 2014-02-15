@@ -16,11 +16,17 @@
 using namespace std;
 //\r\nSet-Cookie: BEACHJUDGESESSID=123456789
 const char *header_OK = "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-type: text/html\r\n\r\n";
+const char *wwwPrefix = "../www/";
 
 namespace beachjudge
 {
 	map<string, Page *> g_pageMap;
+	map<string, void (*)(stringstream &, Socket *, Session *)> g_templateMap;
 
+	void Page::RegisterTemplate(string entry, void (*func)(stringstream &, Socket *, Session *))
+	{
+		g_templateMap[entry] = func;
+	}
 	Page *Page::Create(string file)
 	{
 		if(!fileExists(file.c_str()))
@@ -55,7 +61,33 @@ namespace beachjudge
 	}
 	void Page::AddToStream(stringstream &stream, Socket *client, Session *session)
 	{
-		stream << m_html;
+		stringstream pageStream(m_html);
+		string chunk, varChunk;
+		while(getline(pageStream, chunk, '$'))
+		{
+			stream << chunk;
+
+			if(pageStream.eof())
+				break;
+
+			varChunk = "";
+			while(true)
+			{
+				char peek = pageStream.peek();
+				if((peek >= 'A' && peek <= 'Z') || (peek >= 'a' && peek <= 'z'))
+				{
+					varChunk.push_back(peek);
+					pageStream.get();
+				}
+				else
+					break;
+			}
+			cout << "Smart Chunk: |" << varChunk << "|" << endl;
+			if(g_templateMap.count(varChunk))
+				g_templateMap[varChunk](stream, client, session);
+			else
+				stream << "$" << varChunk;
+		}
 
 		delete this;
 	}
@@ -164,14 +196,6 @@ namespace beachjudge
 			string arguments;
 			stream >> arguments;
 
-			stringstream argStream(arguments);
-			string arg;
-			while(getline(argStream, arg, '/'))
-			{
-				cout << arg << " | ";
-			}
-			cout << endl;
-
 			string in;
 			while(stream >> in)
 			{
@@ -195,16 +219,28 @@ namespace beachjudge
 				}
 			}
 
-//				print("Accessing File: %s\r\n", file.c_str());
+			stringstream argStream(arguments);
+			string arg, filePath = wwwPrefix;
 
 			stringstream webPageStream;
 			webPageStream << header_OK;
-//			client->Write((char *)header_OK, strlen(header_OK));
 
-			Page *index = Page::Create("../www/index.html");
-			print("%d\n", index);
+			getline(argStream, arg, '/');
+			if(getline(argStream, arg, '/'))
+			{
+				string testPath = filePath;
+				testPath.append(arg);
+				testPath.append(".html");
+				if(fileExists(testPath.c_str()))
+					filePath = testPath;
+				else
+					filePath.append("404.html");
+			}
+			else
+				filePath.append("index.html");
+
+			Page *index = Page::Create(filePath);
 			index->AddToStream(webPageStream, client, session);
-
 			string webPage = webPageStream.str();
 			client->Write((char *)webPage.c_str(), webPage.length());
 		}
