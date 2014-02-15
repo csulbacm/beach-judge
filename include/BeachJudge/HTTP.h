@@ -3,6 +3,7 @@
 
 //- Standard Library -
 #include <string>
+#include <sstream>
 
 //- Beach Judge -
 #include <BeachJudge/Socket.h>
@@ -12,7 +13,10 @@ namespace beachjudge
 	class HTTP
 	{
 	public:
-		static void AppendHeader_OK(std::string &str);
+		static void OpenHeader_OK(std::stringstream &stream);
+		static void SetSessionCookie(std::stringstream &stream, std::string target, std::string value);
+		static void CloseHeader(std::stringstream &stream);
+
 		static void HandleRequest(Socket *client, std::string &request);
 	};
 }

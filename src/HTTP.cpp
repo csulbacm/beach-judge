@@ -8,12 +8,23 @@
 #include <BeachJudge/HTTP.h>
 
 using namespace std;
-//\r\nSet-Cookie: BEACHJUDGESESSID=123456789
-const char *header_OK = "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-type: text/html\r\n\r\n";
+
 const char *wwwPrefix = "../www/";
 
 namespace beachjudge
 {
+	void HTTP::OpenHeader_OK(stringstream &stream)
+	{
+		stream << "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-type: text/html\r\n";
+	}
+	void HTTP::SetSessionCookie(std::stringstream &stream, std::string target, std::string value)
+	{
+		stream << "Set-Cookie: " << target << "=" << value << "\r\n";
+	}
+	void HTTP::CloseHeader(stringstream &stream)
+	{
+		stream << "\r\n\r\n"; 
+	}
 	void HTTP::HandleRequest(Socket *client, std::string &request)
 	{
 		unsigned short port = 0;
@@ -67,7 +78,8 @@ namespace beachjudge
 			string arg, filePath = wwwPrefix;
 
 			stringstream webPageStream;
-			webPageStream << header_OK;
+			OpenHeader_OK(webPageStream);
+			CloseHeader(webPageStream);
 
 			getline(argStream, arg, '/');
 			if(getline(argStream, arg, '/'))
@@ -138,9 +150,5 @@ namespace beachjudge
 				}
 			}
 		}
-	}
-	void HTTP::AppendHeader_OK(string &str)
-	{
-		str.append(header_OK);
 	}
 }
