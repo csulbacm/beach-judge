@@ -188,7 +188,7 @@ namespace beachjudge
 		stringstream stream(request);
 		string method;
 		stream >> method;
-		print("[%d: %d %d] Receiving Msg: %d.%d.%d.%d:%d %d\r\n", getRunTimeMS(), session, session->GetID(), (unsigned short)ip[0], (unsigned short)ip[1], (unsigned short)ip[2], (unsigned short)ip[3], port);
+		print("[%d: %d %d] Receiving Msg: %d.%d.%d.%d:%d\r\n", getRunTimeMS(), session, session->GetID(), (unsigned short)ip[0], (unsigned short)ip[1], (unsigned short)ip[2], (unsigned short)ip[3], port);
 		cout << request << endl;
 
 		if(!method.compare("GET"))
@@ -206,8 +206,8 @@ namespace beachjudge
 					{
 						string value;
 						stream >> value;
-						if(value.back() == ';')
-							value.pop_back();
+						if(*value.rbegin() == ';')
+							value.erase(value.end());
 
 						if(!cookie.compare(" BEACHJUDGESESSID"))
 						{
