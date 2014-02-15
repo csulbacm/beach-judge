@@ -17,6 +17,10 @@ namespace beachjudge
 	{
 		stream << "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-type: text/html\r\n";
 	}
+	void HTTP::OpenHeader_NotFound(std::stringstream &stream)
+	{
+		stream << "HTTP/1.1 404 Not Found\r\nConnection: close\r\nContent-type: text/html\r\n";
+	}
 	void HTTP::SetSessionCookie(std::stringstream &stream, std::string target, std::string value)
 	{
 		stream << "Set-Cookie: " << target << "=" << value << "\r\n";
@@ -77,10 +81,8 @@ namespace beachjudge
 			stringstream argStream(arguments);
 			string arg, filePath = wwwPrefix;
 
+			bool e404 = false;
 			stringstream webPageStream;
-			OpenHeader_OK(webPageStream);
-			CloseHeader(webPageStream);
-
 			getline(argStream, arg, '/');
 			if(getline(argStream, arg, '/'))
 			{
@@ -94,11 +96,21 @@ namespace beachjudge
 					if(fileExists(testPath.c_str()))
 						filePath = testPath;
 					else
+					{
 						filePath.append("404.html");
+						e404 = true;
+					}
 				}
 			}
 			else
 				filePath.append("index.html");
+
+			if(e404)
+				OpenHeader_NotFound(webPageStream);
+			else
+				OpenHeader_OK(webPageStream);
+
+			CloseHeader(webPageStream);
 
 			Page *index = Page::Create(filePath);
 			index->AddToStream(webPageStream, client, session);
