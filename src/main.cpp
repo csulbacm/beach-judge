@@ -8,6 +8,7 @@
 //- Beach Judge -
 #include <BeachJudge/Base.h>
 #include <BeachJudge/HTTP.h>
+#include <BeachJudge/Page.h>
 #include <BeachJudge/Thread.h>
 #include <BeachJudge/Socket.h>
 

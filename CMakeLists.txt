@@ -21,7 +21,9 @@ set(INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(INC
 	${INC_DIR}/BeachJudge/Base.h
 	${INC_DIR}/BeachJudge/Config.h
+	${INC_DIR}/BeachJudge/Page.h
 	${INC_DIR}/BeachJudge/HTTP.h
+	${INC_DIR}/BeachJudge/Session.h
 	${INC_DIR}/BeachJudge/Socket.h
 	${INC_DIR}/BeachJudge/Thread.h
 )
@@ -29,6 +31,8 @@ set(INC
 set(SRC
 	${SRC_DIR}/Base.cpp
 	${SRC_DIR}/HTTP.cpp
+	${SRC_DIR}/Page.cpp
+	${SRC_DIR}/Session.cpp
 	${SRC_DIR}/Socket.cpp
 	${SRC_DIR}/Thread.cpp
 	${SRC_DIR}/main.cpp
