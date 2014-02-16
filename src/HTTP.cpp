@@ -31,7 +31,7 @@ namespace beachjudge
 	}
 	void HTTP::SetSessionCookie(std::stringstream &stream, std::string target, std::string value)
 	{
-		stream << "Set-Cookie: " << target << "=" << value << "\r\n";
+		stream << "Set-Cookie: " << target << "=" << value << "; Path=/\r\n";
 	}
 	void HTTP::LoadImage(stringstream &stream, string file)
 	{
@@ -187,7 +187,7 @@ namespace beachjudge
 					SetSessionCookie(webPageStream, "BEACHJUDGESESSID", string(idBuff));
 				}
 				else
-					SetSessionCookie(webPageStream, "BEACHJUDGESESSID", "deleted; expires=Thu, 01 Jan 1970 00:00:00 GMT");
+					SetSessionCookie(webPageStream, "BEACHJUDGESESSID", "deleted; Expires=Thu, 01 Jan 1970 00:00:00 GMT");
 				CloseHeader(webPageStream);
 
 				Page *index = Page::Create(filePath);
