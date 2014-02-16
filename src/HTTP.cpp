@@ -105,15 +105,18 @@ namespace beachjudge
 			}
 
 			stringstream argStream(arguments);
-			string arg, filePath(wwwPrefix);
+			string  filePath(wwwPrefix);
 
 			bool e404 = false;
 			stringstream webPageStream;
-			getline(argStream, arg, '/');
+			string fileReq = arguments.substr(0, arguments.find_first_of('?'));
+			fileReq = fileReq.substr(0, fileReq.find_first_of('#'));
 
-			if(getline(argStream, arg, '/'))
+			if(fileReq.length() == 1)
+				filePath.append("index.html");
+			else
 			{
-				if(!arg.compare("logout"))
+				if(!fileReq.compare("logout"))
 					if(session)
 					{
 						delete session;
@@ -121,7 +124,7 @@ namespace beachjudge
 					}
 
 				string testPath = filePath;
-				testPath.append(arg);
+				testPath.append(fileReq);
 				if(fileExists(testPath.c_str()))
 					filePath = testPath;
 				else
@@ -136,8 +139,6 @@ namespace beachjudge
 					}
 				}
 			}
-			else
-				filePath.append("index.html");
 
 			unsigned short per = filePath.find_last_of('.');
 			string type;
@@ -253,15 +254,18 @@ namespace beachjudge
 				}
 
 			stringstream argStream(arguments);
-			string arg, filePath(wwwPrefix);
+			string filePath(wwwPrefix);
 
 			bool e404 = false;
 			stringstream webPageStream;
-			getline(argStream, arg, '/');
+			string fileReq = arguments.substr(0, arguments.find_first_of('?'));
+			fileReq = fileReq.substr(0, fileReq.find_first_of('#'));
 
-			if(getline(argStream, arg, '/'))
+			if(fileReq.length() == 1)
+				filePath.append("index.html");
+			else
 			{
-				if(!arg.compare("logout"))
+				if(!fileReq.compare("logout"))
 					if(session)
 					{
 						delete session;
@@ -269,7 +273,7 @@ namespace beachjudge
 					}
 
 				string testPath = filePath;
-				testPath.append(arg);
+				testPath.append(fileReq);
 				if(fileExists(testPath.c_str()))
 					filePath = testPath;
 				else
@@ -284,8 +288,6 @@ namespace beachjudge
 					}
 				}
 			}
-			else
-				filePath.append("index.html");
 
 			unsigned short per = filePath.find_last_of('.');
 			string type;
