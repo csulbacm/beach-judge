@@ -33,6 +33,7 @@ namespace beachjudge
 			session = new Session();
 			session->m_address = address;
 			string addrStr;
+			g_sessionMap[address] = session;
 			for(unsigned char a = 0; a < 4; a++)
 			{
 				char buff[4];
@@ -44,8 +45,6 @@ namespace beachjudge
 					addrStr.push_back('.');
 			}
 			session->m_addressString = addrStr;
-
-			g_sessionMap[address] = session;
 
 			do
 			{
@@ -75,6 +74,8 @@ namespace beachjudge
 			Session *session = g_sessionVec.back();
 			if(deleteAll || session->GetExpireTimeMS() <= currTimeMS)
 				delete session;
+			else
+				break;
 		}
 	}
 
