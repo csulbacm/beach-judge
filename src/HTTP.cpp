@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <cstring>
 
 //- Beach Judge -
 #include <BeachJudge/Base.h>
@@ -171,7 +172,7 @@ namespace beachjudge
 					#ifdef _WIN32
 						_itoa_s(session->GetID(), idBuff, 8, 10);
 					#else
-						itoa(session->GetID(), idBuff, 10);
+						sprintf(idBuff, "%d", session->GetID());
 					#endif
 					SetSessionCookie(webPageStream, "BEACHJUDGESESSID", string(idBuff));
 				}
@@ -318,7 +319,7 @@ namespace beachjudge
 					#ifdef _WIN32
 						_itoa_s(session->GetID(), idBuff, 8, 10);
 					#else
-						itoa(session->GetID(), idBuff, 10);
+						sprintf(idBuff, "%d", session->GetID());
 					#endif
 					SetSessionCookie(webPageStream, "BEACHJUDGESESSID", string(idBuff));
 				}

@@ -3,6 +3,7 @@
 
 //- Standard Library -
 #include <string>
+#include <cstdlib>
 
 //- Beach Judge -
 #include <BeachJudge/Socket.h>
