@@ -116,6 +116,7 @@ namespace beachjudge
 				filePath.append("index.html");
 			else
 			{
+				fileReq = fileReq.substr(1);
 				if(!fileReq.compare("logout"))
 					if(session)
 					{
@@ -265,6 +266,7 @@ namespace beachjudge
 				filePath.append("index.html");
 			else
 			{
+				fileReq = fileReq.substr(1);
 				if(!fileReq.compare("logout"))
 					if(session)
 					{
