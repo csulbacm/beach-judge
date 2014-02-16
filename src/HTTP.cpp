@@ -1,5 +1,7 @@
 //- Standard Library -
 #include <iostream>
+#include <fstream>
+#include <algorithm>
 
 //- Beach Judge -
 #include <BeachJudge/Base.h>
@@ -24,6 +26,29 @@ namespace beachjudge
 	void HTTP::SetSessionCookie(std::stringstream &stream, std::string target, std::string value)
 	{
 		stream << "Set-Cookie: " << target << "=" << value << "\r\n";
+	}
+	void HTTP::LoadImage(stringstream &stream, string file)
+	{
+		ifstream inFile(file, ios::binary);
+
+		stream << "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-type: */*\r\n";
+
+		string img;
+
+		while(!inFile.eof())
+		{
+			char c;
+			inFile.get(c);
+			img.push_back(c);
+		}
+
+		unsigned long size = img.size();
+		stream << "Content-Length: " << size << "\r\n\r\n";
+		
+		for(unsigned long a = 0; a < size; a++)
+			stream << img[a];
+
+		inFile.close();
 	}
 	void HTTP::CloseHeader(stringstream &stream)
 	{
@@ -89,7 +114,9 @@ namespace beachjudge
 				string testPath = filePath;
 				testPath.append(arg);
 				if(fileExists(testPath.c_str()))
+				{
 					filePath = testPath;
+				}
 				else
 				{
 					testPath.append(".html");
@@ -105,17 +132,38 @@ namespace beachjudge
 			else
 				filePath.append("index.html");
 
-			if(e404)
-				OpenHeader_NotFound(webPageStream);
+			unsigned short per = filePath.find_last_of('.');
+			string type;
+			if(per != string::npos)
+				type = filePath.substr(per + 1);
+
+			bool img = false;
+			if(type.length())
+			{
+				transform(type.begin(), type.end(), type.begin(), tolower);
+				if(!type.compare("jpg") || !type.compare("jpeg") || !type.compare("png") || !type.compare("bmp"))
+					img = true;
+			}
+
+			if(img)
+			{
+				LoadImage(webPageStream, filePath);
+				string response = webPageStream.str();
+				client->Write((char *)response.c_str(), response.length());
+			}
 			else
-				OpenHeader_OK(webPageStream);
+			{
+				if(e404)
+					OpenHeader_NotFound(webPageStream);
+				else
+					OpenHeader_OK(webPageStream);
+				CloseHeader(webPageStream);
 
-			CloseHeader(webPageStream);
-
-			Page *index = Page::Create(filePath);
-			index->AddToStream(webPageStream, client, session);
-			string webPage = webPageStream.str();
-			client->Write((char *)webPage.c_str(), webPage.length());
+				Page *index = Page::Create(filePath);
+				index->AddToStream(webPageStream, client, session);
+				string webPage = webPageStream.str();
+				client->Write((char *)webPage.c_str(), webPage.length());
+			}
 		}
 		else if(!method.compare("POST"))
 		{

@@ -17,6 +17,7 @@ namespace beachjudge
 		static void OpenHeader_NotFound(std::stringstream &stream);
 		static void SetSessionCookie(std::stringstream &stream, std::string target, std::string value);
 		static void CloseHeader(std::stringstream &stream);
+		static void LoadImage(std::stringstream &stream, std::string file);
 
 		static void HandleRequest(Socket *client, std::string &request);
 	};
