@@ -140,49 +140,49 @@ namespace beachjudge
 				ifStack.push_back(arg);
 			else if(!varChunk.compare("endif"))
 				ifStack.erase(find(ifStack.begin(), ifStack.end(), arg));
-			else if(!varChunk.compare("set"))
-			{
-				if(arg.size() && val.size())
-				{
-					if(masterLocalVars)
-						masterLocalVars->operator[](arg) = val;
-					else
-						localVars[arg] = val;
-				}
-				else
-					stream << "$" << varChunk << ":" << arg << "=" << val;
-			}
-			else if(!varChunk.compare("get"))
-			{
-				bool fail = false;
-				if(masterLocalVars)
-				{
-					if(masterLocalVars->count(arg))
-						stream << masterLocalVars->operator[](arg);
-					else
-						fail = true;
-				}
-				else if(localVars.count(arg))
-					stream << localVars[arg];
-				else
-					fail = true;
-
-				if(fail)
-					stream << "$" << varChunk << ":" << arg;
-			}
-			else if(!varChunk.compare("include"))
-			{
-				string file(includePrefix);
-				file.append(arg);
-				if(fileExists(file.c_str()))
-				{
-					Page *page = Page::Create(file);
-					page->AddToStream(stream, client, session, &localVars);
-				}
-			}
 			else if(valid)
 			{
-				if(g_templateMap.count(varChunk))
+				if(!varChunk.compare("set"))
+				{
+					if(arg.size() && val.size())
+					{
+						if(masterLocalVars)
+							masterLocalVars->operator[](arg) = val;
+						else
+							localVars[arg] = val;
+					}
+					else
+						stream << "$" << varChunk << ":" << arg << "=" << val;
+				}
+				else if(!varChunk.compare("get"))
+				{
+					bool fail = false;
+					if(masterLocalVars)
+					{
+						if(masterLocalVars->count(arg))
+							stream << masterLocalVars->operator[](arg);
+						else
+							fail = true;
+					}
+					else if(localVars.count(arg))
+						stream << localVars[arg];
+					else
+						fail = true;
+
+					if(fail)
+						stream << "$" << varChunk << ":" << arg;
+				}
+				else if(!varChunk.compare("include"))
+				{
+					string file(includePrefix);
+					file.append(arg);
+					if(fileExists(file.c_str()))
+					{
+						Page *page = Page::Create(file);
+						page->AddToStream(stream, client, session, &localVars);
+					}
+				}
+				else if(g_templateMap.count(varChunk))
 					g_templateMap[varChunk](stream, client, session, arg);
 				else
 					stream << "$" << varChunk;
