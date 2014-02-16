@@ -10,12 +10,15 @@
 	<div class="navbar">
 		<p><a href="/">Home</a><a href="login">Team Login</a></p>
 	</div>
-	<div class="login">
-		<form method="post" action="/">
-			<p><input type="text" name="team" value="" placeholder="Team"></p>
-			<p><input type="password" name="passwd" value="" placeholder="Password"></p>
-			<p><input type="submit" class="submit" value="Login"></p>
-		</form>
+	<div class="content">
+		$if:loggedIn<p>You are already logged in.</p>$endif:loggedIn
+		$if:loggedOut<div class="login">
+			<form method="post" action="/">
+				<p><input type="text" name="team" value="" placeholder="Team"></p>
+				<p><input type="password" name="passwd" value="" placeholder="Password"></p>
+				<p><input type="submit" class="submit" value="Login"></p>
+			</form>
+		</div>$endif:loggedOut
 	</div>
 </body>
 </html>

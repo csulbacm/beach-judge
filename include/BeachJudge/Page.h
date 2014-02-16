@@ -20,7 +20,7 @@ namespace beachjudge
 	public:
 		static Page *Create(std::string file);
 		static void Cleanup();
-		static void RegisterTemplate(std::string entry, void (*func)(std::stringstream &, Socket *, Session *));
+		static void RegisterTemplate(std::string entry, void (*func)(std::stringstream &, Socket *, Session *, std::string));
 
 		~Page();
 

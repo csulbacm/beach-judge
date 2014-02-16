@@ -52,7 +52,7 @@ namespace beachjudge
 	}
 	void HTTP::CloseHeader(stringstream &stream)
 	{
-		stream << "\r\n\r\n";
+		stream << "\r\n";
 	}
 	void HTTP::HandleRequest(Socket *client, std::string &request)
 	{
@@ -67,11 +67,12 @@ namespace beachjudge
 			ipPtr++;
 		}
 
-		Session *session = Session::Create(addr, port, 5);
+		Session *session = Session::Lookup(addr);
+//		Session *session = Session::Create(addr, port, 5);
 		stringstream stream(request);
 		string method;
 		stream >> method;
-		print("[%d: %d %d] Receiving Msg: %d.%d.%d.%d:%d\r\n", getRunTimeMS(), session, session->GetID(), (unsigned short)ip[0], (unsigned short)ip[1], (unsigned short)ip[2], (unsigned short)ip[3], port);
+//		print("[%d: %d %d] Receiving Msg: %d.%d.%d.%d:%d\r\n", getRunTimeMS(), session, session->GetID(), (unsigned short)ip[0], (unsigned short)ip[1], (unsigned short)ip[2], (unsigned short)ip[3], port);
 		cout << request << endl;
 
 		if(!method.compare("GET"))
@@ -98,7 +99,6 @@ namespace beachjudge
 							print("Beach Judge Sess ID: %s\r\n", value.c_str());
 						}
 					}
-
 					break;
 				}
 			}

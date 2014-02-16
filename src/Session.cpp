@@ -72,6 +72,7 @@ namespace beachjudge
 		m_id = 0;
 		m_userID = 0;
 		m_expireTimeMS = 0;
+		m_variables["loggedIn"] = 1;
 	}
 	Session::~Session()
 	{
@@ -90,5 +91,11 @@ namespace beachjudge
 	unsigned short Session::GetUserID() const
 	{
 		return m_userID;
+	}
+	unsigned short Session::GetVariable(std::string name)
+	{
+		if(m_variables.count(name))
+			return m_variables[name];
+		return 0;
 	}
 }

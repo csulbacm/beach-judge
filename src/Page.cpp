@@ -2,6 +2,8 @@
 #include <iostream>
 #include <fstream>
 #include <map>
+#include <vector>
+#include <algorithm>
 
 //- Beach Judge -
 #include <BeachJudge/Base.h>
@@ -12,9 +14,9 @@ using namespace std;
 namespace beachjudge
 {
 	map<string, Page *> g_pageMap;
-	map<string, void (*)(stringstream &, Socket *, Session *)> g_templateMap;
+	map<string, void (*)(stringstream &, Socket *, Session *, std::string)> g_templateMap;
 
-	void Page::RegisterTemplate(string entry, void (*func)(stringstream &, Socket *, Session *))
+	void Page::RegisterTemplate(string entry, void (*func)(stringstream &, Socket *, Session *, std::string))
 	{
 		g_templateMap[entry] = func;
 	}
@@ -56,10 +58,30 @@ namespace beachjudge
 	void Page::AddToStream(stringstream &stream, Socket *client, Session *session)
 	{
 		stringstream pageStream(m_html);
-		string chunk, varChunk;
+		string chunk, varChunk, arg;
+		vector<string> ifStack;
+
 		while(getline(pageStream, chunk, '$'))
 		{
-			stream << chunk;
+			bool valid = true;
+			if(ifStack.size())
+			{
+				if(session)
+				{
+					cout << "WHYYYY" << endl;
+					for(vector<string>::iterator it = ifStack.begin(); it != ifStack.end(); it++)
+						if(session->GetVariable(*it) == 0)
+						{
+							valid = false;
+							break;
+						}
+				}
+				else if(ifStack.front().compare("loggedOut"))
+					valid = false;
+			}
+
+			if(valid)
+				stream << chunk;
 
 			if(pageStream.eof())
 				break;
@@ -73,14 +95,37 @@ namespace beachjudge
 					varChunk.push_back(peek);
 					pageStream.get();
 				}
+				else if(peek == ':')
+				{
+					arg = "";
+					pageStream.get();
+					while(true)
+					{
+						char argPeek = pageStream.peek();
+						if((argPeek >= 'A' && argPeek <= 'Z') || (argPeek >= 'a' && argPeek <= 'z'))
+						{
+							arg.push_back(argPeek);
+							pageStream.get();
+						}
+						else
+							break;
+					}
+				}
 				else
 					break;
 			}
-			cout << "Smart Chunk: |" << varChunk << "|" << endl;
-			if(g_templateMap.count(varChunk))
-				g_templateMap[varChunk](stream, client, session);
-			else
-				stream << "$" << varChunk;
+			
+			if(!varChunk.compare("if"))
+				ifStack.push_back(arg);
+			else if(!varChunk.compare("endif"))
+				ifStack.erase(find(ifStack.begin(), ifStack.end(), arg));
+			else if(valid)
+			{
+				if(g_templateMap.count(varChunk))
+					g_templateMap[varChunk](stream, client, session, arg);
+				else
+					stream << "$" << varChunk;
+			}
 		}
 
 		delete this;

@@ -18,7 +18,7 @@
 using namespace std;
 using namespace beachjudge;
 
-void TestFunc(stringstream &stream, Socket *socket, Session *session)
+void TestFunc(stringstream &stream, Socket *socket, Session *session, std::string arg)
 {
 	stream << "[HOLY POOP IT WORKED]";
 }
