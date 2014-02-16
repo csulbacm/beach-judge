@@ -4,6 +4,7 @@
 //- Standard Library -
 #include <string>
 #include <sstream>
+#include <map>
 
 //- Beach Judge -
 #include <BeachJudge/Session.h>
@@ -25,7 +26,7 @@ namespace beachjudge
 
 		~Page();
 
-		void AddToStream(std::stringstream &stream, Socket *client, Session *session);
+		void AddToStream(std::stringstream &stream, Socket *client, Session *session, std::map<std::string, std::string> *masterLocalVars = 0);
 	};
 }
 

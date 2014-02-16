@@ -18,24 +18,12 @@ namespace beachjudge
 	map<string, Page *> g_pageMap;
 	map<string, void (*)(stringstream &, Socket *, Session *, std::string)> g_templateMap;
 
-	void IncludeTemplate(stringstream &stream, Socket *socket, Session *session, string arg)
-	{
-		string file(includePrefix);
-		file.append(arg);
-		if(fileExists(file.c_str()))
-		{
-			Page *page = Page::Create(file);
-			page->AddToStream(stream, socket, session);
-		}
-	}
-
 	void Page::RegisterTemplate(string entry, void (*func)(stringstream &, Socket *, Session *, string))
 	{
 		g_templateMap[entry] = func;
 	}
 	void Page::RegisterDefaultTemplates()
 	{
-		RegisterTemplate("include", &IncludeTemplate);
 	}
 	Page *Page::Create(string file)
 	{
@@ -72,7 +60,7 @@ namespace beachjudge
 	{
 		g_pageMap.erase(m_fileSource);
 	}
-	void Page::AddToStream(stringstream &stream, Socket *client, Session *session)
+	void Page::AddToStream(stringstream &stream, Socket *client, Session *session, map<string, string> *masterLocalVars)
 	{
 		stringstream pageStream(m_html);
 		string chunk, varChunk, arg, val;
@@ -155,16 +143,42 @@ namespace beachjudge
 			else if(!varChunk.compare("set"))
 			{
 				if(arg.size() && val.size())
-					localVars[arg] = val;
+				{
+					if(masterLocalVars)
+						masterLocalVars->operator[](arg) = val;
+					else
+						localVars[arg] = val;
+				}
 				else
 					stream << "$" << varChunk << ":" << arg << "=" << val;
 			}
 			else if(!varChunk.compare("get"))
 			{
-				if(localVars.count(arg))
+				bool fail = false;
+				if(masterLocalVars)
+				{
+					if(masterLocalVars->count(arg))
+						stream << masterLocalVars->operator[](arg);
+					else
+						fail = true;
+				}
+				else if(localVars.count(arg))
 					stream << localVars[arg];
 				else
+					fail = true;
+
+				if(fail)
 					stream << "$" << varChunk << ":" << arg;
+			}
+			else if(!varChunk.compare("include"))
+			{
+				string file(includePrefix);
+				file.append(arg);
+				if(fileExists(file.c_str()))
+				{
+					Page *page = Page::Create(file);
+					page->AddToStream(stream, client, session, &localVars);
+				}
 			}
 			else if(valid)
 			{
