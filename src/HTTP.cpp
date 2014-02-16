@@ -105,7 +105,7 @@ namespace beachjudge
 			}
 
 			stringstream argStream(arguments);
-			string arg, filePath = wwwPrefix;
+			string arg, filePath(wwwPrefix);
 
 			bool e404 = false;
 			stringstream webPageStream;
@@ -253,7 +253,7 @@ namespace beachjudge
 				}
 
 			stringstream argStream(arguments);
-			string arg, filePath = wwwPrefix;
+			string arg, filePath(wwwPrefix);
 
 			bool e404 = false;
 			stringstream webPageStream;

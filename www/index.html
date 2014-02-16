@@ -7,9 +7,7 @@
 	<div class="header">
 		<p><h1>Beach Judge: Tech Demo</h1>
 	</div>
-	<div class="navbar">
-		<p><a href="/">Home</a>$if:loggedOut<a href="login">Team Login</a>$endif:loggedOut$if:loggedIn<a href="logout">Logout</a>$endif:loggedIn</p>
-	</div>
+	$include:navbar.inc
 	<div class="content">
 		<p>This is a demo of our programming team judgement software.</p>
 	</div>

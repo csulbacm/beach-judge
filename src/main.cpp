@@ -18,11 +18,6 @@
 using namespace std;
 using namespace beachjudge;
 
-void TestFunc(stringstream &stream, Socket *socket, Session *session, std::string arg)
-{
-	stream << "[HOLY POOP IT WORKED]";
-}
-
 void *webServerFunc(void *arg)
 {
 	srand((unsigned int)time(0));
@@ -67,7 +62,8 @@ int main(int argc, char **argv)
 	Team::SetDatabase("../data/teams.txt");
 	Team::LoadFromDatabase();
 
-	Page::RegisterTemplate("test", &TestFunc);
+	Page::RegisterDefaultTemplates();
+
 	Thread webServerThread(&webServerFunc);
 
 	webServerThread.Start(0);

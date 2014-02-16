@@ -21,6 +21,7 @@ namespace beachjudge
 		static Page *Create(std::string file);
 		static void Cleanup();
 		static void RegisterTemplate(std::string entry, void (*func)(std::stringstream &, Socket *, Session *, std::string));
+		static void RegisterDefaultTemplates();
 
 		~Page();
 

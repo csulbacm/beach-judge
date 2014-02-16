@@ -11,14 +11,31 @@
 
 using namespace std;
 
+const char *includePrefix = "../www/";
+
 namespace beachjudge
 {
 	map<string, Page *> g_pageMap;
 	map<string, void (*)(stringstream &, Socket *, Session *, std::string)> g_templateMap;
 
-	void Page::RegisterTemplate(string entry, void (*func)(stringstream &, Socket *, Session *, std::string))
+	void IncludeTemplate(stringstream &stream, Socket *socket, Session *session, string arg)
+	{
+		string file(includePrefix);
+		file.append(arg);
+		if(fileExists(file.c_str()))
+		{
+			Page *page = Page::Create(file);
+			page->AddToStream(stream, socket, session);
+		}
+	}
+
+	void Page::RegisterTemplate(string entry, void (*func)(stringstream &, Socket *, Session *, string))
 	{
 		g_templateMap[entry] = func;
+	}
+	void Page::RegisterDefaultTemplates()
+	{
+		RegisterTemplate("include", &IncludeTemplate);
 	}
 	Page *Page::Create(string file)
 	{
@@ -101,7 +118,7 @@ namespace beachjudge
 					while(true)
 					{
 						char argPeek = pageStream.peek();
-						if((argPeek >= 'A' && argPeek <= 'Z') || (argPeek >= 'a' && argPeek <= 'z'))
+						if((argPeek >= 'A' && argPeek <= 'Z') || (argPeek >= 'a' && argPeek <= 'z') || argPeek == '.' || argPeek == '/')
 						{
 							arg.push_back(argPeek);
 							pageStream.get();
