@@ -1,9 +1,7 @@
 $include:inc/dochead.html
 $include:inc/navi.html
-<div class="container">
-	
+<div class="container content">
 	<div class="row">
-		
 		<div class="col-md-8 col-md-push-2">
 			$if:loggedIn<p>You are already logged in.</p>$endif:loggedIn
 			$if:loggedOut
@@ -19,7 +17,9 @@ $include:inc/navi.html
 					<input type="password" class="form-control" id="password" placeholder="Password" name="passwd">
 				</div>
 				
-				<button type="submit" name="cmd" value="Login" class="btn btn-default">Submit</button>
+
+					<input type="hidden" name="cmd" value="Login">
+				<button type="submit" class="btn btn-default">Submit</button>
 			</form>
 			$endif:loggedOut
 		</div>

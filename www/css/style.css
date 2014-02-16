@@ -1,0 +1,8 @@
+.sticky {
+	margin-top: 50px;
+	position: fixed;
+}
+
+.content {
+	margin-top: 75px;
+}

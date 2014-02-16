@@ -1,0 +1,54 @@
+$set:title=Leaderboard
+$include:inc/dochead.html
+$include:inc/navi.html
+<div class="container content">
+
+	<div class="row">
+		<!-- table col -->
+		<div class="col-md-12" >
+			<h2>Overall Score</h2>
+			<div class="panel panel-default">
+				<div class="panel-body">
+					<table class="table">
+						<thead>
+							<tr style="font-weight:bold;">
+								<td>
+								No.</td>
+								<td>
+								Contestant</td>
+								<td>
+								Points</td>
+								<td>
+								Penalty</td>
+							</tr>
+						</thead>
+						<tbody id="holder">
+							<tr id="clone">
+								<td>1</td>
+								<td>David</td>
+								<td>123123.1232</td>
+								<td>123123.1232</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		</div>
+
+		<!--/ table col -->
+	
+		</div>
+	</div>
+</div>
+<script>
+	( function  (argument) {
+		var holder = document.getElementById('holder');
+		var clone  = document.getElementById('clone');
+	
+		for (var i = 0; i < 30; i++) {
+			holder.innerHTML += clone.outerHTML;
+		};
+	})();
+</script>
+$include:inc/docfooter.html
