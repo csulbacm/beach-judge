@@ -17,6 +17,8 @@ project(${NAME})
 
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(EXT_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/src)
+set(EXT_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/include)
 
 set(INC
 	${INC_DIR}/BeachJudge/Base.h
@@ -26,6 +28,7 @@ set(INC
 	${INC_DIR}/BeachJudge/Session.h
 	${INC_DIR}/BeachJudge/Socket.h
 	${INC_DIR}/BeachJudge/Thread.h
+	${EXT_INC_DIR}/sha1.h
 )
 
 set(SRC
@@ -36,10 +39,12 @@ set(SRC
 	${SRC_DIR}/Socket.cpp
 	${SRC_DIR}/Thread.cpp
 	${SRC_DIR}/main.cpp
+	${EXT_SRC_DIR}/sha1.cpp
 )
 
 set(INCLUDE
 	${INC_DIR}
+	${EXT_INC_DIR}
 )
 
 set(LIB "")

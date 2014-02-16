@@ -11,6 +11,7 @@
 #include <BeachJudge/Page.h>
 #include <BeachJudge/Thread.h>
 #include <BeachJudge/Socket.h>
+#include <sha1.h>
 
 #define BEACHJUDGE_SESSION_CLEANUPTICKMS 15 * 60 * 1000 //- TODO: Externalize to Config -
 

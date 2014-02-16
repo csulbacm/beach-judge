@@ -27,7 +27,7 @@ namespace beachjudge
 	}
 	void HTTP::CloseHeader(stringstream &stream)
 	{
-		stream << "\r\n\r\n"; 
+		stream << "\r\n\r\n";
 	}
 	void HTTP::HandleRequest(Socket *client, std::string &request)
 	{
