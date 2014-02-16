@@ -71,8 +71,8 @@ int main(int argc, char **argv)
 
 	print("Beach Judge v%s\n", getVersionString().c_str());
 
-	Team::Create("judge", "root", 0);
-	Team::SetDatabase("../data/teams.txt");
+	Team::Create("judge", "root", 0, true);
+	Team::SetDatabase("teams.txt");
 	Team::LoadFromDatabase();
 
 	Page::RegisterDefaultTemplates();

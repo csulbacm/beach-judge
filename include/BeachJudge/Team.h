@@ -14,11 +14,12 @@ namespace beachjudge
 	{
 		unsigned short m_id;
 		std::string m_name, m_password;
+		bool m_isJudge;
 
 		Team();
 
 	public:
-		static Team *Create(std::string name, std::string password, unsigned short id = -1);
+		static Team *Create(std::string name, std::string password, unsigned short id = -1, bool isJudge = false);
 		static Team *LookupByID(unsigned short id);
 		static Team *LookupByName(std::string name);
 		static void SetDatabase(std::string file);
@@ -28,8 +29,10 @@ namespace beachjudge
 
 		~Team();
 
+		void SetPassword(std::string password);
 		bool TestPassword(std::string password);
 		std::string GetName() const;
+		bool IsJudge() const;
 	};
 }
 

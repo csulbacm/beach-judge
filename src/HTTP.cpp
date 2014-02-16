@@ -143,7 +143,7 @@ namespace beachjudge
 				}
 			}
 
-			unsigned short per = filePath.find_last_of('.');
+			long per = filePath.find_last_of('.');
 			string type;
 			if(per != string::npos)
 				type = filePath.substr(per + 1);
@@ -247,14 +247,38 @@ namespace beachjudge
 				}
 			}
 
-			if(argMap.count("passwd"))
-				if(argMap.count("team"))
+			if(argMap.count("cmd"))
+			{
+				if(!argMap["cmd"].compare("Login") && !session)
 				{
-					Team *team = Team::LookupByName(argMap["team"]);
-					if(team)
-						if(team->TestPassword(argMap["passwd"]))
-							session = Session::Create(addr, port, team);
+					if(argMap.count("passwd"))
+						if(argMap.count("team"))
+						{
+							Team *team = Team::LookupByName(argMap["team"]);
+							if(team)
+								if(team->TestPassword(argMap["passwd"]))
+									session = Session::Create(addr, port, team);
+						}
 				}
+				else if(!argMap["cmd"].compare("Change") && session)
+				{
+					if(argMap.count("curPasswd"))
+						if(argMap.count("newPasswd"))
+						{
+							Team *team = session->GetTeam();
+							if(team)
+								if(team->TestPassword(argMap["curPasswd"]))
+								{
+									string pass = argMap["newPasswd"];
+									if(pass.size())
+									{
+										team->SetPassword(pass);
+										Team::SaveToDatabase();
+									}
+								}
+						}
+				}
+			}
 
 			stringstream argStream(arguments);
 			string filePath(wwwPrefix);
@@ -293,7 +317,7 @@ namespace beachjudge
 				}
 			}
 
-			unsigned short per = filePath.find_last_of('.');
+			long per = filePath.find_last_of('.');
 			string type;
 			if(per != string::npos)
 				type = filePath.substr(per + 1);

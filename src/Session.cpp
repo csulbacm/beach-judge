@@ -55,6 +55,7 @@ namespace beachjudge
 			g_sessionVec.push_back(session);
 		}
 
+		session->m_variables["isJudge"] = team->IsJudge() ? 1 : 0;
 		session->m_port = port;
 		session->m_team = team;
 		session->ResetTimeout();

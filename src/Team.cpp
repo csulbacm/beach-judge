@@ -2,6 +2,7 @@
 #include <map>
 #include <fstream>
 #include <string>
+#include <iostream>
 
 //- Beach Judge -
 #include <BeachJudge/Base.h>
@@ -39,7 +40,7 @@ namespace beachjudge
 			return g_teamByNameMap[name];
 		return 0;
 	}
-	Team *Team::Create(string name, string password, unsigned short id)
+	Team *Team::Create(string name, string password, unsigned short id, bool isJudge)
 	{
 		Team *team = LookupByName(name);
 		if(!team)
@@ -62,6 +63,7 @@ namespace beachjudge
 		}
 
 		team->m_password = sha1Convert(password);
+		team->m_isJudge = isJudge;
 		return team;
 	}
 	void Team::SetDatabase(string file)
@@ -117,6 +119,10 @@ namespace beachjudge
 		g_teamByNameMap.erase(this->m_name);
 		g_teamByIDMap.erase(this->m_id);
 	}
+	void Team::SetPassword(string password)
+	{
+		m_password = sha1Convert(password);
+	}
 	bool Team::TestPassword(string password)
 	{
 		password = sha1Convert(password);
@@ -125,5 +131,9 @@ namespace beachjudge
 	string Team::GetName() const
 	{
 		return m_name;
+	}
+	bool Team::IsJudge() const
+	{
+		return m_isJudge;
 	}
 }

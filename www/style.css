@@ -44,7 +44,7 @@ div.content
 	padding-left: 16px
 }
 
-div.login input
+input
 {
 	border: 0px solid #FFF;
 	background-color: #575759;
@@ -52,7 +52,7 @@ div.login input
 	color: #D7D7D9;
 	width: 160px;
 }
-div.login .submit
+.submit
 {
 	width: 160px;
 }

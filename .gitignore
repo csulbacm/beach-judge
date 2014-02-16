@@ -43,6 +43,3 @@ bin
 
 # Generated Files
 include/BeachJudge/Config.h
-
-# Competition Data
-data
