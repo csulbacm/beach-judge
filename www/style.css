@@ -1,4 +1,62 @@
 body
 {
-	background-color: #dadada;
+	background-color: #373739;
+	padding: 0px;
+	margin: 0px;
+	font-family: Verdana;
+	color: #D7D7D9;
+}
+
+a
+{
+	color: #979799;
+}
+
+div.header
+{
+	background-color: #171719;
+	height: 64px;
+	width: 100%;
+}
+div.header h1
+{
+	padding-left: 16px;
+	padding-top: 10px;
+}
+
+br
+{
+	clear: both;
+}
+
+div.navbar
+{
+	padding-left: 16px;
+	height: 16px;
+}
+div.navbar a
+{
+	padding-right: 16px;
+}
+
+div.content
+{
+	padding-left: 16px
+}
+
+div.login
+{
+	padding-left: 16px;
+}
+div.login input
+{
+	border: 0px solid #FFF;
+	background-color: #575759;
+	padding: 4px;
+	color: #D7D7D9;
+	width: 160px;
+}
+div.login .submit
+{
+	width: 160px;
 }
