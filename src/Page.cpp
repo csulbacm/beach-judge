@@ -68,7 +68,6 @@ namespace beachjudge
 			{
 				if(session)
 				{
-					cout << "WHYYYY" << endl;
 					for(vector<string>::iterator it = ifStack.begin(); it != ifStack.end(); it++)
 						if(session->GetVariable(*it) == 0)
 						{

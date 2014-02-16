@@ -8,7 +8,7 @@
 		<p><h1>Team Login</h1></p>
 	</div>
 	<div class="navbar">
-		<p><a href="/">Home</a><a href="login">Team Login</a></p>
+		<p><a href="/">Home</a>$if:loggedOut<a href="login">Team Login</a>$endif:loggedOut$if:loggedIn<a href="logout">Logout</a>$endif:loggedIn</p>
 	</div>
 	<div class="content">
 		$if:loggedIn<p>You are already logged in.</p>$endif:loggedIn

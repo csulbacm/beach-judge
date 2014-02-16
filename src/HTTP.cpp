@@ -8,6 +8,7 @@
 #include <BeachJudge/Page.h>
 #include <BeachJudge/Session.h>
 #include <BeachJudge/HTTP.h>
+#include <BeachJudge/Team.h>
 
 using namespace std;
 
@@ -68,7 +69,6 @@ namespace beachjudge
 		}
 
 		Session *session = Session::Lookup(addr);
-//		Session *session = Session::Create(addr, port, 5);
 		stringstream stream(request);
 		string method;
 		stream >> method;
@@ -109,14 +109,20 @@ namespace beachjudge
 			bool e404 = false;
 			stringstream webPageStream;
 			getline(argStream, arg, '/');
+
 			if(getline(argStream, arg, '/'))
 			{
+				if(!arg.compare("logout"))
+					if(session)
+					{
+						delete session;
+						session = 0;
+					}
+
 				string testPath = filePath;
 				testPath.append(arg);
 				if(fileExists(testPath.c_str()))
-				{
 					filePath = testPath;
-				}
 				else
 				{
 					testPath.append(".html");
@@ -157,6 +163,20 @@ namespace beachjudge
 					OpenHeader_NotFound(webPageStream);
 				else
 					OpenHeader_OK(webPageStream);
+				if(session)
+				{
+					char idBuff[8];
+					memset(idBuff, 0, 8);
+
+					#ifdef _WIN32
+						_itoa_s(session->GetID(), idBuff, 8, 10);
+					#else
+						itoa(session->GetID(), idBuff, 10);
+					#endif
+					SetSessionCookie(webPageStream, "BEACHJUDGESESSID", string(idBuff));
+				}
+				else
+					SetSessionCookie(webPageStream, "BEACHJUDGESESSID", "deleted; expires=Thu, 01 Jan 1970 00:00:00 GMT");
 				CloseHeader(webPageStream);
 
 				Page *index = Page::Create(filePath);
@@ -170,6 +190,7 @@ namespace beachjudge
 			string arguments;
 			stream >> arguments;
 
+			map<string, string> argMap;
 			string in;
 			while(stream >> in)
 			{
@@ -196,18 +217,119 @@ namespace beachjudge
 
 					string postArgs;
 					stream >> postArgs;
-
 					string arg;
 					stringstream argStream(postArgs);
 					while(getline(argStream, arg, '='))
 					{
 						string val;
 						getline(argStream, val, '&');
-						cout << "ARG: " << arg << " = " << val << endl;
+						argMap[arg] = val;
 					}
 
 					break;
 				}
+				else if(in.find("team=") == 0)
+				{
+					string postArgs = in;
+					string arg;
+					stringstream argStream(postArgs);
+					while(getline(argStream, arg, '='))
+					{
+						string val;
+						getline(argStream, val, '&');
+						argMap[arg] = val;
+					}
+				}
+			}
+
+			if(argMap.count("passwd"))
+				if(argMap.count("team"))
+				{
+					Team *team = Team::LookupByName(argMap["team"]);
+					if(team)
+						if(team->TestPassword(argMap["passwd"]))
+							session = Session::Create(addr, port, team);
+				}
+
+			stringstream argStream(arguments);
+			string arg, filePath = wwwPrefix;
+
+			bool e404 = false;
+			stringstream webPageStream;
+			getline(argStream, arg, '/');
+
+			if(getline(argStream, arg, '/'))
+			{
+				if(!arg.compare("logout"))
+					if(session)
+					{
+						delete session;
+						session = 0;
+					}
+
+				string testPath = filePath;
+				testPath.append(arg);
+				if(fileExists(testPath.c_str()))
+					filePath = testPath;
+				else
+				{
+					testPath.append(".html");
+					if(fileExists(testPath.c_str()))
+						filePath = testPath;
+					else
+					{
+						filePath.append("404.html");
+						e404 = true;
+					}
+				}
+			}
+			else
+				filePath.append("index.html");
+
+			unsigned short per = filePath.find_last_of('.');
+			string type;
+			if(per != string::npos)
+				type = filePath.substr(per + 1);
+
+			bool img = false;
+			if(type.length())
+			{
+				transform(type.begin(), type.end(), type.begin(), ::tolower);
+				if(!type.compare("jpg") || !type.compare("jpeg") || !type.compare("png") || !type.compare("bmp"))
+					img = true;
+			}
+
+			if(img)
+			{
+				LoadImage(webPageStream, filePath);
+				string response = webPageStream.str();
+				client->Write((char *)response.c_str(), response.length());
+			}
+			else
+			{
+				if(e404)
+					OpenHeader_NotFound(webPageStream);
+				else
+					OpenHeader_OK(webPageStream);
+				if(session)
+				{
+					char idBuff[8];
+					memset(idBuff, 0, 8);
+					#ifdef _WIN32
+						_itoa_s(session->GetID(), idBuff, 8, 10);
+					#else
+						itoa(session->GetID(), idBuff, 10);
+					#endif
+					SetSessionCookie(webPageStream, "BEACHJUDGESESSID", string(idBuff));
+				}
+				else
+					SetSessionCookie(webPageStream, "BEACHJUDGESESSID", "deleted; expires=Thu, 01 Jan 1970 00:00:00 GMT");
+				CloseHeader(webPageStream);
+
+				Page *index = Page::Create(filePath);
+				index->AddToStream(webPageStream, client, session);
+				string webPage = webPageStream.str();
+				client->Write((char *)webPage.c_str(), webPage.length());
 			}
 		}
 	}

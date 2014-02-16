@@ -22,14 +22,10 @@ namespace beachjudge
 	map<unsigned short, Session *> g_sessionIDMap;
 	vector<Session *> g_sessionVec;
 
-	Session *Session::Create(unsigned long address, unsigned short port, unsigned short userID)
+	Session *Session::Create(unsigned long address, unsigned short port, Team *team)
 	{
-		Session *session = 0;
-		if(g_sessionMap.count(address))
-		{
-			session = g_sessionMap[address];
-		}
-		else
+		Session *session = Lookup(address);
+		if(!session)
 		{
 			session = new Session();
 			session->m_address = address;
@@ -46,7 +42,7 @@ namespace beachjudge
 
 		session->m_expireTimeMS = getRunTimeMS() + BEACHJUDGE_SESSION_EXPIREMS;
 		session->m_port = port;
-		session->m_userID = userID;
+		session->m_team = team;
 		sort(g_sessionVec.begin(), g_sessionVec.end(), SessionExpireComp);
 		return session;
 	}
@@ -70,7 +66,7 @@ namespace beachjudge
 	Session::Session()
 	{
 		m_id = 0;
-		m_userID = 0;
+		m_team = 0;
 		m_expireTimeMS = 0;
 		m_variables["loggedIn"] = 1;
 	}
@@ -88,9 +84,9 @@ namespace beachjudge
 	{
 		return m_id;
 	}
-	unsigned short Session::GetUserID() const
+	Team *Session::GetTeam() const
 	{
-		return m_userID;
+		return m_team;
 	}
 	unsigned short Session::GetVariable(std::string name)
 	{

@@ -11,7 +11,7 @@
 #include <BeachJudge/Page.h>
 #include <BeachJudge/Thread.h>
 #include <BeachJudge/Socket.h>
-#include <sha1.h>
+#include <BeachJudge/Team.h>
 
 #define BEACHJUDGE_SESSION_CLEANUPTICKMS 15 * 60 * 1000 //- TODO: Externalize to Config -
 
@@ -62,6 +62,10 @@ int main(int argc, char **argv)
 	srand((unsigned int)time(0));
 
 	print("Beach Judge v%s\n", getVersionString().c_str());
+
+	Team::Create("judge", "root", 0);
+	Team::SetDatabase("../data/teams.txt");
+	Team::LoadFromDatabase();
 
 	Page::RegisterTemplate("test", &TestFunc);
 	Thread webServerThread(&webServerFunc);

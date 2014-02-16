@@ -1,9 +1,18 @@
 <html>
 <head>
-	<title>Hello, world!</title>
+	<title>BEACH Judge - Logout</title>
 	<link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
-	<h1>You were logged out bro.</h1>
+	<div class="header">
+		<p><h1>Team Login</h1></p>
+	</div>
+	<div class="navbar">
+		<p><a href="/">Home</a>$if:loggedOut<a href="login">Team Login</a>$endif:loggedOut$if:loggedIn<a href="logout">Logout</a>$endif:loggedIn</p>
+	</div>
+	<div class="content">
+		$if:loggedOut<p>You aren't logged in.</p>$endif:loggedOut
+		$if:loggedIn<p>You were logged out.</p>$endif:loggedIn
+	</div>
 </body>
 </html>
