@@ -13,15 +13,28 @@
 				</strong>
 			</a>
 		</li>
-		<li><a href="#">
+	</ul>
+			
+	<ul class="nav navbar-nav pull-right">
+		$if:loggedIn
+			<li><a href="#">
 			Leaderboard
-		</a></li>
-		<li><a href="#">
+			</a></li>
+			<li><a href="#">
 			Submit
-		</a></li>
-		<li><a href="#">
+			</a></li>
+			<li><a href="#">
 			Profile
-		</a></li>
+			</a></li>
+		$endif:loggedIn
+		$if:loggedOut
+			<li>
+				<a href="login.html" class="btn btn-default" style="padding:10px; margin:5px 0;">
+					Login
+				</a>
+			</li>
+		$endif:loggedOut
+		
 	</ul>
 			</div>
 		</div>

@@ -1,22 +1,28 @@
-<html>
-<head>
-	<title>BEACH Judge - Login</title>
-	<link rel="stylesheet" type="text/css" href="style.css">
-</head>
-<body>
-	<div class="header">
-		<p><h1>Beach Judge - Team Login</h1></p>
-	</div>
-	$include:navbar.inc
-	<div class="content">
-		$if:loggedIn<p>You are already logged in.</p>$endif:loggedIn
-		$if:loggedOut<div class="login">
-			<form method="post" action="/">
-				<p><input type="text" name="team" value="" placeholder="Team"></p>
-				<p><input type="password" name="passwd" value="" placeholder="Password"></p>
-				<p><input type="submit" class="submit" name="cmd" value="Login"></p>
+$include:inc/dochead.php
+$include:inc/navi.php
+<div class="container">
+	
+	<div class="row">
+		
+		<div class="col-md-8 col-md-push-2">
+			$if:loggedIn<p>You are already logged in.</p>$endif:loggedIn
+			$if:loggedOut
+			<form role="form" method="post" action="/">
+				<div class="form-group">
+					<label for="team">Email address</label>
+					<input type="text" class="form-control" 
+					name="team"
+					id="team" placeholder="Team Name">
+				</div>
+				<div class="form-group">
+					<label for="password">Password</label>
+					<input type="password" class="form-control" id="password" placeholder="Password" name="passwd">
+				</div>
+				
+				<button type="submit" name="cmd" value="Login" class="btn btn-default">Submit</button>
 			</form>
-		</div>$endif:loggedOut
+			$endif:loggedOut
+		</div>
 	</div>
-</body>
-</html>
+</div>
+$include:inc/docfooter.php
