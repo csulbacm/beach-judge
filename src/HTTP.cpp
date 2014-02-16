@@ -29,7 +29,7 @@ namespace beachjudge
 	}
 	void HTTP::LoadImage(stringstream &stream, string file)
 	{
-		ifstream inFile(file, ios::binary);
+		ifstream inFile(file.c_str(), ios::binary);
 
 		stream << "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-type: */*\r\n";
 
@@ -140,7 +140,7 @@ namespace beachjudge
 			bool img = false;
 			if(type.length())
 			{
-				transform(type.begin(), type.end(), type.begin(), tolower);
+				transform(type.begin(), type.end(), type.begin(), ::tolower);
 				if(!type.compare("jpg") || !type.compare("jpeg") || !type.compare("png") || !type.compare("bmp"))
 					img = true;
 			}
