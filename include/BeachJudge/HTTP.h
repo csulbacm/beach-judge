@@ -14,6 +14,7 @@ namespace beachjudge
 	{
 	public:
 		static void OpenHeader_OK(std::stringstream &stream);
+		static void OpenHeader_OK_CSS(std::stringstream &stream);
 		static void OpenHeader_NotFound(std::stringstream &stream);
 		static void SetSessionCookie(std::stringstream &stream, std::string target, std::string value);
 		static void CloseHeader(std::stringstream &stream);

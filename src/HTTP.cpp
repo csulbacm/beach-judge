@@ -21,6 +21,10 @@ namespace beachjudge
 	{
 		stream << "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-type: text/html\r\n";
 	}
+	void HTTP::OpenHeader_OK_CSS(stringstream &stream)
+	{
+		stream << "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-type: text/css\r\n";
+	}
 	void HTTP::OpenHeader_NotFound(std::stringstream &stream)
 	{
 		stream << "HTTP/1.1 404 Not Found\r\nConnection: close\r\nContent-type: text/html\r\n";
@@ -166,6 +170,8 @@ namespace beachjudge
 			{
 				if(e404)
 					OpenHeader_NotFound(webPageStream);
+				else if(!type.compare("css"))
+					OpenHeader_OK_CSS(webPageStream);
 				else
 					OpenHeader_OK(webPageStream);
 				if(session)
@@ -340,6 +346,8 @@ namespace beachjudge
 			{
 				if(e404)
 					OpenHeader_NotFound(webPageStream);
+				else if(!type.compare("css"))
+					OpenHeader_OK_CSS(webPageStream);
 				else
 					OpenHeader_OK(webPageStream);
 				if(session)
