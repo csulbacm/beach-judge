@@ -70,6 +70,8 @@ namespace beachjudge
 		}
 
 		Session *session = Session::Lookup(addr);
+		if(session)
+			session->ResetTimeout();
 		stringstream stream(request);
 		string method;
 		stream >> method;

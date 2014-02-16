@@ -122,4 +122,8 @@ namespace beachjudge
 		password = sha1Convert(password);
 		return m_password.compare(password) == 0;
 	}
+	string Team::GetName() const
+	{
+		return m_name;
+	}
 }

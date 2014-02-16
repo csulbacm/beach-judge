@@ -15,6 +15,7 @@ namespace beachjudge
 		unsigned long m_address, m_expireTimeMS;
 		unsigned short m_id, m_port;
 		Team *m_team;
+		std::string m_addressString;
 		std::map<std::string, unsigned short> m_variables;
 
 		Session();
@@ -24,10 +25,13 @@ namespace beachjudge
 		static Session *Create(unsigned long address, unsigned short port, Team *team);
 		static Session *Lookup(unsigned long address);
 
+		static void ListCurrent();
+
 		unsigned short GetID() const;
 		Team *GetTeam() const;
 		unsigned long GetExpireTimeMS() const;
 		unsigned short GetVariable(std::string name);
+		void ResetTimeout();
 
 		~Session();
 	};

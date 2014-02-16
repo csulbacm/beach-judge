@@ -29,6 +29,7 @@ namespace beachjudge
 		~Team();
 
 		bool TestPassword(std::string password);
+		std::string GetName() const;
 	};
 }
 

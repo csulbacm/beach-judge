@@ -18,6 +18,19 @@
 using namespace std;
 using namespace beachjudge;
 
+void *commandFunc(void *arg)
+{
+	string cmd;
+	while(getline(cin, cmd))
+	{
+		if(!cmd.compare("sessions"))
+			Session::ListCurrent();
+	}
+
+	Thread::Exit(0);
+	return 0;
+}
+
 void *webServerFunc(void *arg)
 {
 	srand((unsigned int)time(0));
@@ -65,8 +78,10 @@ int main(int argc, char **argv)
 	Page::RegisterDefaultTemplates();
 
 	Thread webServerThread(&webServerFunc);
-
 	webServerThread.Start(0);
+
+	Thread commandThread(&commandFunc);
+	commandThread.Start(0);
 
 	unsigned long sessionCleanupMS = getRunTimeMS() + BEACHJUDGE_SESSION_CLEANUPTICKMS;
 	while(true)
@@ -82,6 +97,7 @@ int main(int argc, char **argv)
 		sleepMS(5000);
 	}
 
+	commandThread.Join();
 	webServerThread.Join();
 	Session::Cleanup(true);
 	Thread::Exit(NULL);
