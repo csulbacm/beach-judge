@@ -75,8 +75,9 @@ namespace beachjudge
 	void Page::AddToStream(stringstream &stream, Socket *client, Session *session)
 	{
 		stringstream pageStream(m_html);
-		string chunk, varChunk, arg;
+		string chunk, varChunk, arg, val;
 		vector<string> ifStack;
+		map<string, string> localVars;
 
 		while(getline(pageStream, chunk, '$'))
 		{
@@ -123,6 +124,22 @@ namespace beachjudge
 							arg.push_back(argPeek);
 							pageStream.get();
 						}
+						else if(argPeek == '=')
+						{
+							val = "";
+							pageStream.get();
+							while(true)
+							{
+								char valPeek = pageStream.peek();
+								if((valPeek >= 'A' && valPeek <= 'Z') || (valPeek >= 'a' && valPeek <= 'z') || (valPeek >= '0' && valPeek <= '9') || valPeek == '.' || valPeek == '/' || valPeek == ' ')
+								{
+									val.push_back(valPeek);
+									pageStream.get();
+								}
+								else
+									break;
+							}
+						}
 						else
 							break;
 					}
@@ -135,6 +152,20 @@ namespace beachjudge
 				ifStack.push_back(arg);
 			else if(!varChunk.compare("endif"))
 				ifStack.erase(find(ifStack.begin(), ifStack.end(), arg));
+			else if(!varChunk.compare("set"))
+			{
+				if(arg.size() && val.size())
+					localVars[arg] = val;
+				else
+					stream << "$" << varChunk << ":" << arg << "=" << val;
+			}
+			else if(!varChunk.compare("get"))
+			{
+				if(localVars.count(arg))
+					stream << localVars[arg];
+				else
+					stream << "$" << varChunk << ":" << arg;
+			}
 			else if(valid)
 			{
 				if(g_templateMap.count(varChunk))
