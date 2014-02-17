@@ -149,6 +149,43 @@ namespace beachjudge
 							arg.push_back(argPeek);
 							pageStream.get();
 						}
+						else if(argPeek == '{' && !doLoop)
+						{
+							pageStream.get();
+							string eval;
+							while(true)
+							{
+								char evalPeek = pageStream.peek();
+								if((evalPeek >= 'A' && evalPeek <= 'Z') || (evalPeek >= 'a' && evalPeek <= 'z') || (evalPeek >= '0' && evalPeek <= '9') || evalPeek == '.' || evalPeek == '/' || evalPeek == ' ')
+								{
+									eval.push_back(evalPeek);
+									pageStream.get();
+								}
+								else
+									break;
+							}
+							char lastPeek = pageStream.peek();
+							if(lastPeek == '}')
+							{
+								pageStream.get();
+								if(targetVars->count(eval))
+								{
+									eval = targetVars->operator[](eval);
+									arg.append(eval);
+								}
+								else
+								{
+									arg.push_back('{');
+									arg.append(eval);
+									arg.push_back('}');
+								}
+							}
+							else
+							{
+								arg.push_back('{');
+								arg.append(eval);
+							}
+						}
 						else if(argPeek == '=')
 						{
 							val = "";
