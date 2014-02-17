@@ -72,6 +72,8 @@ int main(int argc, char **argv)
 	print("Beach Judge v%s\n", getVersionString().c_str());
 
 	Team::Create("judge", "root", 0, true);
+	Team::Create("dummy", "1234", 1);
+
 	Team::SetDatabase("teams.txt");
 	Team::LoadFromDatabase();
 
