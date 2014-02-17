@@ -13,7 +13,7 @@
 
 using namespace std;
 
-const char *wwwPrefix = "../www/";
+const char *wwwPrefix = "../www";
 
 namespace beachjudge
 {
@@ -62,314 +62,212 @@ namespace beachjudge
 	}
 	void HTTP::HandleRequest(Socket *client, std::string &request)
 	{
+		if(request.size() <= 1)
+			return;
+
+		istringstream reqStream(request);
+
 		unsigned short port = 0;
 		unsigned long addr = 0;
 		client->GetPeerIP4Info(&addr, &port);
 
-		unsigned char ip[4], *ipPtr = (unsigned char *)&addr;
-		for(unsigned char a = 0; a < 4; a++)
-		{
-			ip[a] = *ipPtr & 0xFF;
-			ipPtr++;
-		}
-
 		Session *session = Session::Lookup(addr);
 		if(session)
 			session->ResetTimeout();
-		stringstream stream(request);
-		string method;
-		stream >> method;
-//		print("[%d: %d %d] Receiving Msg: %d.%d.%d.%d:%d\r\n", getRunTimeMS(), session, session->GetID(), (unsigned short)ip[0], (unsigned short)ip[1], (unsigned short)ip[2], (unsigned short)ip[3], port);
-		cout << request << endl;
 
-		if(!method.compare("GET"))
+		string str;
+
+		//- URI Request -
+		getline(reqStream, str);
+		istringstream uriRequest(str);
+		string method, uri, htmlVersion;
+		uriRequest >> method >> uri >> htmlVersion;
+
+		string file(wwwPrefix), arguments, type;
+
+		bool e404 = false, loggingOut = false;
+
 		{
-			string arguments;
-			stream >> arguments;
+			string uriCopy = uri;
+			size_t argToken;
+			argToken = uri.find_first_of('?');
 
-			string in;
-			while(stream >> in)
+			if(argToken != string::npos)
 			{
-				if(!in.compare("Cookie:"))
-				{
-					string cookie;
-					while(getline(stream, cookie, '='))
-					{
-						string value;
-						stream >> value;
-						if(!value.empty())
-							if(*value.rbegin() == ';')
-								value = value.substr(0, value.size() - 1);
-
-						if(!cookie.compare(" BEACHJUDGESESSID"))
-						{
-							print("Beach Judge Sess ID: %s\r\n", value.c_str());
-						}
-					}
-					break;
-				}
+				arguments = uriCopy.substr(argToken + 1);
+				uriCopy = uriCopy.substr(0, argToken);
 			}
 
-			stringstream argStream(arguments);
-			string  filePath(wwwPrefix);
-
-			bool e404 = false;
-			stringstream webPageStream;
-			string fileReq = arguments.substr(0, arguments.find_first_of('?'));
-			fileReq = fileReq.substr(0, fileReq.find_first_of('#'));
-
-			if(fileReq.length() == 1)
-				filePath.append("index.html");
+			if(uriCopy.length() == 1)
+				file.append("/index.html");
 			else
 			{
-				fileReq = fileReq.substr(1);
-				if(!fileReq.compare("logout"))
-					if(session)
-					{
-						delete session;
-						session = 0;
-					}
+				if(!uriCopy.compare("/logout")) //- TODO: Find a better way to do this -
+					loggingOut = true;
 
-				string testPath = filePath;
-				testPath.append(fileReq);
+				string testPath = file;
+				testPath.append(uriCopy);
 				if(fileExists(testPath.c_str()))
-					filePath = testPath;
+					file = testPath;
 				else
 				{
 					testPath.append(".html");
 					if(fileExists(testPath.c_str()))
-						filePath = testPath;
+						file = testPath;
 					else
 					{
-						filePath.append("404.html");
+						file.append("/404.html");
 						e404 = true;
 					}
 				}
 			}
 
-			long per = filePath.find_last_of('.');
-			string type;
-			if(per != string::npos)
-				type = filePath.substr(per + 1);
-
-			bool img = false;
-			if(type.length())
+			size_t lastPeriod = file.find_last_of('.');
+			if(lastPeriod != string::npos)
 			{
+				type = file.substr(lastPeriod + 1);
 				transform(type.begin(), type.end(), type.begin(), ::tolower);
-				if(!type.compare("jpg") || !type.compare("jpeg") || !type.compare("png") || !type.compare("bmp"))
-					img = true;
-			}
-
-			if(img)
-			{
-				LoadImage(webPageStream, filePath);
-				string response = webPageStream.str();
-				client->Write((char *)response.c_str(), response.length());
-			}
-			else
-			{
-				if(e404)
-					OpenHeader_NotFound(webPageStream);
-				else if(!type.compare("css"))
-					OpenHeader_OK_CSS(webPageStream);
-				else
-					OpenHeader_OK(webPageStream);
-				if(session)
-				{
-					char idBuff[8];
-					memset(idBuff, 0, 8);
-
-					#ifdef _WIN32
-						_itoa_s(session->GetID(), idBuff, 8, 10);
-					#else
-						sprintf(idBuff, "%d", session->GetID());
-					#endif
-					SetSessionCookie(webPageStream, "BEACHJUDGESESSID", string(idBuff));
-				}
-				else
-					SetSessionCookie(webPageStream, "BEACHJUDGESESSID", "deleted; Expires=Thu, 01 Jan 1970 00:00:00 GMT");
-				CloseHeader(webPageStream);
-
-				Page *index = Page::Create(filePath);
-				index->AddToStream(webPageStream, client, session);
-				string webPage = webPageStream.str();
-				client->Write((char *)webPage.c_str(), webPage.length());
 			}
 		}
-		else if(!method.compare("POST"))
+
+//		cout << request << endl;
+
+		string line, contentType;
+		unsigned long contentLength = 0;
+		do
 		{
-			string arguments;
-			stream >> arguments;
+			getline(reqStream, line);
+			stringstream lineStream(line);
 
-			map<string, string> argMap;
-			string in;
-			while(stream >> in)
+			string left, right;
+			lineStream >> left;
+			getline(lineStream, right);
+			size_t rightLen = right.size();
+			if(rightLen)
+				if(right.at(rightLen - 1) == '\r')
+					right = right.substr(1, rightLen - 2);
+			if(!left.compare("Content-Type:"))
+				contentType = right;
+			else if(!left.compare("Content-Length:"))
+				contentLength = atoi(right.c_str());
+			else if(!left.compare("Cookie:"))
 			{
-				if(!in.compare("Cookie:"))
+				string cookie;
+				stringstream cookieStream(right);
+				while(getline(cookieStream, cookie, '='))
 				{
-					string cookie;
-					while(getline(stream, cookie, '='))
-					{
-						string value;
-						stream >> value;
-						if(!value.empty())
-							if(*value.rbegin() == ';')
-								value = value.substr(0, value.size() - 1);
+					string val;
+					getline(cookieStream, val, '&');
 
-						if(!cookie.compare(" BEACHJUDGESESSID"))
-						{
-							print("Beach Judge Sess ID: %s\r\n", value.c_str());
-						}
-						if(stream.peek() == '\r')
-							break;
-					}
-					getline(stream, cookie);
-					getline(stream, cookie);
-
-					string postArgs;
-					stream >> postArgs;
-					string arg;
-					stringstream argStream(postArgs);
-					while(getline(argStream, arg, '='))
+					if(!cookie.compare("BEACHJUDGESESSID"))
 					{
-						string val;
-						getline(argStream, val, '&');
-						argMap[arg] = val;
-					}
-
-					break;
-				}
-				else if(in.find("team=") == 0)
-				{
-					string postArgs = in;
-					string arg;
-					stringstream argStream(postArgs);
-					while(getline(argStream, arg, '='))
-					{
-						string val;
-						getline(argStream, val, '&');
-						argMap[arg] = val;
+						unsigned short sessID = atoi(val.c_str());
+						//- TODO: Handle invalid cookies -
 					}
 				}
 			}
+		}
+		while(line.size() > 1);
 
-			if(argMap.count("cmd"))
+		if(contentLength)
+			if(!method.compare("POST"))
 			{
-				if(!argMap["cmd"].compare("Login") && !session)
+//				cout << "Content: " << contentType << " | " << contentLength << endl;
+				if(!contentType.compare("application/x-www-form-urlencoded"))
 				{
-					if(argMap.count("passwd"))
-						if(argMap.count("team"))
+					string arg, args;
+					map<string, string> argMap;
+					getline(reqStream, args);
+					stringstream argStream(args);
+					while(getline(argStream, arg, '='))
+					{
+						string val;
+						getline(argStream, val, '&');
+						argMap[arg] = val;
+					}
+					if(argMap.count("cmd"))
+					{
+						if(!argMap["cmd"].compare("Login") && !session)
 						{
-							Team *team = Team::LookupByName(argMap["team"]);
-							if(team)
-								if(team->TestPassword(argMap["passwd"]))
-									session = Session::Create(addr, port, team);
-						}
-				}
-				else if(!argMap["cmd"].compare("Change") && session)
-				{
-					if(argMap.count("curPasswd"))
-						if(argMap.count("newPasswd"))
-						{
-							Team *team = session->GetTeam();
-							if(team)
-								if(team->TestPassword(argMap["curPasswd"]))
+							if(argMap.count("passwd"))
+								if(argMap.count("team"))
 								{
-									string pass = argMap["newPasswd"];
-									if(pass.size())
-									{
-										team->SetPassword(pass);
-										Team::SaveToDatabase();
-									}
+									Team *team = Team::LookupByName(argMap["team"]);
+									if(team)
+										if(team->TestPassword(argMap["passwd"]))
+											session = Session::Create(addr, port, team);
 								}
 						}
-				}
-			}
-
-			stringstream argStream(arguments);
-			string filePath(wwwPrefix);
-
-			bool e404 = false;
-			stringstream webPageStream;
-			string fileReq = arguments.substr(0, arguments.find_first_of('?'));
-			fileReq = fileReq.substr(0, fileReq.find_first_of('#'));
-
-			if(fileReq.length() == 1)
-				filePath.append("index.html");
-			else
-			{
-				fileReq = fileReq.substr(1);
-				if(!fileReq.compare("logout"))
-					if(session)
-					{
-						delete session;
-						session = 0;
-					}
-
-				string testPath = filePath;
-				testPath.append(fileReq);
-				if(fileExists(testPath.c_str()))
-					filePath = testPath;
-				else
-				{
-					testPath.append(".html");
-					if(fileExists(testPath.c_str()))
-						filePath = testPath;
-					else
-					{
-						filePath.append("404.html");
-						e404 = true;
+						else if(!argMap["cmd"].compare("Change") && session)
+						{
+							if(argMap.count("curPasswd"))
+								if(argMap.count("newPasswd"))
+								{
+									Team *team = session->GetTeam();
+									if(team)
+										if(team->TestPassword(argMap["curPasswd"]))
+										{
+											string pass = argMap["newPasswd"];
+											if(pass.size())
+											{
+												team->SetPassword(pass);
+												Team::SaveToDatabase();
+											}
+										}
+								}
+						}
 					}
 				}
 			}
 
-			long per = filePath.find_last_of('.');
-			string type;
-			if(per != string::npos)
-				type = filePath.substr(per + 1);
+		stringstream webPageStream;
 
-			bool img = false;
-			if(type.length())
-			{
-				transform(type.begin(), type.end(), type.begin(), ::tolower);
-				if(!type.compare("jpg") || !type.compare("jpeg") || !type.compare("png") || !type.compare("bmp"))
-					img = true;
-			}
+		bool img = false;
+		if(type.length())
+			if(!type.compare("jpg") || !type.compare("jpeg") || !type.compare("png") || !type.compare("bmp"))
+				img = true;
 
-			if(img)
-			{
-				LoadImage(webPageStream, filePath);
-				string response = webPageStream.str();
-				client->Write((char *)response.c_str(), response.length());
-			}
-			else
-			{
-				if(e404)
-					OpenHeader_NotFound(webPageStream);
-				else if(!type.compare("css"))
-					OpenHeader_OK_CSS(webPageStream);
-				else
-					OpenHeader_OK(webPageStream);
-				if(session)
-				{
-					char idBuff[8];
-					memset(idBuff, 0, 8);
-					#ifdef _WIN32
-						_itoa_s(session->GetID(), idBuff, 8, 10);
-					#else
-						sprintf(idBuff, "%d", session->GetID());
-					#endif
-					SetSessionCookie(webPageStream, "BEACHJUDGESESSID", string(idBuff));
-				}
-				else
-					SetSessionCookie(webPageStream, "BEACHJUDGESESSID", "deleted; expires=Thu, 01 Jan 1970 00:00:00 GMT");
-				CloseHeader(webPageStream);
-
-				Page *index = Page::Create(filePath);
-				index->AddToStream(webPageStream, client, session);
-				string webPage = webPageStream.str();
-				client->Write((char *)webPage.c_str(), webPage.length());
-			}
+		if(img)
+		{
+			LoadImage(webPageStream, file);
+			string response = webPageStream.str();
+			client->Write((char *)response.c_str(), response.length());
 		}
+		else
+		{
+			if(e404)
+				OpenHeader_NotFound(webPageStream);
+			else if(!type.compare("css"))
+				OpenHeader_OK_CSS(webPageStream);
+			else
+				OpenHeader_OK(webPageStream);
+			if(session && !loggingOut)
+			{
+				char idBuff[8];
+				memset(idBuff, 0, 8);
+
+				#ifdef _WIN32
+					_itoa_s(session->GetID(), idBuff, 8, 10);
+				#else
+					sprintf(idBuff, "%d", session->GetID());
+				#endif
+				SetSessionCookie(webPageStream, "BEACHJUDGESESSID", string(idBuff));
+			}
+			else
+				SetSessionCookie(webPageStream, "BEACHJUDGESESSID", "deleted; Expires=Thu, 01 Jan 1970 00:00:00 GMT");
+			CloseHeader(webPageStream);
+
+			Page *index = Page::Create(file);
+			index->AddToStream(webPageStream, client, session);
+			string webPage = webPageStream.str();
+			client->Write((char *)webPage.c_str(), webPage.length());
+		}
+
+		if(loggingOut)
+			if(session)
+			{
+				delete session;
+				session = 0;
+			}
 	}
 }

@@ -115,6 +115,9 @@ namespace beachjudge
 			error("[Error] Socket::create - Failed to create Socket.\n");
 		}
 
+		int reuse = 1;
+		setsockopt(sSocket, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+
 		Socket *sock = new Socket();
 		sock->m_socket = sSocket;
 		if(!isBlocking)
