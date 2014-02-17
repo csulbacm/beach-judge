@@ -60,7 +60,15 @@ namespace beachjudge
 		Page *page = new Page();
 		page->m_fileSource = file;
 		page->m_html = html;
+		page->m_isTemp = true; //- TODO: Remove this for caching -
 		g_pageMap[file] = page;
+		return page;
+	}
+	Page *Page::CreateFromHTML(string html)
+	{
+		Page *page = new Page();
+		page->m_fileSource = "";
+		page->m_html = html;
 		return page;
 	}
 	void Page::Cleanup()
@@ -71,10 +79,12 @@ namespace beachjudge
 
 	Page::Page()
 	{
+		m_isTemp = false;
 	}
 	Page::~Page()
 	{
-		g_pageMap.erase(m_fileSource);
+		if(m_fileSource.size())
+			g_pageMap.erase(m_fileSource);
 	}
 	void Page::AddToStream(stringstream &stream, Socket *client, Session *session, map<string, string> *masterLocalVars)
 	{
@@ -82,7 +92,11 @@ namespace beachjudge
 		string chunk, varChunk, arg, val, loopTarget;
 		stringstream loopStream;
 		vector<string> ifStack;
-		map<string, string> localVars;
+		map<string, string> localVars, *targetVars = 0;
+		if(masterLocalVars)
+			targetVars = masterLocalVars;
+		else
+			targetVars = &localVars;
 		bool doLoop = false;
 
 		while(getline(pageStream, chunk, '$'))
@@ -177,175 +191,69 @@ namespace beachjudge
 			{
 				if(!varChunk.compare("loop"))
 				{
-					if(arg.size() && !doLoop)
-					{
-						loopTarget = arg;
-						loopStream.str(string());
-						doLoop = true;
-					}
+					if(doLoop)
+						loopStream << "$" << varChunk << ":" << arg;
 					else
-						stream << "$" << varChunk << ":" << arg;
+					{
+						if(arg.size())
+						{
+							loopTarget = arg;
+							loopStream.str(string());
+							doLoop = true;
+						}
+						else
+							stream << "$" << varChunk << ":" << arg;
+					}
 				}
 				else if(!varChunk.compare("endLoop"))
 				{
-					map<unsigned short, Team *>::iterator teamIt;
-					map<unsigned short, Team *> &teamsByID = Team::GetTeamsByID();
 					if(doLoop)
 					{
-						bool done = false;
-						if(!loopTarget.compare("teams"))
-							teamIt = teamsByID.begin();
-						else
-							done = true;
-						while(!done)
+						if(arg.size())
 						{
-							stringstream inLoopStream(loopStream.str());
-							if(!loopTarget.compare("teams"))
+							if(!arg.compare(loopTarget))
 							{
-								localVars["teamName"] = teamIt->second->GetName();
-								char idStr[8];
-								memset(idStr, 0, 8);
-								sprintf(idStr, "%d", teamIt->first);
-								localVars["teamID"] = string(idStr);
-								teamIt++;
-								if(teamIt == teamsByID.end())
+								map<unsigned short, Team *>::iterator teamIt;
+								map<unsigned short, Team *> &teamsByID = Team::GetTeamsByID();
+
+								bool done = false;
+								if(!loopTarget.compare("teams"))
+									teamIt = teamsByID.begin();
+								else
 									done = true;
+								Page *embPage = Page::CreateFromHTML(loopStream.str());
+								while(!done)
+								{
+									if(!loopTarget.compare("teams"))
+									{
+										targetVars->operator[]("teamName") = teamIt->second->GetName();
+										char idStr[8];
+										memset(idStr, 0, 8);
+										sprintf(idStr, "%d", teamIt->first);
+										targetVars->operator[]("teamID") = string(idStr);
+										teamIt++;
+										if(teamIt == teamsByID.end())
+											done = true;
+									}
+									embPage->AddToStream(stream, client, session, &localVars);
+								}
+								delete embPage;
+
+								if(!loopTarget.compare("teams"))
+								{
+									targetVars->erase("teamName");
+									targetVars->erase("teamID");
+								}
+								doLoop = false;
 							}
-
-							string embChunk, embVarChunk;
-							while(getline(inLoopStream, embChunk, '$'))
-							{
-								bool embValid = true;
-								if(ifStack.size())
-								{
-									if(session)
-									{
-										for(vector<string>::iterator it = ifStack.begin(); it != ifStack.end(); it++)
-											if(session->GetVariable(*it) == 0)
-											{
-												embValid = false;
-												break;
-											}
-									}
-									else if(ifStack.front().compare("loggedOut"))
-										embValid = false;
-								}
-
-								if(embValid)
-									stream << embChunk;
-
-								if(inLoopStream.eof())
-									break;
-
-								embVarChunk = "";
-								while(true)
-								{
-									char peek = inLoopStream.peek();
-									if((peek >= 'A' && peek <= 'Z') || (peek >= 'a' && peek <= 'z'))
-									{
-										embVarChunk.push_back(peek);
-										inLoopStream.get();
-									}
-									else if(peek == ':')
-									{
-										arg = "";
-										inLoopStream.get();
-										while(true)
-										{
-											char argPeek = inLoopStream.peek();
-											if((argPeek >= 'A' && argPeek <= 'Z') || (argPeek >= 'a' && argPeek <= 'z') || argPeek == '.' || argPeek == '/')
-											{
-												arg.push_back(argPeek);
-												inLoopStream.get();
-											}
-											else if(argPeek == '=')
-											{
-												val = "";
-												inLoopStream.get();
-												while(true)
-												{
-													char valPeek = inLoopStream.peek();
-													if((valPeek >= 'A' && valPeek <= 'Z') || (valPeek >= 'a' && valPeek <= 'z') || (valPeek >= '0' && valPeek <= '9') || valPeek == '.' || valPeek == '/' || valPeek == ' ')
-													{
-														val.push_back(valPeek);
-														inLoopStream.get();
-													}
-													else
-														break;
-												}
-											}
-											else
-												break;
-										}
-									}
-									else
-										break;
-								}
-								
-								if(!embVarChunk.compare("if"))
-									ifStack.push_back(arg);
-								else if(!embVarChunk.compare("endif"))
-									ifStack.erase(find(ifStack.begin(), ifStack.end(), arg));
-								else if(embValid)
-								{
-									if(!embVarChunk.compare("set"))
-									{
-										if(arg.size() && val.size())
-										{
-											if(masterLocalVars)
-												masterLocalVars->operator[](arg) = val;
-											else
-												localVars[arg] = val;
-										}
-										else
-											stream << "$" << embVarChunk << ":" << arg << "=" << val;
-									}
-									else if(!embVarChunk.compare("get"))
-									{
-										bool fail = false;
-										if(masterLocalVars)
-										{
-											if(masterLocalVars->count(arg))
-												stream << masterLocalVars->operator[](arg);
-											else
-												fail = true;
-										}
-										else if(localVars.count(arg))
-											stream << localVars[arg];
-										else
-											fail = true;
-
-										if(fail)
-											stream << "$" << embVarChunk << ":" << arg;
-									}
-									else if(!embVarChunk.compare("include"))
-									{
-										string file(includePrefix);
-										file.append(arg);
-										if(fileExists(file.c_str()))
-										{
-											Page *page = Page::Create(file);
-											page->AddToStream(stream, client, session, &localVars);
-										}
-									}
-									else if(g_templateMap.count(embVarChunk))
-										g_templateMap[embVarChunk](stream, client, session, arg);
-									else
-										stream << "$" << embVarChunk;
-								}
-							}
+							else
+								loopStream << "$" << varChunk << ":" << arg;
 						}
-
-						if(!loopTarget.compare("teams"))
-						{
-							localVars.erase("teamName");
-							localVars.erase("teamID");
-						}
-
-						doLoop = false;
+						else
+							stream << "$" << varChunk << ":" << arg;
 					}
 					else
-						stream << "$" << varChunk;
+						stream << "$" << varChunk << ":" << arg;
 				}
 				else if(!varChunk.compare("set"))
 				{
@@ -354,12 +262,7 @@ namespace beachjudge
 					else
 					{
 						if(arg.size() && val.size())
-						{
-							if(masterLocalVars)
-								masterLocalVars->operator[](arg) = val;
-							else
-								localVars[arg] = val;
-						}
+							targetVars->operator[](arg) = val;
 						else
 							stream << "$" << varChunk << ":" << arg << "=" << val;
 					}
@@ -370,20 +273,9 @@ namespace beachjudge
 						loopStream << "$" << varChunk << ":" << arg;
 					else
 					{
-						bool fail = false;
-						if(masterLocalVars)
-						{
-							if(masterLocalVars->count(arg))
-								stream << masterLocalVars->operator[](arg);
-							else
-								fail = true;
-						}
-						else if(localVars.count(arg))
-							stream << localVars[arg];
+						if(targetVars->count(arg))
+							stream << targetVars->operator[](arg);
 						else
-							fail = true;
-
-						if(fail)
 							stream << "$" << varChunk << ":" << arg;
 					}
 				}
@@ -398,7 +290,7 @@ namespace beachjudge
 						if(fileExists(file.c_str()))
 						{
 							Page *page = Page::Create(file);
-							page->AddToStream(stream, client, session, &localVars);
+							page->AddToStream(stream, client, session, targetVars);
 						}
 					}
 				}
@@ -411,6 +303,7 @@ namespace beachjudge
 			}
 		}
 
-		delete this;
+		if(m_isTemp)
+			delete this;
 	}
 }

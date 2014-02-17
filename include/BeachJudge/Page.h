@@ -15,11 +15,13 @@ namespace beachjudge
 	class Page
 	{
 		std::string m_fileSource, m_html;
+		bool m_isTemp;
 
 		Page();
 
 	public:
 		static Page *Create(std::string file);
+		static Page *CreateFromHTML(std::string html);
 		static void Cleanup();
 		static void RegisterTemplate(std::string entry, void (*func)(std::stringstream &, Socket *, Session *, std::string));
 		static void RegisterDefaultTemplates();
