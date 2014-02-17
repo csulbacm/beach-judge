@@ -23,13 +23,14 @@ namespace beachjudge
 	public:
 		static void Cleanup(bool deleteAll = false);
 		static Session *Create(unsigned long address, unsigned short port, Team *team);
-		static Session *Lookup(unsigned long address);
+		static Session *Lookup(unsigned short id);
 
 		static void ListCurrent();
 
 		unsigned short GetID() const;
 		Team *GetTeam() const;
 		unsigned long GetExpireTimeMS() const;
+		unsigned long GetAddress() const;
 		unsigned short GetVariable(std::string name);
 		void ResetTimeout();
 
