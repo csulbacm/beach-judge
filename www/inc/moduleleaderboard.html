@@ -1,0 +1,38 @@
+<div class="panel panel-default">
+		<h2>Overall Score</h2>
+	<div class="panel-body">
+		<table class="table">
+			<thead>
+				<tr style="font-weight:bold;">
+					<td>
+					No.</td>
+					<td>
+					Contestant</td>
+					<td>
+					Points</td>
+					<td>
+					Penalty</td>
+				</tr>
+			</thead>
+			<tbody id="holder">
+				<tr id="clone">
+					<td>1</td>
+					<td>David</td>
+					<td>123123.1232</td>
+					<td>123123.1232</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<script>
+	( function  (argument) {
+		var holder = document.getElementById('holder');
+		var clone  = document.getElementById('clone');
+	
+		for (var i = 0; i < 30; i++) {
+			holder.innerHTML += clone.outerHTML;
+		};
+	})();
+</script>
