@@ -71,9 +71,7 @@ namespace beachjudge
 		unsigned long addr = 0;
 		client->GetPeerIP4Info(&addr, &port);
 
-		Session *session = Session::Lookup(addr);
-		if(session)
-			session->ResetTimeout();
+		Session *session = 0;
 
 		string str;
 
@@ -162,7 +160,13 @@ namespace beachjudge
 					if(!cookie.compare("BEACHJUDGESESSID"))
 					{
 						unsigned short sessID = atoi(val.c_str());
-						//- TODO: Handle invalid cookies -
+						Session *sess = Session::Lookup(sessID);
+						if(sess)
+							if(sess->GetAddress() == addr)
+							{
+								sess->ResetTimeout();
+								session = sess;
+							}
 					}
 				}
 			}

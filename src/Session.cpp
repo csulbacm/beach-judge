@@ -62,10 +62,10 @@ namespace beachjudge
 		session->ResetTimeout();
 		return session;
 	}
-	Session *Session::Lookup(unsigned long address)
+	Session *Session::Lookup(unsigned short id)
 	{
-		if(g_sessionMap.count(address))
-			return g_sessionMap[address];
+		if(g_sessionIDMap.count(id))
+			return g_sessionIDMap[id];
 		return 0;
 	}
 	void Session::Cleanup(bool deleteAll)
@@ -117,6 +117,10 @@ namespace beachjudge
 	unsigned short Session::GetID() const
 	{
 		return m_id;
+	}
+	unsigned long Session::GetAddress() const
+	{
+		return m_address;
 	}
 	Team *Session::GetTeam() const
 	{
