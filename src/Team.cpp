@@ -28,6 +28,10 @@ namespace beachjudge
 		return string(hex);
 	}
 
+	map<unsigned short, Team *> &Team::GetTeamsByID()
+	{
+		return g_teamByIDMap;
+	}
 	Team *Team::LookupByID(unsigned short id)
 	{
 		if(g_teamByIDMap.count(id))

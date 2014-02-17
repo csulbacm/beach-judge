@@ -4,6 +4,7 @@
 //- Standard Library -
 #include <string>
 #include <cstdlib>
+#include <map>
 
 //- Beach Judge -
 #include <BeachJudge/Socket.h>
@@ -27,6 +28,7 @@ namespace beachjudge
 		static void SaveToDatabase();
 		static void LoadFromDatabase();
 		static void DeleteAll();
+		static std::map<unsigned short, Team *> &GetTeamsByID();
 
 		~Team();
 
