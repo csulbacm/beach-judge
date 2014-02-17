@@ -28,7 +28,15 @@ $include:inc/navi.html
 								Penalty</td>
 							</tr>
 						</thead>
-						<tbody id="holderRight">
+						<tbody>
+							$startLoop:teams
+							<tr>
+								<td>$get:teamIdx</td>
+								<td>$get:teamName</td>
+								<td>123123.1232</td>
+								<td>123123.1232</td>
+							</tr>
+							$endLoop:teams
 						</tbody>
 					</table>
 				</div>
@@ -52,7 +60,15 @@ $include:inc/navi.html
 								Penalty</td>
 							</tr>
 						</thead>
-						<tbody id="holderRight1">
+						<tbody>
+							$startLoop:teams
+							<tr>
+								<td>$get:teamIdx</td>
+								<td>$get:teamName</td>
+								<td>123123.1232</td>
+								<td>123123.1232</td>
+							</tr>
+							$endLoop:teams
 						</tbody>
 					</table>
 				</div>
@@ -62,18 +78,4 @@ $include:inc/navi.html
 		</div>
 	</div>
 </div>
-<script>
-	( function  (argument) {
-		var holder = document.getElementById('holder');
-		var holderRight = document.getElementById('holderRight');
-		var holderRight1 = document.getElementById('holderRight1');
-		var clone  = document.getElementById('clone');
-	
-		for (var i = 0; i < 30; i++) {
-			holder.innerHTML += clone.outerHTML;
-			holderRight.innerHTML += clone.outerHTML;
-			holderRight1.innerHTML += clone.outerHTML;
-		};
-	})();
-</script>
 $include:inc/docfooter.html

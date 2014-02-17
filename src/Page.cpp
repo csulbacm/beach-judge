@@ -189,7 +189,7 @@ namespace beachjudge
 			}
 			else if(valid)
 			{
-				if(!varChunk.compare("loop"))
+				if(!varChunk.compare("startLoop"))
 				{
 					if(doLoop)
 						loopStream << "$" << varChunk << ":" << arg;
@@ -222,20 +222,25 @@ namespace beachjudge
 								else
 									done = true;
 								Page *embPage = Page::CreateFromHTML(loopStream.str());
+								unsigned short idx = 0;
 								while(!done)
 								{
+									idx++;
 									if(!loopTarget.compare("teams"))
 									{
 										targetVars->operator[]("teamName") = teamIt->second->GetName();
-										char idStr[8];
-										memset(idStr, 0, 8);
-										sprintf(idStr, "%d", teamIt->first);
-										targetVars->operator[]("teamID") = string(idStr);
+										char str[8];
+										memset(str, 0, 8);
+										sprintf(str, "%d", teamIt->first);
+										targetVars->operator[]("teamID") = string(str);
+										memset(str, 0, 8);
+										sprintf(str, "%d", idx);
+										targetVars->operator[]("teamIdx") = string(str);
 										teamIt++;
 										if(teamIt == teamsByID.end())
 											done = true;
 									}
-									embPage->AddToStream(stream, client, session, &localVars);
+									embPage->AddToStream(stream, client, session, targetVars);
 								}
 								delete embPage;
 
