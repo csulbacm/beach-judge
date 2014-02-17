@@ -1,19 +1,45 @@
-$include:inc/dochead.html
-$include:inc/navi.html
 <div class="container content">
 
 	<div class="row">
 		<!-- table col -->
 		<div class="col-md-6" >
-				$include:inc/moduleleaderboard.html
+			<h2>Overall Score</h2>
+			<div class="panel panel-default">
+				<div class="panel-body">
+					<table class="table">
+						<thead>
+							<tr style="font-weight:bold;">
+								<td>
+								No.</td>
+								<td>
+								Contestant</td>
+								<td>
+								Points</td>
+								<td>
+								Penalty</td>
+							</tr>
+						</thead>
+						<tbody id="holder">
+							<tr id="clone">
+								<td>1</td>
+								<td>David</td>
+								<td>123123.1232</td>
+								<td>123123.1232</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
 		</div>
 
 		<!--/ table col -->
 		<div class="col-md-6">
+			<h2>Problem Scores</h2>
+			
 			<!-- table col -->
 			<div class="panel panel-default">
-			<h2>Scores: Buckets</h2>
 				<div class="panel-body">
+					<h3 style="margin:0; padding:0;">Buckets</h3>
 					<table class="table">
 						<thead>
 							<tr style="font-weight:bold;">
@@ -36,8 +62,8 @@ $include:inc/navi.html
 			<!--/ table col -->
 			<!-- table col -->
 			<div class="panel panel-default">
-				<h2>Scores: Buckets</h2>
 				<div class="panel-body">
+					<h3 style="margin:0; padding:0;">Buckets</h3>
 					<table class="table">
 						<thead>
 							<tr style="font-weight:bold;">
@@ -75,4 +101,3 @@ $include:inc/navi.html
 		};
 	})();
 </script>
-$include:inc/docfooter.html
