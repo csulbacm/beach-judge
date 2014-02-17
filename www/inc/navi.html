@@ -14,8 +14,15 @@
 				</ul>
 				
 				<ul class="nav navbar-nav pull-right">
+						$if:loggedIn
+						<li><a href="#">
+							<strong>Hello, $teamName</strong>
+						</a></li>
+						$endif:loggedIn
+
 						<li><a href="/leaderboard">Leaderboard</a></li>
 					$if:loggedIn
+
 							$if:isJudge
 								<li><a href="/leaderboard">Grade</a></li>
 								<li><a href="/mail">Manage Mail</a></li>
@@ -25,7 +32,6 @@
 								<li><a href="/submission">Submit</a></li>
 							$endif:isTeam
 							<li><a href="/responses">View Responses</a></li>
-						<li><a href="#">Profile	</a></li>
 
 						<li class="login-holder">
 							<a href="/logout" class="btn btn-default">
