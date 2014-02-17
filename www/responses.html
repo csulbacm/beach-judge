@@ -1,17 +1,20 @@
-$set:title=Mail
+$set:title=Responses
 $include:inc/dochead.html
 $include:inc/navi.html
-<div class="container content">
-	<div class="row">
-		<div class="col-md-8 col-md-push-2">
-			$include:inc/mailstub.html
-			$include:inc/mailstub.html
-			$include:inc/mailstub.html
-			$include:inc/mailstub.html
-			$include:inc/mailstub.html
-			$include:inc/mailstub.html
-			$include:inc/mailstub.html
+$if:loggedIn
+	<div class="container content">
+		<div class="row">
+			<div class="col-md-8 col-md-push-2">
+				$include:inc/mailstub.html
+				$include:inc/mailstub.html
+				$include:inc/mailstub.html
+				$include:inc/mailstub.html
+				$include:inc/mailstub.html
+				$include:inc/mailstub.html
+				$include:inc/mailstub.html
+			</div>
 		</div>
 	</div>
-</div>
+$endif:loggedIn
+$include:inc/loginstandalone.html
 $include:inc/docfooter.php

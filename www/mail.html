@@ -1,6 +1,7 @@
 $set:title=Mail
 $include:inc/dochead.html
 $include:inc/navi.html
+$if:loggedIn
 <div class="container content">
 	<div class="row">
 		<div class="col-md-4 ">
@@ -59,4 +60,8 @@ $include:inc/navi.html
 		</div>
 	</div>
 </div>
+
+$endif:loggedIn
+$include:inc/loginstandalone.html
+
 $include:inc/docfooter.php

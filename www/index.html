@@ -2,11 +2,9 @@ $set:title=beachJudge
 $include:inc/dochead.html
 $include:inc/navi.html
 
-
+$if:loggedIn		
 <div class="container content">
 	<div class="row">
-
-	$if:loggedIn		
 		<div class="col-md-6">
 				$if:isTeam
 					$include:inc/modulesubmit.html
@@ -17,18 +15,10 @@ $include:inc/navi.html
 				$include:inc/modulestatus.html
 				$include:inc/modulegetproblems.html
 		</div>
-
-
-	$endif:loggedIn
 	</div>
-
-	$if:loggedOut
-		<div class="col-md-6 col-md-push-3">
-				$include:inc/loginmodal.html
-			
-		</div>
-	$endif:loggedOut
 </div>
 
+$endif:loggedIn
+$include:inc/loginstandalone.html
 
 $include:inc/docfooter.html
