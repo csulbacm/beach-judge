@@ -15,24 +15,25 @@
 				
 				<ul class="nav navbar-nav pull-right">
 					$if:loggedIn
-					<li><a href="/leaderboard">
-						Leaderboard
-					</a></li>
-					<li><a href="#">
-						Submit
-					</a></li>
-					<li><a href="#">
-						Profile
-					</a></li>
-					<li>
-						<a href="/logout" class="btn btn-default" style="padding:10px; margin:5px 0;">
-							Logout
-						</a>
-					</li>
+						<li><a href="/leaderboard">Leaderboard</a></li>
+							$if:isJudge
+								<li><a href="/leaderboard">Grade</a></li>
+							$endif:isJudge
+						<li><a href="#">Mail</a></li>
+						<li><a href="#">Submit</a></li>
+						<li><a href="#">Profile	</a></li>
+
+						<li class="login-holder">
+							<a href="/logout" class="btn btn-default">
+								Logout
+							</a>
+						</li>
+					
 					$endif:loggedIn
+
 					$if:loggedOut
-					<li>
-						<a href="login.html" class="btn btn-default" style="padding:10px; margin:5px 0;">
+					<li class="login-holder">
+						<a href="login.html" class="btn btn-default">
 						Login
 						</a>
 					</li>

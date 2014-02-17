@@ -27,3 +27,11 @@
 table  {
 	text-align: center;
 }
+
+.login-holder {
+	margin: 0 10px;
+}
+.login-holder a {
+	padding:10px !important; 
+	margin:5px 0 !important;
+}
