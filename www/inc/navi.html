@@ -14,16 +14,17 @@
 				</ul>
 				
 				<ul class="nav navbar-nav pull-right">
-					$if:loggedIn
 						<li><a href="/leaderboard">Leaderboard</a></li>
+					$if:loggedIn
 							$if:isJudge
 								<li><a href="/leaderboard">Grade</a></li>
+								<li><a href="/mail">Manage Mail</a></li>
 							$endif:isJudge
 							
 							$if:isTeam
 								<li><a href="#">Submit</a></li>
+								<li><a href="/responses">View Responses</a></li>
 							$endif:isTeam
-						<li><a href="#">Mail</a></li>
 						<li><a href="#">Profile	</a></li>
 
 						<li class="login-holder">
