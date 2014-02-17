@@ -49,16 +49,15 @@ namespace beachjudge
 			team->m_name = name;
 			g_teamByNameMap[name] = team;
 
-			if(id == -1)
+			if(id == 0 && !isJudge)
 			{
 				do
 				{
-					team->m_id = (unsigned short)rand();
+					id = (unsigned short)rand();
 				}
-				while(g_teamByIDMap.count(team->m_id));
+				while(id == 0 || g_teamByIDMap.count(id));
 			}
-			else
-				team->m_id = id;
+			team->m_id = id;
 			g_teamByIDMap[team->m_id] = team;
 		}
 
@@ -76,7 +75,7 @@ namespace beachjudge
 		for(map<unsigned short, Team *>::iterator it = g_teamByIDMap.begin(); it != g_teamByIDMap.end(); it++)
 		{
 			Team *team = it->second;
-			outFile << team->m_id << '\t' << team->m_name << '\t' << team->m_password << "\r\n";
+			outFile << team->m_id << '\t' << team->m_name << '\t' << team->m_password << endl;
 		}
 		outFile.close();
 	}
@@ -94,9 +93,9 @@ namespace beachjudge
 				unsigned short id = atoi(idStr.c_str());
 				Team *team = LookupByID(id);
 				if(!team)
-					team = Create(name, password, id);
+					team = Create(name, "", id);
 				team->m_name = name;
-				team->m_password = sha1Convert(password);
+				team->m_password = password;
 
 				g_teamByIDMap[id] = team;
 				g_teamByNameMap[name] = team;
@@ -112,7 +111,8 @@ namespace beachjudge
 
 	Team::Team()
 	{
-		m_id = 0;
+		m_id = m_totalPenalties = 0;
+		m_totalScore = 0;
 	}
 	Team::~Team()
 	{
@@ -135,6 +135,14 @@ namespace beachjudge
 	unsigned short Team::GetID() const
 	{
 		return m_id;
+	}
+	unsigned short Team::GetTotalPenalties() const
+	{
+		return m_totalPenalties;
+	}
+	unsigned long Team::GetTotalScore() const
+	{
+		return m_totalScore;
 	}
 	bool Team::IsJudge() const
 	{

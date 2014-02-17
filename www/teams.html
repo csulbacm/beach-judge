@@ -1,0 +1,58 @@
+$set:title=Teams
+$include:inc/dochead.html
+$include:inc/navi.html
+$if:isJudge
+<div class="container content">
+	<div class="row">
+		<div class="col-md-4 ">
+			
+			<div class="panel panel-default mail">
+				<h2>Teams</h2>
+				<div class="panel-body">
+					<ul>
+						<li>
+							<strong>Team Unibyte</strong><br/>
+							John Doe, Null Termino, & Alan Turing
+						</li>
+					</ul>
+				</div>
+			</div>
+
+		</div>
+
+		<div class="col-md-8 ">
+			<div class="panel panel-default">
+		<h2>Create Team
+
+	
+		
+		</h2>
+	<div class="panel-body">
+		<form role="form" method="post" action="/teams">
+			<div class="form-group">
+				<label for="newTeamName">Name</label>
+				<input type="text" class="form-control" 
+				name="newTeamName"
+				id="newTeamName" placeholder="">
+			</div>
+			<div class="form-group">
+				<label for="newTeamPass">Password</label>
+				<input type="password" class="form-control" id="newTeamPass" placeholder="" name="newTeamPass">
+			</div>
+			
+
+				<input type="hidden" name="cmd" value="createTeam">
+			<button type="submit" class="btn btn-default">Submit</button>
+		</form>
+	</div>
+</div>
+		</div>
+	</div>
+</div>
+
+$endif:isJudge
+
+$include:inc/teamforbid.html
+$include:inc/loginstandalone.html
+
+$include:inc/docfooter.php

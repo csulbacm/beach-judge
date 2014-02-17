@@ -187,7 +187,8 @@ namespace beachjudge
 					{
 						string val;
 						getline(argStream, val, '&');
-						argMap[arg] = val;
+						if(arg.size() && val.size())
+							argMap[arg] = val;
 					}
 					if(argMap.count("cmd"))
 					{
@@ -212,13 +213,27 @@ namespace beachjudge
 										if(team->TestPassword(argMap["curPasswd"]))
 										{
 											string pass = argMap["newPasswd"];
-											if(pass.size())
+											team->SetPassword(pass);
+											Team::SaveToDatabase();
+										}
+								}
+						}
+						else if(!argMap["cmd"].compare("createTeam") && session)
+						{
+							Team *team = session->GetTeam();
+							if(team)
+								if(team->IsJudge())
+									if(argMap.count("newTeamName"))
+										if(argMap.count("newTeamPass"))
+										{
+											string name = argMap["newTeamName"];
+											if(!Team::LookupByName(name))
 											{
-												team->SetPassword(pass);
+												string pass = argMap["newTeamPass"];
+												Team::Create(name, pass);
 												Team::SaveToDatabase();
 											}
 										}
-								}
 						}
 					}
 				}
