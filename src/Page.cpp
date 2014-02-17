@@ -18,12 +18,27 @@ namespace beachjudge
 	map<string, Page *> g_pageMap;
 	map<string, void (*)(stringstream &, Socket *, Session *, std::string)> g_templateMap;
 
+	void TeamID(stringstream &stream, Socket *socket, Session *session, string arg)
+	{
+		Team *team = session->GetTeam();
+		if(team)
+			stream << team->GetID();
+	}
+	void TeamName(stringstream &stream, Socket *socket, Session *session, string arg)
+	{
+		Team *team = session->GetTeam();
+		if(team)
+			stream << team->GetName();
+	}
+
 	void Page::RegisterTemplate(string entry, void (*func)(stringstream &, Socket *, Session *, string))
 	{
 		g_templateMap[entry] = func;
 	}
 	void Page::RegisterDefaultTemplates()
 	{
+		RegisterTemplate("teamID", &TeamID);
+		RegisterTemplate("teamName", &TeamName);
 	}
 	Page *Page::Create(string file)
 	{
