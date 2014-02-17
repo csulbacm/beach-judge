@@ -32,6 +32,7 @@ namespace beachjudge
 		void SetPassword(std::string password);
 		bool TestPassword(std::string password);
 		std::string GetName() const;
+		unsigned short GetID() const;
 		bool IsJudge() const;
 	};
 }

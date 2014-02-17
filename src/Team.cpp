@@ -132,6 +132,10 @@ namespace beachjudge
 	{
 		return m_name;
 	}
+	unsigned short Team::GetID() const
+	{
+		return m_id;
+	}
 	bool Team::IsJudge() const
 	{
 		return m_isJudge;
