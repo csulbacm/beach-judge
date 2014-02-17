@@ -1,7 +1,7 @@
 $set:title=Mail
 $include:inc/dochead.html
 $include:inc/navi.html
-$if:loggedIn
+$if:isJudge
 <div class="container content">
 	<div class="row">
 		<div class="col-md-4 ">
@@ -61,7 +61,9 @@ $if:loggedIn
 	</div>
 </div>
 
-$endif:loggedIn
+$endif:isJudge
+
+$include:inc/teamforbid.html
 $include:inc/loginstandalone.html
 
 $include:inc/docfooter.php

@@ -1,0 +1,57 @@
+$set:title=Submission
+$include:inc/dochead.html
+$include:inc/navi.html
+$if:loggedIn
+<div class="container content">
+	<div class="row">
+		<div class="col-md-4 ">
+			
+			<div class="panel panel-default mail">
+				<h2>Submission</h2>
+				<div class="panel-body">
+					<ul>
+						<li>
+							<strong>Team Unibyte</strong> 
+							<p>Buckets: Compile Error</p>
+						</li>
+						<li>
+							<strong>Team Unibyte</strong> 
+							<p>Buckets: Invalid Output </p>
+						</li>
+						<li>
+							<strong>Team Unibyte</strong> 
+							<p>Buckets: Success</p>
+						</li>
+					</ul>
+				</div>
+			</div>
+
+		</div>
+
+		<div class="col-md-8 ">
+			<div class="panel panel-default">
+		<h2>View Submission
+
+	
+		
+		</h2>
+	<div class="panel-body">
+
+		<p>
+			<strong>Question</strong>
+			<span>
+				 Buckets - Success
+			</span>
+		</p>
+
+		<hr />
+			<pre><code>// my first program in C++<br/>#include &lt;iostream&gt;<br/><br/>int main()<br/>{<br/>  std::cout &lt;&lt; &quot;Hello World!&quot;;<br/>}</code></pre>
+	</div>
+</div>
+		</div>
+	</div>
+</div>
+
+$endif:loggedIn
+$include:inc/loginstandalone.html
+$include:inc/docfooter.php
