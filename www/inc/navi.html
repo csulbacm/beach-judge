@@ -3,7 +3,7 @@
 		<div class="row">
 			<div class="col-md-12"> 
 				
-				<ul class="nav navbar-nav">
+				<ul class="nav navbar-nav pull-left">
 					<li>
 						<a href="/">
 						<strong>
@@ -19,8 +19,11 @@
 							$if:isJudge
 								<li><a href="/leaderboard">Grade</a></li>
 							$endif:isJudge
+							
+							$if:isTeam
+								<li><a href="#">Submit</a></li>
+							$endif:isTeam
 						<li><a href="#">Mail</a></li>
-						<li><a href="#">Submit</a></li>
 						<li><a href="#">Profile	</a></li>
 
 						<li class="login-holder">

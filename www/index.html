@@ -8,13 +8,17 @@ $include:inc/navi.html
 
 	$if:loggedIn		
 		<div class="col-md-6">
-				$include:inc/modulesubmit.html
+				$if:isTeam
+					$include:inc/modulesubmit.html
+				$endif:isTeam
 				$include:inc/modulemail.html
 		</div>
 		<div class="col-md-6">
 				$include:inc/modulestatus.html
 				$include:inc/modulegetproblems.html
 		</div>
+
+
 	$endif:loggedIn
 	</div>
 
