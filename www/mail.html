@@ -10,14 +10,15 @@ $if:isJudge
 				<h2>Questions</h2>
 				<div class="panel-body">
 					<ul>
+						$startLoop:problems
+						$loadUnansweredQuestionsForProblem:{problemID}
+						$startLoop:x{questionCount}
 						<li>
-							<strong>Team Unibyte</strong> &mdash;
-							Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corrupti nam obcaecati magni inventore?
+							<strong>$get:asker{idx}</strong> &mdash;
+							$get:question{idx}
 						</li>
-						<li>
-							<strong>Team Unibyte</strong> &mdash;
-							Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corrupti nam obcaecati magni inventore?
-						</li>
+						$endLoop:x{questionCount}
+						$endLoop:problems
 					</ul>
 				</div>
 			</div>

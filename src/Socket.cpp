@@ -116,8 +116,12 @@ namespace beachjudge
 		}
 
 		int reuse = 1;
-		setsockopt(sSocket, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
-
+		#ifdef linux
+			setsockopt(sSocket, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+		#endif
+		#ifdef _WIN32
+			setsockopt(sSocket, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse));
+		#endif
 		Socket *sock = new Socket();
 		sock->m_socket = sSocket;
 		if(!isBlocking)

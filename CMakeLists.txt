@@ -27,6 +27,7 @@ set(INC
 	${INC_DIR}/BeachJudge/Page.h
 	${INC_DIR}/BeachJudge/Problem.h
 	${INC_DIR}/BeachJudge/HTTP.h
+	${INC_DIR}/BeachJudge/Question.h
 	${INC_DIR}/BeachJudge/Session.h
 	${INC_DIR}/BeachJudge/Socket.h
 	${INC_DIR}/BeachJudge/Team.h
@@ -40,6 +41,7 @@ set(SRC
 	${SRC_DIR}/HTTP.cpp
 	${SRC_DIR}/Page.cpp
 	${SRC_DIR}/Problem.cpp
+	${SRC_DIR}/Question.cpp
 	${SRC_DIR}/Session.cpp
 	${SRC_DIR}/Socket.cpp
 	${SRC_DIR}/Team.cpp

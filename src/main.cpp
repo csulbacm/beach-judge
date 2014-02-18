@@ -12,6 +12,7 @@
 #include <BeachJudge/Problem.h>
 #include <BeachJudge/Thread.h>
 #include <BeachJudge/Socket.h>
+#include <BeachJudge/Question.h>
 #include <BeachJudge/Team.h>
 
 #define BEACHJUDGE_SESSION_CLEANUPTICKMS 15 * 60 * 1000 //- TODO: Externalize to Config -
@@ -32,6 +33,28 @@ void *commandFunc(void *arg)
 	return 0;
 }
 
+void *clientHandlerFunc(void *arg)
+{
+	pair<Socket *, Thread *> *data = (pair<Socket *, Thread *> *)arg;
+	Thread *thread = data->second;
+	Socket *client = data->first;
+	
+	char sbuff[8192];
+	memset(sbuff, 0, 8192);
+	unsigned short len = client->Read(sbuff, 8191);
+
+	string request(sbuff);
+	HTTP::HandleRequest(client, request);
+
+	client->Shutdown();
+	
+	delete data;
+//	delete thread;
+
+	Thread::Exit(0);
+	return 0;
+}
+
 void *webServerFunc(void *arg)
 {
 	srand((unsigned int)time(0));
@@ -40,22 +63,16 @@ void *webServerFunc(void *arg)
 	server->Bind(8081);
 	server->Listen(16);
 
-	char sbuff[8192];
 	while(true)
 	{
 		Socket *client = server->Accept(); //- TODO: Fix Non-Blocking Sockets -
 
-		if(client)
-		{
-			memset(sbuff, 0, 8192);
-			unsigned short len = client->Read(sbuff, 8191);
+		Thread *clientThread = new Thread(&clientHandlerFunc);
 
-			string request(sbuff);
-			HTTP::HandleRequest(client, request);
-
-			client->Shutdown();
-			delete client;
-		}
+		pair<Socket *, Thread *> *data = new pair<Socket *, Thread *>();
+		data->first = client;
+		data->second = clientThread;
+		clientThread->Start(data); //- TODO: Confirm that this cleans up properly -
 
 		sleepMS(1);
 	}
@@ -105,6 +122,7 @@ int main(int argc, char **argv)
 
 	commandThread.Join();
 	webServerThread.Join();
+	Question::Cleanup();
 	Session::Cleanup(true);
 	Thread::Exit(NULL);
 	return 0;

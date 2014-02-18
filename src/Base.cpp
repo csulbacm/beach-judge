@@ -16,6 +16,7 @@
 #ifdef _WIN32
 	//- Windows Patches -
 	#include <Windows.h>
+	#include <direct.h>
 	#define snprintf _snprintf_s
 	#define vsnprintf _vsnprintf_s
 #endif

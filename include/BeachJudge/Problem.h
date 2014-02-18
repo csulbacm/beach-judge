@@ -44,6 +44,7 @@ namespace beachjudge
 
 	public:
 		static Problem *Create(unsigned short id, std::string name);
+		static Problem *LookupByID(unsigned short id);
 		static std::map<unsigned short, Problem *> &GetProblemsByID();
 
 		~Problem();

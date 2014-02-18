@@ -6,6 +6,7 @@
 
 //- Beach Judge -
 #include <BeachJudge/Base.h>
+#include <BeachJudge/Question.h>
 #include <BeachJudge/Page.h>
 #include <BeachJudge/Session.h>
 #include <BeachJudge/HTTP.h>
@@ -192,48 +193,69 @@ namespace beachjudge
 					}
 					if(argMap.count("cmd"))
 					{
-						if(!argMap["cmd"].compare("Login") && !session)
+						if(session)
 						{
-							if(argMap.count("passwd"))
-								if(argMap.count("team"))
-								{
-									Team *team = Team::LookupByName(argMap["team"]);
-									if(team)
-										if(team->TestPassword(argMap["passwd"]))
-											session = Session::Create(addr, port, team);
-								}
-						}
-						else if(!argMap["cmd"].compare("Change") && session)
-						{
-							if(argMap.count("curPasswd"))
-								if(argMap.count("newPasswd"))
-								{
-									Team *team = session->GetTeam();
-									if(team)
-										if(team->TestPassword(argMap["curPasswd"]))
-										{
-											string pass = argMap["newPasswd"];
-											team->SetPassword(pass);
-											Team::SaveToDatabase();
-										}
-								}
-						}
-						else if(!argMap["cmd"].compare("createTeam") && session)
-						{
-							Team *team = session->GetTeam();
-							if(team)
-								if(team->IsJudge())
-									if(argMap.count("newTeamName"))
-										if(argMap.count("newTeamPass"))
-										{
-											string name = argMap["newTeamName"];
-											if(!Team::LookupByName(name))
+							if(!argMap["cmd"].compare("Change"))
+							{
+								if(argMap.count("curPasswd"))
+									if(argMap.count("newPasswd"))
+									{
+										Team *team = session->GetTeam();
+										if(team)
+											if(team->TestPassword(argMap["curPasswd"]))
 											{
-												string pass = argMap["newTeamPass"];
-												Team::Create(name, pass);
+												string pass = argMap["newPasswd"];
+												team->SetPassword(pass);
 												Team::SaveToDatabase();
 											}
-										}
+									}
+							}
+							else if(!argMap["cmd"].compare("createTeam"))
+							{
+								Team *team = session->GetTeam();
+								if(team)
+									if(team->IsJudge())
+										if(argMap.count("newTeamName"))
+											if(argMap.count("newTeamPass"))
+											{
+												string name = argMap["newTeamName"];
+												if(!Team::LookupByName(name))
+												{
+													string pass = argMap["newTeamPass"];
+													Team::Create(name, pass);
+													Team::SaveToDatabase();
+												}
+											}
+							}
+							else if(!argMap["cmd"].compare("askQuestion"))
+							{
+								Team *team = session->GetTeam();
+								if(team)
+									if(!team->IsJudge())
+										if(argMap.count("question"))
+											if(argMap.count("problemID"))
+											{
+												string problemID = argMap["problemID"];
+												Problem *problem = Problem::LookupByID(atoi(problemID.c_str()));
+												if(problem)
+												{
+													string question = argMap["question"];
+													Question::Create(question, team, problem);
+												}
+											}
+							}
+						}
+						else
+						{
+							if(!argMap["cmd"].compare("Login"))
+								if(argMap.count("passwd"))
+									if(argMap.count("team"))
+									{
+										Team *team = Team::LookupByName(argMap["team"]);
+										if(team)
+											if(team->TestPassword(argMap["passwd"]))
+												session = Session::Create(addr, port, team);
+									}
 						}
 					}
 				}

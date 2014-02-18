@@ -19,7 +19,14 @@ namespace beachjudge
 		g_problems[id] = problem;
 		problem->m_id = id;
 		problem->m_name = name;
+
 		return problem;
+	}
+	Problem *Problem::LookupByID(unsigned short id)
+	{
+		if(g_problems.count(id))
+			return g_problems[id];
+		return 0;
 	}
 	map<unsigned short, Problem *> &Problem::GetProblemsByID()
 	{

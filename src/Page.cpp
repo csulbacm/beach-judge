@@ -9,6 +9,7 @@
 //- Beach Judge -
 #include <BeachJudge/Base.h>
 #include <BeachJudge/Page.h>
+#include <BeachJudge/Question.h>
 #include <BeachJudge/Problem.h>
 
 using namespace std;
@@ -18,29 +19,76 @@ const char *includePrefix = "../www/";
 namespace beachjudge
 {
 	map<string, Page *> g_pageMap;
-	map<string, void (*)(stringstream &, Socket *, Session *, std::string)> g_templateMap;
+	map<string, void (*)(stringstream &, Socket *, Session *, string, map<string, string> *)> g_templateMap;
 
-	void TeamID(stringstream &stream, Socket *socket, Session *session, string arg)
+	void TeamID(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
 	{
 		Team *team = session->GetTeam();
 		if(team)
 			stream << team->GetID();
 	}
-	void TeamName(stringstream &stream, Socket *socket, Session *session, string arg)
+	void TeamName(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
 	{
 		Team *team = session->GetTeam();
 		if(team)
 			stream << team->GetName();
 	}
+	void Echo(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
+	{
+		cout << "Echo: " << arg << endl;
+	}
+	void LoadUnansweredQuestionsForProblem(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
+	{
+		unsigned short id = atoi(arg.c_str());
+		Problem *problem = Problem::LookupByID(id);
+		if(problem)
+		{
+			map<Problem *, vector<Question *> > &questionsByProblem = Question::GetQuestionsByProblem();
+			if(questionsByProblem.count(problem))
+			{
+				vector<Question *> &questions = questionsByProblem[problem];
+				unsigned short idx = 0;
+				char str[8];
+				for(vector<Question *>::iterator it = questions.begin(); it != questions.end(); it++)
+				{
+					Question *question = *it;
+					if(!question->IsAnswered())
+					{
+						idx++;
+						memset(str, 0, 8);
+						sprintf(str, "%d", idx);
+						string idxStr(str);
+						string questionKey("question");
+						string askerKey("asker");
+						targetVars->operator[](questionKey.append(idxStr)) = question->GetText();
+						targetVars->operator[](askerKey.append(idxStr)) = question->GetTeam()->GetName();
+					}
+				}
+				memset(str, 0, 8);
+				sprintf(str, "%d", idx);
+				targetVars->operator[]("questionCount") = string(str);
+			}
+			else
+				targetVars->operator[]("questionCount") = "0";
+		}
+/*		cout << "Target Map:" << endl;
+		for(map<string, string>::iterator it = targetVars->begin(); it != targetVars->end(); it++)
+		{
+			cout << it->first << " - " << it->second << endl;
+		}*/
+	}
 
-	void Page::RegisterTemplate(string entry, void (*func)(stringstream &, Socket *, Session *, string))
+
+	void Page::RegisterTemplate(string entry, void (*func)(stringstream &, Socket *, Session *, string, map<string, string> *))
 	{
 		g_templateMap[entry] = func;
 	}
 	void Page::RegisterDefaultTemplates()
 	{
+		RegisterTemplate("echo", &Echo);
 		RegisterTemplate("teamID", &TeamID);
 		RegisterTemplate("teamName", &TeamName);
+		RegisterTemplate("loadUnansweredQuestionsForProblem", &LoadUnansweredQuestionsForProblem);
 	}
 	Page *Page::Create(string file)
 	{
@@ -91,6 +139,7 @@ namespace beachjudge
 	{
 		stringstream pageStream(m_html);
 		string chunk, varChunk, arg, val, loopTarget;
+		string strictArg, strictVal, strictLoopTarget;
 		stringstream loopStream;
 		vector<string> ifStack;
 		map<string, string> localVars, *targetVars = 0;
@@ -141,55 +190,72 @@ namespace beachjudge
 				else if(peek == ':')
 				{
 					arg = "";
+					strictArg = "";
 					pageStream.get();
 					while(true)
 					{
 						char argPeek = pageStream.peek();
-						if((argPeek >= 'A' && argPeek <= 'Z') || (argPeek >= 'a' && argPeek <= 'z') || argPeek == '.' || argPeek == '/')
+						if((argPeek >= 'A' && argPeek <= 'Z') || (argPeek >= 'a' && argPeek <= 'z') || (argPeek >= '0' && argPeek <= '9') ||  argPeek == '.' || argPeek == '/')
 						{
 							arg.push_back(argPeek);
+							strictArg.push_back(argPeek);
 							pageStream.get();
 						}
-						else if(argPeek == '{' && !doLoop)
+						else if(argPeek == '}' && doLoop)
+						{
+							arg.push_back(argPeek);
+							strictArg.push_back(argPeek);
+							pageStream.get();
+						}
+						else if(argPeek == '{')
 						{
 							pageStream.get();
-							string eval;
-							while(true)
+							strictArg.push_back(argPeek);
+							if(doLoop)
+								arg.push_back(argPeek);
+							else
 							{
-								char evalPeek = pageStream.peek();
-								if((evalPeek >= 'A' && evalPeek <= 'Z') || (evalPeek >= 'a' && evalPeek <= 'z') || (evalPeek >= '0' && evalPeek <= '9') || evalPeek == '.' || evalPeek == '/' || evalPeek == ' ')
+								string eval;
+								while(true)
 								{
-									eval.push_back(evalPeek);
-									pageStream.get();
+									char evalPeek = pageStream.peek();
+									if((evalPeek >= 'A' && evalPeek <= 'Z') || (evalPeek >= 'a' && evalPeek <= 'z') || (evalPeek >= '0' && evalPeek <= '9') || evalPeek == '.' || evalPeek == '/' || evalPeek == ' ')
+									{
+										eval.push_back(evalPeek);
+										strictArg.push_back(evalPeek);
+										pageStream.get();
+									}
+									else
+										break;
 								}
-								else
-									break;
-							}
-							char lastPeek = pageStream.peek();
-							if(lastPeek == '}')
-							{
-								pageStream.get();
-								if(targetVars->count(eval))
+								char lastPeek = pageStream.peek();
+								if(lastPeek == '}')
 								{
-									eval = targetVars->operator[](eval);
-									arg.append(eval);
+									pageStream.get();
+									if(targetVars->count(eval))
+									{
+										eval = targetVars->operator[](eval);
+										arg.append(eval);
+									}
+									else
+									{
+										arg.push_back('{');
+										arg.append(eval);
+										arg.push_back('}');
+									}
+									strictArg.push_back(lastPeek);
 								}
 								else
 								{
 									arg.push_back('{');
 									arg.append(eval);
-									arg.push_back('}');
 								}
-							}
-							else
-							{
-								arg.push_back('{');
-								arg.append(eval);
 							}
 						}
 						else if(argPeek == '=')
 						{
 							val = "";
+							strictVal = "";
 							pageStream.get();
 							while(true)
 							{
@@ -197,43 +263,58 @@ namespace beachjudge
 								if((valPeek >= 'A' && valPeek <= 'Z') || (valPeek >= 'a' && valPeek <= 'z') || (valPeek >= '0' && valPeek <= '9') || valPeek == '.' || valPeek == '/' || valPeek == ' ')
 								{
 									val.push_back(valPeek);
+									strictVal.push_back(valPeek);
 									pageStream.get();
 								}
-								else if(valPeek == '{' && !doLoop)
+								else if(valPeek == '}' && doLoop)
+								{
+									val.push_back(valPeek);
+									strictVal.push_back(valPeek);
+									pageStream.get();
+								}
+								else if(valPeek == '{')
 								{
 									pageStream.get();
-									string eval;
-									while(true)
+									strictVal.push_back(valPeek);
+									if(doLoop)
+										val.push_back(valPeek);
+									else
 									{
-										char evalPeek = pageStream.peek();
-										if((evalPeek >= 'A' && evalPeek <= 'Z') || (evalPeek >= 'a' && evalPeek <= 'z') || (evalPeek >= '0' && evalPeek <= '9') || evalPeek == '.' || evalPeek == '/' || evalPeek == ' ')
+										string eval;
+										while(true)
 										{
-											eval.push_back(evalPeek);
-											pageStream.get();
+											char evalPeek = pageStream.peek();
+											if((evalPeek >= 'A' && evalPeek <= 'Z') || (evalPeek >= 'a' && evalPeek <= 'z') || (evalPeek >= '0' && evalPeek <= '9') || evalPeek == '.' || evalPeek == '/' || evalPeek == ' ')
+											{
+												eval.push_back(evalPeek);
+												strictVal.push_back(evalPeek);
+												pageStream.get();
+											}
+											else
+												break;
 										}
-										else
-											break;
-									}
-									char lastPeek = pageStream.peek();
-									if(lastPeek == '}')
-									{
-										pageStream.get();
-										if(targetVars->count(eval))
+										char lastPeek = pageStream.peek();
+										if(lastPeek == '}')
 										{
-											eval = targetVars->operator[](eval);
-											val.append(eval);
+											pageStream.get();
+											if(targetVars->count(eval))
+											{
+												eval = targetVars->operator[](eval);
+												val.append(eval);
+											}
+											else
+											{
+												val.push_back('{');
+												val.append(eval);
+												val.push_back('}');
+											}
+											strictVal.push_back(lastPeek);
 										}
 										else
 										{
 											val.push_back('{');
 											val.append(eval);
-											val.push_back('}');
 										}
-									}
-									else
-									{
-										val.push_back('{');
-										val.append(eval);
 									}
 								}
 								else
@@ -270,9 +351,11 @@ namespace beachjudge
 						loopStream << "$" << varChunk << ":" << arg;
 					else
 					{
+//						cout << "Start Loop: " << strictArg << endl;
 						if(arg.size())
 						{
 							loopTarget = arg;
+							strictLoopTarget = strictArg;
 							loopStream.str(string());
 							doLoop = true;
 						}
@@ -286,43 +369,60 @@ namespace beachjudge
 					{
 						if(arg.size())
 						{
-							if(!arg.compare(loopTarget))
+							if(!arg.compare(strictLoopTarget))
 							{
+//								cout << "End Loop: " << arg << endl;
 								map<unsigned short, Team *>::iterator teamIt;
 								map<unsigned short, Team *> &teamsByID = Team::GetTeamsByID();
 								map<unsigned short, Problem *>::iterator problemIt;
 								map<unsigned short, Problem *> &problemsByID = Problem::GetProblemsByID();
+								unsigned short num = 0;
+								if(loopTarget.size() > 1)
+									num = atoi(&loopTarget.c_str()[1]);
+								string numIdx;
+								if(num)
+									numIdx.push_back(loopTarget[0]);
 
 								bool done = false;
 								if(!loopTarget.compare("teams"))
 									teamIt = teamsByID.begin();
 								else if(!loopTarget.compare("problems"))
 									problemIt = problemsByID.begin();
-								else
+								else if(!num)
 									done = true;
 								Page *embPage = Page::CreateFromHTML(loopStream.str());
+//								cout << "LoopStr: " << loopStream.str() << endl;
 								unsigned short idx = 0;
 								while(!done)
 								{
 									idx++;
+									char str[8];
+									memset(str, 0, 8);
+									sprintf(str, "%d", idx);
+									targetVars->operator[]("idx") = string(str);
+									if(num)
+										targetVars->operator[](numIdx) = string(str);
 									if(!loopTarget.compare("teams"))
 									{
-										targetVars->operator[]("teamName") = teamIt->second->GetName();
-										char str[8];
-										memset(str, 0, 8);
-										sprintf(str, "%d", teamIt->first);
-										targetVars->operator[]("teamID") = string(str);
-										memset(str, 0, 8);
-										sprintf(str, "%d", idx);
-										targetVars->operator[]("teamIdx") = string(str);
-										teamIt++;
+										if(teamIt->first == 0)
+											teamIt++;
+										if(teamIt != teamsByID.end())
+										{
+											targetVars->operator[]("teamName") = teamIt->second->GetName();
+											memset(str, 0, 8);
+											sprintf(str, "%d", teamIt->first);
+											targetVars->operator[]("teamID") = string(str);
+											memset(str, 0, 8);
+											sprintf(str, "%d", idx);
+											targetVars->operator[]("teamIdx") = string(str);
+											teamIt++;
+										}
 										if(teamIt == teamsByID.end())
 											done = true;
 									}
 									else if(!loopTarget.compare("problems"))
 									{
 										targetVars->operator[]("problemName") = problemIt->second->GetName();
-										char str[8];
 										memset(str, 0, 8);
 										sprintf(str, "%d", problemIt->first);
 										targetVars->operator[]("problemID") = string(str);
@@ -333,6 +433,9 @@ namespace beachjudge
 										if(problemIt == problemsByID.end())
 											done = true;
 									}
+									else if(num)
+										if(idx >= num)
+											done = true;
 									embPage->AddToStream(stream, client, session, targetVars);
 								}
 								delete embPage;
@@ -399,10 +502,19 @@ namespace beachjudge
 						}
 					}
 				}
+				else if(g_templateMap.count(varChunk))
+				{
+					if(doLoop)
+					{
+						loopStream << "$" << varChunk;
+						if(arg.size())
+							loopStream << ":" << arg;
+					}
+					else
+						g_templateMap[varChunk](stream, client, session, arg, targetVars);
+				}
 				else if(doLoop)
 					loopStream << "$" << varChunk;
-				else if(g_templateMap.count(varChunk))
-					g_templateMap[varChunk](stream, client, session, arg);
 				else
 					stream << "$" << varChunk;
 			}
