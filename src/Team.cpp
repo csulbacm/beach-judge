@@ -75,6 +75,7 @@ namespace beachjudge
 	}
 	void Team::SaveToDatabase()
 	{
+		createFolder(filePath(g_teamDatabase.c_str()).c_str());
 		ofstream outFile(g_teamDatabase.c_str());
 		for(map<unsigned short, Team *>::iterator it = g_teamByIDMap.begin(); it != g_teamByIDMap.end(); it++)
 		{

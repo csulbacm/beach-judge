@@ -9,6 +9,7 @@
 #include <BeachJudge/Base.h>
 #include <BeachJudge/HTTP.h>
 #include <BeachJudge/Page.h>
+#include <BeachJudge/Problem.h>
 #include <BeachJudge/Thread.h>
 #include <BeachJudge/Socket.h>
 #include <BeachJudge/Team.h>
@@ -74,8 +75,11 @@ int main(int argc, char **argv)
 	Team::Create("judge", "root", 0, true);
 	Team::Create("dummy", "1234", 1);
 
-	Team::SetDatabase("teams.txt");
+	Team::SetDatabase("compo/teams.txt");
 	Team::LoadFromDatabase();
+
+	Problem::Create(1, "Cell Phone Headache");
+	Problem::Create(2, "Adding Reversed Numbers");
 
 	Page::RegisterDefaultTemplates();
 

@@ -8,6 +8,7 @@
 
 //- Beach Judge -
 #include <BeachJudge/Socket.h>
+#include <BeachJudge/Problem.h>
 
 namespace beachjudge
 {

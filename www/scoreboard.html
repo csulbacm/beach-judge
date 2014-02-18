@@ -11,9 +11,10 @@ $include:inc/navi.html
 
 		<!--/ table col -->
 		<div class="col-md-6">
+			$startLoop:problems
 			<!-- table col -->
 			<div class="panel panel-default">
-			<h2>Scores: Buckets</h2>
+			<h2>Scores: $get:problemName</h2>
 				<div class="panel-body">
 					<table class="table">
 						<thead>
@@ -43,38 +44,7 @@ $include:inc/navi.html
 			</div>
 			
 			<!--/ table col -->
-			<!-- table col -->
-			<div class="panel panel-default">
-				<h2>Scores: Buckets</h2>
-				<div class="panel-body">
-					<table class="table">
-						<thead>
-							<tr style="font-weight:bold;">
-								<td>
-								No.</td>
-								<td>
-								Contestant</td>
-								<td>
-								Points</td>
-								<td>
-								Penalty</td>
-							</tr>
-						</thead>
-						<tbody>
-							$startLoop:teams
-							<tr>
-								<td>$get:teamIdx</td>
-								<td>$get:teamName</td>
-								<td>123123.1232</td>
-								<td>123123.1232</td>
-							</tr>
-							$endLoop:teams
-						</tbody>
-					</table>
-				</div>
-			</div>
-			
-			<!--/ table col -->
+			$endLoop:problems
 		</div>
 	</div>
 </div>

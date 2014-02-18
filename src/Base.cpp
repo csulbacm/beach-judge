@@ -4,11 +4,13 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <sstream>
 
 #ifdef linux
 	//- Linux -
 	#include <unistd.h>
 	#include <sys/time.h>
+	#include <sys/stat.h>
 #endif
 
 #ifdef _WIN32
@@ -57,12 +59,31 @@ namespace beachjudge
 	{
 		string str(file);
 
-		int idx = 0;
+		size_t idx = 0;
 		while((idx = str.find("\\")) != string::npos)
 			str = str.replace(idx, 1, "/");
 		while((idx = str.find("/./")) != string::npos)
 			str = str.replace(idx, 3, "/");
 		return str;
+	}
+	bool createFolder(const char *folder)
+	{
+		stringstream folderStream(folder);
+		string curr, final;
+		while(getline(folderStream, curr, '/'))
+		{
+			if(final.size())
+				final.push_back('/');
+			final.append(curr);
+			#ifdef linux
+				mkdir(final.c_str(), 0777);
+			#endif
+			#ifdef _WIN32
+				_mkdir(final.c_str());
+			#endif
+		}
+
+		return true;
 	}
 
 	void error(const char *format, ...)

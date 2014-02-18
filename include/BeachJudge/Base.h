@@ -18,6 +18,7 @@ namespace beachjudge
 	std::string fileExt(const char *file);
 	std::string filePath(const char *file);
 	std::string fileCompressPath(const char *file);
+	bool createFolder(const char *folder);
 
 	//- Messages -
 	void error(const char *format, ...);

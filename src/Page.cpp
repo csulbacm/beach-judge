@@ -9,6 +9,7 @@
 //- Beach Judge -
 #include <BeachJudge/Base.h>
 #include <BeachJudge/Page.h>
+#include <BeachJudge/Problem.h>
 
 using namespace std;
 
@@ -289,10 +290,14 @@ namespace beachjudge
 							{
 								map<unsigned short, Team *>::iterator teamIt;
 								map<unsigned short, Team *> &teamsByID = Team::GetTeamsByID();
+								map<unsigned short, Problem *>::iterator problemIt;
+								map<unsigned short, Problem *> &problemsByID = Problem::GetProblemsByID();
 
 								bool done = false;
 								if(!loopTarget.compare("teams"))
 									teamIt = teamsByID.begin();
+								else if(!loopTarget.compare("problems"))
+									problemIt = problemsByID.begin();
 								else
 									done = true;
 								Page *embPage = Page::CreateFromHTML(loopStream.str());
@@ -314,6 +319,20 @@ namespace beachjudge
 										if(teamIt == teamsByID.end())
 											done = true;
 									}
+									else if(!loopTarget.compare("problems"))
+									{
+										targetVars->operator[]("problemName") = problemIt->second->GetName();
+										char str[8];
+										memset(str, 0, 8);
+										sprintf(str, "%d", problemIt->first);
+										targetVars->operator[]("problemID") = string(str);
+										memset(str, 0, 8);
+										sprintf(str, "%d", idx);
+										targetVars->operator[]("problemIdx") = string(str);
+										problemIt++;
+										if(problemIt == problemsByID.end())
+											done = true;
+									}
 									embPage->AddToStream(stream, client, session, targetVars);
 								}
 								delete embPage;
@@ -322,6 +341,13 @@ namespace beachjudge
 								{
 									targetVars->erase("teamName");
 									targetVars->erase("teamID");
+									targetVars->erase("teamIdx");
+								}
+								else if(!loopTarget.compare("problems"))
+								{
+									targetVars->erase("problemName");
+									targetVars->erase("problemID");
+									targetVars->erase("problemIdx");
 								}
 								doLoop = false;
 							}
