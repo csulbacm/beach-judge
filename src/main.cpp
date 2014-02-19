@@ -39,13 +39,8 @@ void *clientHandlerFunc(void *arg)
 	pair<Socket *, Thread *> *data = (pair<Socket *, Thread *> *)arg;
 	Thread *thread = data->second;
 	Socket *client = data->first;
-	
-	char sbuff[8192];
-	memset(sbuff, 0, 8192);
-	unsigned short len = client->Read(sbuff, 8191);
 
-	string request(sbuff);
-	HTTP::HandleRequest(client, request);
+	HTTP::HandleClient(client);
 
 	client->Shutdown();
 	

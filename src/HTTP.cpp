@@ -14,6 +14,9 @@
 
 using namespace std;
 
+#define TEAM_COMM_LIMIT 32 * 1024
+#define ANON_COMM_LIMIT 1024
+
 const char *wwwPrefix = "../www";
 
 namespace beachjudge
@@ -21,6 +24,10 @@ namespace beachjudge
 	void HTTP::OpenHeader_OK(stringstream &stream)
 	{
 		stream << "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-type: text/html\r\n";
+	}
+	void HTTP::OpenHeader_OK_MultiPart(stringstream &stream)
+	{
+		stream << "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-type: text/html\r\n";
 	}
 	void HTTP::OpenHeader_OK_CSS(stringstream &stream)
 	{
@@ -61,12 +68,23 @@ namespace beachjudge
 	{
 		stream << "\r\n";
 	}
-	void HTTP::HandleRequest(Socket *client, std::string &request)
+	void HTTP::HandleClient(Socket *client)
 	{
-		if(request.size() <= 1)
-			return;
+		stringstream reqStream;
 
-		istringstream reqStream(request);
+		{
+			char sbuff[1025];
+			memset(sbuff, 0, 1025);
+			unsigned short len = client->Read(sbuff, 1024);
+			if(len)
+			{
+				string part(sbuff);
+				reqStream << part;
+			}
+		}
+
+		if(reqStream.str().size() <= 1)
+			return;
 
 		unsigned short port = 0;
 		unsigned long addr = 0;
@@ -129,20 +147,7 @@ namespace beachjudge
 			}
 		}
 
-		map<string, string> getArgMap;
-		{
-			string arg, args;
-			stringstream argStream(arguments);
-			while(getline(argStream, arg, '='))
-			{
-				string val;
-				getline(argStream, val, '&');
-				if(arg.size() && val.size())
-					getArgMap[arg] = val;
-			}
-		}
-
-//		cout << request << endl;
+//		cout << reqStream.str() << endl;
 
 		string line, contentType;
 		unsigned long contentLength = 0;
@@ -187,10 +192,46 @@ namespace beachjudge
 		}
 		while(line.size() > 1);
 
+		if(client->HasRead())
+		{
+			char sbuff[257];
+			do
+			{
+				memset(sbuff, 0, 257);
+				unsigned short len = client->Read(sbuff, 256);
+				if(len)
+				{
+					string part(sbuff);
+					reqStream << part;
+					if(session)
+					{
+						if(!session->GetTeam()->IsJudge())
+							if(reqStream.str().size() > TEAM_COMM_LIMIT)
+								return;
+					}
+					else if(reqStream.str().size() > ANON_COMM_LIMIT)
+						return;
+				}
+			}
+			while(client->HasRead());
+		}
+
+		map<string, string> getArgMap;
+		{
+			string arg, args;
+			stringstream argStream(arguments);
+			while(getline(argStream, arg, '='))
+			{
+				string val;
+				getline(argStream, val, '&');
+				if(arg.size() && val.size())
+					getArgMap[arg] = val;
+			}
+		}
+
 		if(contentLength)
 			if(!method.compare("POST"))
 			{
-//				cout << "Content: " << contentType << " | " << contentLength << endl;
 				if(!contentType.compare("application/x-www-form-urlencoded"))
 				{
 					string arg, args;
@@ -271,6 +312,11 @@ namespace beachjudge
 									}
 						}
 					}
+				}
+				else if(!contentType.compare("multipart/form-data"))
+				{
+//					string boundary = 
+					cout << "Content: " << contentType << " | " << contentLength << endl;
 				}
 			}
 

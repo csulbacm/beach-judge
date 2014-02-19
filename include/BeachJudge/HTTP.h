@@ -15,12 +15,13 @@ namespace beachjudge
 	public:
 		static void OpenHeader_OK(std::stringstream &stream);
 		static void OpenHeader_OK_CSS(std::stringstream &stream);
+		static void OpenHeader_OK_MultiPart(std::stringstream &stream);
 		static void OpenHeader_NotFound(std::stringstream &stream);
 		static void SetSessionCookie(std::stringstream &stream, std::string target, std::string value);
 		static void CloseHeader(std::stringstream &stream);
 		static void LoadImage(std::stringstream &stream, std::string file);
 
-		static void HandleRequest(Socket *client, std::string &request);
+		static void HandleClient(Socket *client);
 	};
 }
 

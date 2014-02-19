@@ -250,6 +250,19 @@ namespace beachjudge
 	{
 		return send(m_socket, buffer, length, 0);
 	}
+	bool Socket::HasRead()
+	{
+		fd_set readFlags, writeFlags;
+		struct timeval waitd = {10, 0};
+		FD_ZERO(&readFlags);
+		FD_ZERO(&writeFlags);
+		FD_SET(m_socket, &readFlags);
+		FD_SET(m_socket, &writeFlags);
+		FD_SET(STDIN_FILENO, &readFlags);
+		FD_SET(STDIN_FILENO, &writeFlags);
+		int ret = select(m_socket + 1, &readFlags, &writeFlags, (fd_set *)0, &waitd);
+		return FD_ISSET(m_socket, &readFlags);
+	}
 	bool Socket::SetBlocking(bool isBlocking)
 	{
 		#if BEACHJUDGE_USEPOSIXSOCKET

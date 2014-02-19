@@ -1,7 +1,7 @@
 <div class="panel panel-default">
 		<h2>Submit File</h2>
 	<div class="panel-body">
-		<form role="form" method="post" action="/">
+		<form role="form" method="post" action="/" enctype="multipart/form-data">
 			<div class="form-group">
 				
 				<label for="problemname">Problem</label>
@@ -19,7 +19,7 @@
 			</div>
 			
 
-			<input type="hidden" name="cmd" value="Problem">
+			<input type="hidden" name="cmd" value="submit">
 			<button type="submit" class="btn btn-default">Submit</button>
 		</form>
 	</div>
