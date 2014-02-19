@@ -9,14 +9,14 @@ $if:isJudge
 			<div class="panel panel-default mail">
 				<h2>Questions</h2>
 				<div class="panel-body">
-					<ul>
+					<ul class="nav nav-stacked">
 						$startLoop:problems
 						$loadUnansweredQuestionsForProblem:{problemID}
 						$startLoop:x{questionCount}
-						<li>
+						<li><a href="/mail?q=$get:questionID{idx}">
 							<strong>$get:asker{idx}</strong> &mdash;
 							$get:question{idx}
-						</li>
+						</a></li>
 						$endLoop:x{questionCount}
 						$endLoop:problems
 					</ul>

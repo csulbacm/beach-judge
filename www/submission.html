@@ -9,19 +9,13 @@ $if:loggedIn
 			<div class="panel panel-default mail">
 				<h2>Submission</h2>
 				<div class="panel-body">
-					<ul>
-						<li>
-							<strong>Team Unibyte</strong> 
-							<p>Buckets: Compile Error</p>
-						</li>
-						<li>
-							<strong>Team Unibyte</strong> 
-							<p>Buckets: Invalid Output </p>
-						</li>
-						<li>
-							<strong>Team Unibyte</strong> 
-							<p>Buckets: Success</p>
-						</li>
+					<ul class="nav nav-stacked">
+						$startLoop:problems
+						<li><a href="/submission?s=0">
+							<strong>$get:problemName</strong> &mdash;
+							Compile Error
+						</a></li>
+						$endLoop:problems
 					</ul>
 				</div>
 			</div>

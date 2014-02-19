@@ -28,7 +28,7 @@ namespace beachjudge
 
 		~Page();
 
-		void AddToStream(std::stringstream &stream, Socket *client, Session *session, std::map<std::string, std::string> *masterLocalVars = 0);
+		void AddToStream(std::stringstream &stream, Socket *client, Session *session, std::map<std::string, std::string> *GETMap, std::map<std::string, std::string> *masterLocalVars = 0);
 	};
 }
 

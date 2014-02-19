@@ -15,6 +15,7 @@ namespace beachjudge
 	vector<Question *> g_questionsVec;
 	map<Problem *, vector<Question *> > g_questionsByProblem;
 	map<Team *, vector<Question *> > g_questionsByTeam;
+	map<unsigned short, Question *> g_questionsByID;
 	
 	Question *Question::Create(string text, Team *team, Problem *problem)
 	{
@@ -22,6 +23,14 @@ namespace beachjudge
 		question->m_text = text;
 		question->m_team = team;
 		question->m_problem = problem;
+
+		do
+		{
+			question->m_id = (unsigned short)rand();
+		}
+		while(g_questionsByID.count(question->m_id));
+		g_questionsByID[question->m_id] = question;
+
 		g_questionsByProblem[problem].push_back(question);
 		g_questionsByTeam[team].push_back(question);
 		g_questionsVec.push_back(question);
@@ -40,6 +49,12 @@ namespace beachjudge
 	{
 		return g_questionsByProblem;
 	}
+	Question *Question::LookupByID(unsigned short id)
+	{
+		if(g_questionsByID.count(id))
+			return g_questionsByID[id];
+		return 0;
+	}
 
 	Question::Question()
 	{
@@ -53,6 +68,7 @@ namespace beachjudge
 		vector<Question *> &questionsByTeamVec = g_questionsByTeam[m_team];
 		questionsByTeamVec.erase(find(questionsByTeamVec.begin(), questionsByTeamVec.end(), this));
 
+		g_questionsByID.erase(m_id);
 		g_questionsVec.erase(find(g_questionsVec.begin(), g_questionsVec.end(), this));
 	}
 	void Question::Answer(string response)
@@ -79,5 +95,9 @@ namespace beachjudge
 	Problem *Question::GetProblem() const
 	{
 		return m_problem;
+	}
+	unsigned short Question::GetID() const
+	{
+		return m_id;
 	}
 }

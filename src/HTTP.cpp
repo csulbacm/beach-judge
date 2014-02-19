@@ -129,6 +129,19 @@ namespace beachjudge
 			}
 		}
 
+		map<string, string> getArgMap;
+		{
+			string arg, args;
+			stringstream argStream(arguments);
+			while(getline(argStream, arg, '='))
+			{
+				string val;
+				getline(argStream, val, '&');
+				if(arg.size() && val.size())
+					getArgMap[arg] = val;
+			}
+		}
+
 //		cout << request << endl;
 
 		string line, contentType;
@@ -181,7 +194,7 @@ namespace beachjudge
 				if(!contentType.compare("application/x-www-form-urlencoded"))
 				{
 					string arg, args;
-					map<string, string> argMap;
+					map<string, string> postArgMap;
 					getline(reqStream, args);
 					stringstream argStream(args);
 					while(getline(argStream, arg, '='))
@@ -189,57 +202,57 @@ namespace beachjudge
 						string val;
 						getline(argStream, val, '&');
 						if(arg.size() && val.size())
-							argMap[arg] = val;
+							postArgMap[arg] = val;
 					}
-					if(argMap.count("cmd"))
+					if(postArgMap.count("cmd"))
 					{
 						if(session)
 						{
-							if(!argMap["cmd"].compare("Change"))
+							if(!postArgMap["cmd"].compare("Change"))
 							{
-								if(argMap.count("curPasswd"))
-									if(argMap.count("newPasswd"))
+								if(postArgMap.count("curPasswd"))
+									if(postArgMap.count("newPasswd"))
 									{
 										Team *team = session->GetTeam();
 										if(team)
-											if(team->TestPassword(argMap["curPasswd"]))
+											if(team->TestPassword(postArgMap["curPasswd"]))
 											{
-												string pass = argMap["newPasswd"];
+												string pass = postArgMap["newPasswd"];
 												team->SetPassword(pass);
 												Team::SaveToDatabase();
 											}
 									}
 							}
-							else if(!argMap["cmd"].compare("createTeam"))
+							else if(!postArgMap["cmd"].compare("createTeam"))
 							{
 								Team *team = session->GetTeam();
 								if(team)
 									if(team->IsJudge())
-										if(argMap.count("newTeamName"))
-											if(argMap.count("newTeamPass"))
+										if(postArgMap.count("newTeamName"))
+											if(postArgMap.count("newTeamPass"))
 											{
-												string name = argMap["newTeamName"];
+												string name = postArgMap["newTeamName"];
 												if(!Team::LookupByName(name))
 												{
-													string pass = argMap["newTeamPass"];
+													string pass = postArgMap["newTeamPass"];
 													Team::Create(name, pass);
 													Team::SaveToDatabase();
 												}
 											}
 							}
-							else if(!argMap["cmd"].compare("askQuestion"))
+							else if(!postArgMap["cmd"].compare("askQuestion"))
 							{
 								Team *team = session->GetTeam();
 								if(team)
 									if(!team->IsJudge())
-										if(argMap.count("question"))
-											if(argMap.count("problemID"))
+										if(postArgMap.count("question"))
+											if(postArgMap.count("problemID"))
 											{
-												string problemID = argMap["problemID"];
+												string problemID = postArgMap["problemID"];
 												Problem *problem = Problem::LookupByID(atoi(problemID.c_str()));
 												if(problem)
 												{
-													string question = argMap["question"];
+													string question = postArgMap["question"];
 													Question::Create(question, team, problem);
 												}
 											}
@@ -247,13 +260,13 @@ namespace beachjudge
 						}
 						else
 						{
-							if(!argMap["cmd"].compare("Login"))
-								if(argMap.count("passwd"))
-									if(argMap.count("team"))
+							if(!postArgMap["cmd"].compare("login"))
+								if(postArgMap.count("passwd"))
+									if(postArgMap.count("team"))
 									{
-										Team *team = Team::LookupByName(argMap["team"]);
+										Team *team = Team::LookupByName(postArgMap["team"]);
 										if(team)
-											if(team->TestPassword(argMap["passwd"]))
+											if(team->TestPassword(postArgMap["passwd"]))
 												session = Session::Create(addr, port, team);
 									}
 						}
@@ -299,7 +312,7 @@ namespace beachjudge
 			CloseHeader(webPageStream);
 
 			Page *index = Page::Create(file);
-			index->AddToStream(webPageStream, client, session);
+			index->AddToStream(webPageStream, client, session, &getArgMap);
 			string webPage = webPageStream.str();
 			client->Write((char *)webPage.c_str(), webPage.length());
 		}

@@ -15,6 +15,7 @@ namespace beachjudge
 	class Question
 	{
 		bool m_isAnswered;
+		unsigned short m_id;
 		std::string m_text, m_response;
 		Team *m_team;
 		Problem *m_problem;
@@ -25,6 +26,7 @@ namespace beachjudge
 		static Question *Create(std::string text, Team *team, Problem *problem);
 		static std::map<Team *, std::vector<Question *> > &GetQuestionsByTeam();
 		static std::map<Problem *, std::vector<Question *> > &GetQuestionsByProblem();
+		static Question *LookupByID(unsigned short id);
 		static void Cleanup();
 
 		~Question();
@@ -35,6 +37,7 @@ namespace beachjudge
 		std::string GetAnswer() const;
 		Team *GetTeam() const;
 		Problem *GetProblem() const;
+		unsigned short GetID() const;
 	};
 }
 

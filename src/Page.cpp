@@ -37,6 +37,54 @@ namespace beachjudge
 	{
 		cout << "Echo: " << arg << endl;
 	}
+	void LoadAnsweredQuestionsForProblem(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
+	{
+		unsigned short id = atoi(arg.c_str());
+		Problem *problem = Problem::LookupByID(id);
+		if(problem)
+		{
+			map<Problem *, vector<Question *> > &questionsByProblem = Question::GetQuestionsByProblem();
+			if(questionsByProblem.count(problem))
+			{
+				vector<Question *> &questions = questionsByProblem[problem];
+				unsigned short idx = 0;
+				char str[8];
+				for(vector<Question *>::iterator it = questions.begin(); it != questions.end(); it++)
+				{
+					Question *question = *it;
+					if(question->IsAnswered())
+					{
+						idx++;
+						memset(str, 0, 8);
+						sprintf(str, "%d", idx);
+						string idxStr(str);
+						string questionKey("question");
+						string questionIDKey("questionID");
+						string askerKey("asker");
+						string answerKey("answer");
+						unsigned short qid = question->GetID();
+						memset(str, 0, 8);
+						sprintf(str, "%d", qid);
+						string idStr(str);
+						targetVars->operator[](questionKey.append(idxStr)) = question->GetText();
+						targetVars->operator[](questionIDKey.append(idxStr)) = idStr;
+						targetVars->operator[](askerKey.append(idxStr)) = question->GetTeam()->GetName();
+						targetVars->operator[](answerKey.append(idxStr)) = question->GetAnswer();
+					}
+				}
+				memset(str, 0, 8);
+				sprintf(str, "%d", idx);
+				targetVars->operator[]("questionCount") = string(str);
+			}
+			else
+				targetVars->operator[]("questionCount") = "0";
+		}
+/*		cout << "Target Map:" << endl;
+		for(map<string, string>::iterator it = targetVars->begin(); it != targetVars->end(); it++)
+		{
+			cout << it->first << " - " << it->second << endl;
+		}*/
+	}
 	void LoadUnansweredQuestionsForProblem(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
 	{
 		unsigned short id = atoi(arg.c_str());
@@ -59,8 +107,14 @@ namespace beachjudge
 						sprintf(str, "%d", idx);
 						string idxStr(str);
 						string questionKey("question");
+						string questionIDKey("questionID");
 						string askerKey("asker");
+						unsigned short qid = question->GetID();
+						memset(str, 0, 8);
+						sprintf(str, "%d", qid);
+						string idStr(str);
 						targetVars->operator[](questionKey.append(idxStr)) = question->GetText();
+						targetVars->operator[](questionIDKey.append(idxStr)) = idStr;
 						targetVars->operator[](askerKey.append(idxStr)) = question->GetTeam()->GetName();
 					}
 				}
@@ -78,7 +132,6 @@ namespace beachjudge
 		}*/
 	}
 
-
 	void Page::RegisterTemplate(string entry, void (*func)(stringstream &, Socket *, Session *, string, map<string, string> *))
 	{
 		g_templateMap[entry] = func;
@@ -89,6 +142,7 @@ namespace beachjudge
 		RegisterTemplate("teamID", &TeamID);
 		RegisterTemplate("teamName", &TeamName);
 		RegisterTemplate("loadUnansweredQuestionsForProblem", &LoadUnansweredQuestionsForProblem);
+		RegisterTemplate("loadAnsweredQuestionsForProblem", &LoadAnsweredQuestionsForProblem);
 	}
 	Page *Page::Create(string file)
 	{
@@ -135,7 +189,7 @@ namespace beachjudge
 		if(m_fileSource.size())
 			g_pageMap.erase(m_fileSource);
 	}
-	void Page::AddToStream(stringstream &stream, Socket *client, Session *session, map<string, string> *masterLocalVars)
+	void Page::AddToStream(stringstream &stream, Socket *client, Session *session, map<string, string> *GETMap, map<string, string> *masterLocalVars)
 	{
 		stringstream pageStream(m_html);
 		string chunk, varChunk, arg, val, loopTarget;
@@ -436,7 +490,7 @@ namespace beachjudge
 									else if(num)
 										if(idx >= num)
 											done = true;
-									embPage->AddToStream(stream, client, session, targetVars);
+									embPage->AddToStream(stream, client, session, GETMap, targetVars);
 								}
 								delete embPage;
 
@@ -487,6 +541,18 @@ namespace beachjudge
 							stream << "$" << varChunk << ":" << arg;
 					}
 				}
+				else if(!varChunk.compare("GET"))
+				{
+					if(doLoop)
+						loopStream << "$" << varChunk << ":" << arg;
+					else
+					{
+						if(GETMap->count(arg))
+							stream << GETMap->operator[](arg);
+						else
+							stream << "$" << varChunk << ":" << arg;
+					}
+				}
 				else if(!varChunk.compare("include"))
 				{
 					if(doLoop)
@@ -498,7 +564,7 @@ namespace beachjudge
 						if(fileExists(file.c_str()))
 						{
 							Page *page = Page::Create(file);
-							page->AddToStream(stream, client, session, targetVars);
+							page->AddToStream(stream, client, session, GETMap, targetVars);
 						}
 					}
 				}

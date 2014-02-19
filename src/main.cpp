@@ -35,6 +35,7 @@ void *commandFunc(void *arg)
 
 void *clientHandlerFunc(void *arg)
 {
+	srand((unsigned int)time(0));
 	pair<Socket *, Thread *> *data = (pair<Socket *, Thread *> *)arg;
 	Thread *thread = data->second;
 	Socket *client = data->first;
