@@ -2,24 +2,19 @@
 		<h2>Submit File</h2>
 	<div class="panel-body">
 		<form role="form" method="post" action="/" enctype="multipart/form-data">
+			<input type="hidden" name="cmd" value="submit">
 			<div class="form-group">
-				
-				<label for="problemname">Problem</label>
-				<select class="form-control" name="problemname">
+				<label for="problemID">Problem</label>
+				<select class="form-control" name="problemID">
 					$startLoop:problems
 					<option value="$get:problemID">$get:problemName</option>
 					$endLoop:problems
 				</select>
 			</div>
-			
-			
 			<div class="form-group">
-				<label for="problemname">Source Code</label>
+				<label for="code">Source Code</label>
 				<input class="form-control" type="file" name="code">
 			</div>
-			
-
-			<input type="hidden" name="cmd" value="submit">
 			<button type="submit" class="btn btn-default">Submit</button>
 		</form>
 	</div>

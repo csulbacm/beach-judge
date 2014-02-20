@@ -149,7 +149,7 @@ namespace beachjudge
 
 //		cout << reqStream.str() << endl;
 
-		string line, contentType;
+		string line, contentType, boundary("--");
 		unsigned long contentLength = 0;
 		do
 		{
@@ -164,7 +164,16 @@ namespace beachjudge
 				if(right.at(rightLen - 1) == '\r')
 					right = right.substr(1, rightLen - 2);
 			if(!left.compare("Content-Type:"))
-				contentType = right;
+			{
+				istringstream rightStream(right);
+				getline(rightStream, contentType, ';');
+				if(!contentType.compare("multipart/form-data"))
+				{
+					size_t b = right.find("boundary=");
+					if(b != string::npos)
+						boundary.append(right.substr(b + 9));
+				}
+			}
 			else if(!left.compare("Content-Length:"))
 				contentLength = atoi(right.c_str());
 			else if(!left.compare("Cookie:"))
@@ -191,6 +200,8 @@ namespace beachjudge
 			}
 		}
 		while(line.size() > 1);
+
+		sleepMS(10);
 
 		if(client->HasRead())
 		{
@@ -229,13 +240,15 @@ namespace beachjudge
 			}
 		}
 
+//		cout << reqStream.str() << endl;
+		map<string, string> postArgMap;
+
 		if(contentLength)
 			if(!method.compare("POST"))
 			{
 				if(!contentType.compare("application/x-www-form-urlencoded"))
 				{
 					string arg, args;
-					map<string, string> postArgMap;
 					getline(reqStream, args);
 					stringstream argStream(args);
 					while(getline(argStream, arg, '='))
@@ -245,80 +258,158 @@ namespace beachjudge
 						if(arg.size() && val.size())
 							postArgMap[arg] = val;
 					}
-					if(postArgMap.count("cmd"))
-					{
-						if(session)
-						{
-							if(!postArgMap["cmd"].compare("Change"))
-							{
-								if(postArgMap.count("curPasswd"))
-									if(postArgMap.count("newPasswd"))
-									{
-										Team *team = session->GetTeam();
-										if(team)
-											if(team->TestPassword(postArgMap["curPasswd"]))
-											{
-												string pass = postArgMap["newPasswd"];
-												team->SetPassword(pass);
-												Team::SaveToDatabase();
-											}
-									}
-							}
-							else if(!postArgMap["cmd"].compare("createTeam"))
-							{
-								Team *team = session->GetTeam();
-								if(team)
-									if(team->IsJudge())
-										if(postArgMap.count("newTeamName"))
-											if(postArgMap.count("newTeamPass"))
-											{
-												string name = postArgMap["newTeamName"];
-												if(!Team::LookupByName(name))
-												{
-													string pass = postArgMap["newTeamPass"];
-													Team::Create(name, pass);
-													Team::SaveToDatabase();
-												}
-											}
-							}
-							else if(!postArgMap["cmd"].compare("askQuestion"))
-							{
-								Team *team = session->GetTeam();
-								if(team)
-									if(!team->IsJudge())
-										if(postArgMap.count("question"))
-											if(postArgMap.count("problemID"))
-											{
-												string problemID = postArgMap["problemID"];
-												Problem *problem = Problem::LookupByID(atoi(problemID.c_str()));
-												if(problem)
-												{
-													string question = postArgMap["question"];
-													Question::Create(question, team, problem);
-												}
-											}
-							}
-						}
-						else
-						{
-							if(!postArgMap["cmd"].compare("login"))
-								if(postArgMap.count("passwd"))
-									if(postArgMap.count("team"))
-									{
-										Team *team = Team::LookupByName(postArgMap["team"]);
-										if(team)
-											if(team->TestPassword(postArgMap["passwd"]))
-												session = Session::Create(addr, port, team);
-									}
-						}
-					}
 				}
 				else if(!contentType.compare("multipart/form-data"))
 				{
-//					string boundary = 
-					cout << "Content: " << contentType << " | " << contentLength << endl;
+					string part;
+					size_t nextPart, lastPart, boundarySize = boundary.size();
+					lastPart = reqStream.tellg();
+					bool doIt = true;
+					while(doIt)
+					{
+						nextPart = reqStream.str().find(boundary, lastPart);
+						if(nextPart == string::npos)
+						{
+							nextPart = reqStream.str().size();
+							doIt = false;
+						}
+						part = reqStream.str().substr(lastPart, nextPart - lastPart);
+						if(part.size() > 2)
+						{
+							istringstream partStream(part);
+							string contentDisposition, cdArg, postArgName;
+							getline(partStream, contentDisposition);
+							getline(partStream, contentDisposition);
+							
+							istringstream contentDispositionStream(contentDisposition);
+							contentDispositionStream >> cdArg >> cdArg;
+							bool readFile = false;
+							while(getline(contentDispositionStream, cdArg, ';'))
+							{
+								if(cdArg.at(cdArg.size() - 1) == '\r')
+									cdArg = cdArg.substr(1, cdArg.size() - 2);
+								else
+									cdArg = cdArg.substr(1);
+
+								istringstream cdArgStream(cdArg);
+								string argName, argVal;
+								getline(cdArgStream, argName, '=');
+								getline(cdArgStream, argVal);
+								argVal = argVal.substr(1, argVal.size() - 2);
+								if(!argName.compare("name"))
+									postArgName = argVal;
+								else if(!argName.compare("filename"))
+									readFile = true;
+							}
+							if(readFile)
+							{
+								string fileContentType;
+								getline(partStream, fileContentType);
+							}
+
+							string piece;
+							getline(partStream, piece);
+
+							if(readFile)
+							{
+								stringstream partValueStream;
+								while(getline(partStream, piece))
+									partValueStream << piece << endl;
+								piece = partValueStream.str().substr(0, partValueStream.str().size() - 1);
+							}
+							else
+								getline(partStream, piece, '\r');
+
+							if(postArgName.size())
+								postArgMap[postArgName] = piece;
+						}
+						lastPart = nextPart + boundarySize;
+					}
 				}
 			}
+
+		if(postArgMap.count("cmd"))
+		{
+			if(session)
+			{
+				string &cmd = postArgMap["cmd"];
+				if(!cmd.compare("Change"))
+				{
+					if(postArgMap.count("curPasswd"))
+						if(postArgMap.count("newPasswd"))
+						{
+							Team *team = session->GetTeam();
+							if(team)
+								if(team->TestPassword(postArgMap["curPasswd"]))
+								{
+									string pass = postArgMap["newPasswd"];
+									team->SetPassword(pass);
+									Team::SaveToDatabase();
+								}
+						}
+				}
+				else if(!cmd.compare("createTeam"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+							if(postArgMap.count("newTeamName"))
+								if(postArgMap.count("newTeamPass"))
+								{
+									string name = postArgMap["newTeamName"];
+									if(!Team::LookupByName(name))
+									{
+										string pass = postArgMap["newTeamPass"];
+										Team::Create(name, pass);
+										Team::SaveToDatabase();
+									}
+								}
+				}
+				else if(!cmd.compare("askQuestion"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(!team->IsJudge())
+							if(postArgMap.count("question"))
+								if(postArgMap.count("problemID"))
+								{
+									Problem *problem = Problem::LookupByID(atoi(postArgMap["problemID"].c_str()));
+									if(problem)
+									{
+										string question = postArgMap["question"];
+										Question::Create(question, team, problem);
+									}
+								}
+				}
+				else if(!cmd.compare("submit"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(!team->IsJudge())
+							if(postArgMap.count("problemID"))
+								if(postArgMap.count("code"))
+								{
+									Problem *problem = Problem::LookupByID(atoi(postArgMap["problemID"].c_str()));
+									if(problem)
+									{
+										
+									}
+								}
+				}
+			}
+			else
+			{
+				if(!postArgMap["cmd"].compare("login"))
+					if(postArgMap.count("passwd"))
+						if(postArgMap.count("team"))
+						{
+							Team *team = Team::LookupByName(postArgMap["team"]);
+							if(team)
+								if(team->TestPassword(postArgMap["passwd"]))
+									session = Session::Create(addr, port, team);
+						}
+			}
+		}
 
 		stringstream webPageStream;
 
