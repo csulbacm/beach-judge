@@ -33,27 +33,27 @@ $if:isJudge
 		
 		</h2>
 	<div class="panel-body">
-
+		$loadQuestion:{GET_q}
 		<p>
 			<strong>From:</strong>
 			<span>
-				 David
+				 $get:asker
 			</span>
 		</p>
 		<p>
-			Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ratione vero omnis odit laudantium animi dolorem?
+			$get:question
 		</p>
 
 		<hr />
-		<form role="form" method="post" action="/">
-						
+		<form role="form" method="post" action="/mail" enctype="multipart/form-data">
+			<input type="hidden" name="cmd" value="answerQuestion">
+			<input type="hidden" name="questionID" value="$get:questionID">
 			<div class="form-group">
-				<label for="message">Message</label>
-				<textarea name="message" id="message" cols="30" rows="10" class="form-control"></textarea>
+				<label for="answer">Message</label>
+				<textarea name="answer" id="answer" cols="30" rows="10" class="form-control"></textarea>
 			</div>
 			
 
-			<input type="hidden" name="cmd" value="Problem">
 			<button type="submit" class="btn btn-default">Submit</button>
 		</form>
 	</div>

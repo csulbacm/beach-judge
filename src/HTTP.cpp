@@ -384,6 +384,19 @@ namespace beachjudge
 									}
 								}
 				}
+				else if(!cmd.compare("answerQuestion"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+							if(postArgMap.count("answer"))
+								if(postArgMap.count("questionID"))
+								{
+									Question *question = Question::LookupByID(atoi(postArgMap["questionID"].c_str()));
+									if(question)
+										question->Answer(postArgMap["answer"]);
+								}
+				}
 				else if(!cmd.compare("submit"))
 				{
 					Team *team = session->GetTeam();

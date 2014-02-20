@@ -37,6 +37,36 @@ namespace beachjudge
 	{
 		cout << "Echo: " << arg << endl;
 	}
+	void LoadQuestion(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
+	{
+		unsigned short id = atoi(arg.c_str());
+		Team *team = 0;
+		if(session)
+			team = session->GetTeam();
+		Question *question = Question::LookupByID(id);
+		if(question)
+		{
+			if(question->IsAnswered() || team == question->GetTeam() || team->IsJudge())
+			{
+				Problem *problem = question->GetProblem();
+				char str[8];
+				string questionKey("question");
+				string questionIDKey("questionID");
+				string askerKey("asker");
+				string answerKey("answer");
+				memset(str, 0, 8);
+				sprintf(str, "%d", question->GetID());
+				targetVars->operator[]("question") = question->GetText();
+				targetVars->operator[]("questionID") = string(str);
+				targetVars->operator[]("asker") = question->GetTeam()->GetName();
+				targetVars->operator[]("answer") = question->GetAnswer();
+				memset(str, 0, 8);
+				sprintf(str, "%d", problem->GetID());
+				targetVars->operator[]("questionProblemID") = string(str);
+				targetVars->operator[]("questionProblemName") = problem->GetName();
+			}
+		}
+	}
 	void LoadAnsweredQuestionsForProblem(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
 	{
 		unsigned short id = atoi(arg.c_str());
@@ -141,6 +171,7 @@ namespace beachjudge
 		RegisterTemplate("echo", &Echo);
 		RegisterTemplate("teamID", &TeamID);
 		RegisterTemplate("teamName", &TeamName);
+		RegisterTemplate("loadQuestion", &LoadQuestion);
 		RegisterTemplate("loadUnansweredQuestionsForProblem", &LoadUnansweredQuestionsForProblem);
 		RegisterTemplate("loadAnsweredQuestionsForProblem", &LoadAnsweredQuestionsForProblem);
 	}
@@ -290,7 +321,7 @@ namespace beachjudge
 					while(true)
 					{
 						char argPeek = pageStream.peek();
-						if((argPeek >= 'A' && argPeek <= 'Z') || (argPeek >= 'a' && argPeek <= 'z') || (argPeek >= '0' && argPeek <= '9') ||  argPeek == '.' || argPeek == '/')
+						if((argPeek >= 'A' && argPeek <= 'Z') || (argPeek >= 'a' && argPeek <= 'z') || (argPeek >= '0' && argPeek <= '9') ||  argPeek == '.' || argPeek == '/' || argPeek == '_')
 						{
 							arg.push_back(argPeek);
 							strictArg.push_back(argPeek);
@@ -314,7 +345,7 @@ namespace beachjudge
 								while(true)
 								{
 									char evalPeek = pageStream.peek();
-									if((evalPeek >= 'A' && evalPeek <= 'Z') || (evalPeek >= 'a' && evalPeek <= 'z') || (evalPeek >= '0' && evalPeek <= '9') || evalPeek == '.' || evalPeek == '/' || evalPeek == ' ')
+									if((evalPeek >= 'A' && evalPeek <= 'Z') || (evalPeek >= 'a' && evalPeek <= 'z') || (evalPeek >= '0' && evalPeek <= '9') || evalPeek == '.' || evalPeek == '/' || evalPeek == ' ' || evalPeek == '_')
 									{
 										eval.push_back(evalPeek);
 										strictArg.push_back(evalPeek);
@@ -364,7 +395,7 @@ namespace beachjudge
 							while(true)
 							{
 								char valPeek = pageStream.peek();
-								if((valPeek >= 'A' && valPeek <= 'Z') || (valPeek >= 'a' && valPeek <= 'z') || (valPeek >= '0' && valPeek <= '9') || valPeek == '.' || valPeek == '/' || valPeek == ' ')
+								if((valPeek >= 'A' && valPeek <= 'Z') || (valPeek >= 'a' && valPeek <= 'z') || (valPeek >= '0' && valPeek <= '9') || valPeek == '.' || valPeek == '/' || valPeek == '_')
 								{
 									val.push_back(valPeek);
 									strictVal.push_back(valPeek);
@@ -388,7 +419,7 @@ namespace beachjudge
 										while(true)
 										{
 											char evalPeek = pageStream.peek();
-											if((evalPeek >= 'A' && evalPeek <= 'Z') || (evalPeek >= 'a' && evalPeek <= 'z') || (evalPeek >= '0' && evalPeek <= '9') || evalPeek == '.' || evalPeek == '/' || evalPeek == ' ')
+											if((evalPeek >= 'A' && evalPeek <= 'Z') || (evalPeek >= 'a' && evalPeek <= 'z') || (evalPeek >= '0' && evalPeek <= '9') || evalPeek == '.' || evalPeek == '/' || evalPeek == ' ' || evalPeek == '_')
 											{
 												eval.push_back(evalPeek);
 												strictVal.push_back(evalPeek);
