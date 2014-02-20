@@ -299,7 +299,10 @@ namespace beachjudge
 								if(!argName.compare("name"))
 									postArgName = argVal;
 								else if(!argName.compare("filename"))
+								{
+									postArgMap["sourceFile"] = argVal;
 									readFile = true;
+								}
 							}
 							if(readFile)
 							{
@@ -392,7 +395,26 @@ namespace beachjudge
 									Problem *problem = Problem::LookupByID(atoi(postArgMap["problemID"].c_str()));
 									if(problem)
 									{
-										
+										CodeType codeType = CodeType_Unknown;
+										string sourceFile = postArgMap["sourceFile"];
+										transform(sourceFile.begin(), sourceFile.end(), sourceFile.begin(), ::tolower);
+										string ext = fileExt(sourceFile.c_str());
+										if(!ext.compare("cpp"))
+											codeType = CodeType_CPP;
+										else if(!ext.compare("java"))
+											codeType = CodeType_Java;
+										else if(!ext.compare("c"))
+											codeType = CodeType_C;
+
+										Submission *submission = Submission::Create(team, problem, codeType, getRunTimeMS());
+										if(submission)
+										{
+											string codeFile = submission->GetSourceFile();
+
+											ofstream srcFileOut(codeFile.c_str());
+											srcFileOut << postArgMap["code"];
+											srcFileOut.close();
+										}
 									}
 								}
 				}

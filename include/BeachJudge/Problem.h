@@ -8,24 +8,41 @@
 
 namespace beachjudge
 {
+	typedef enum CodeType
+	{
+		CodeType_Unknown,
+		CodeType_C,
+		CodeType_CPP,
+		CodeType_Java
+	} CodeType;
+
 	class Team;
 	class Problem;
 
-	class Attempt
+	class Submission
 	{
+		CodeType m_codeType;
+		unsigned short m_id;
 		Team *m_team;
 		Problem *m_problem;
 		unsigned long m_timeMS;
+		std::string m_sourceFile;
+
+		Submission();
 
 	public:
-		Attempt(Team *team, Problem *problem, unsigned long timeMS);
+		static Submission *Create(Team *team, Problem *problem, CodeType codeType, unsigned long timeMS);
+
+		~Submission();
 
 		Team *GetTeam() const;
 		Problem *GetProblem() const;
 		unsigned long GetTimeMS() const;
+		unsigned short GetID() const;
+		std::string GetSourceFile() const;
 	};
 
-	class Solution : public Attempt
+	class Solution : public Submission
 	{
 		unsigned short m_penalties;
 

@@ -191,6 +191,9 @@ namespace beachjudge
 	}
 	void Page::AddToStream(stringstream &stream, Socket *client, Session *session, map<string, string> *GETMap, map<string, string> *masterLocalVars)
 	{
+		Team *team = 0;
+		if(session)
+			team = session->GetTeam();
 		stringstream pageStream(m_html);
 		string chunk, varChunk, arg, val, loopTarget;
 		string strictArg, strictVal, strictLoopTarget;
@@ -430,6 +433,10 @@ namespace beachjudge
 								map<unsigned short, Team *> &teamsByID = Team::GetTeamsByID();
 								map<unsigned short, Problem *>::iterator problemIt;
 								map<unsigned short, Problem *> &problemsByID = Problem::GetProblemsByID();
+								vector<Submission *>::iterator submissionIt;
+								vector<Submission *> *submissions = 0;
+								if(team)
+									submissions = team->GetSubmissions();
 								unsigned short num = 0;
 								if(loopTarget.size() > 1)
 									num = atoi(&loopTarget.c_str()[1]);
@@ -442,6 +449,18 @@ namespace beachjudge
 									teamIt = teamsByID.begin();
 								else if(!loopTarget.compare("problems"))
 									problemIt = problemsByID.begin();
+								else if(!loopTarget.compare("mySubmissions"))
+								{
+									if(team)
+									{
+										if(submissions->size())
+											submissionIt = submissions->begin();
+										else
+											done = true;
+									}
+									else
+										done = true;
+								}
 								else if(!num)
 									done = true;
 								Page *embPage = Page::CreateFromHTML(loopStream.str());
@@ -450,8 +469,8 @@ namespace beachjudge
 								while(!done)
 								{
 									idx++;
-									char str[8];
-									memset(str, 0, 8);
+									char str[16];
+									memset(str, 0, 16);
 									sprintf(str, "%d", idx);
 									targetVars->operator[]("idx") = string(str);
 									if(num)
@@ -463,10 +482,10 @@ namespace beachjudge
 										if(teamIt != teamsByID.end())
 										{
 											targetVars->operator[]("teamName") = teamIt->second->GetName();
-											memset(str, 0, 8);
+											memset(str, 0, 16);
 											sprintf(str, "%d", teamIt->first);
 											targetVars->operator[]("teamID") = string(str);
-											memset(str, 0, 8);
+											memset(str, 0, 16);
 											sprintf(str, "%d", idx);
 											targetVars->operator[]("teamIdx") = string(str);
 											teamIt++;
@@ -477,14 +496,38 @@ namespace beachjudge
 									else if(!loopTarget.compare("problems"))
 									{
 										targetVars->operator[]("problemName") = problemIt->second->GetName();
-										memset(str, 0, 8);
+										memset(str, 0, 16);
 										sprintf(str, "%d", problemIt->first);
 										targetVars->operator[]("problemID") = string(str);
-										memset(str, 0, 8);
+										memset(str, 0, 16);
 										sprintf(str, "%d", idx);
 										targetVars->operator[]("problemIdx") = string(str);
 										problemIt++;
 										if(problemIt == problemsByID.end())
+											done = true;
+									}
+									else if(!loopTarget.compare("mySubmissions") && team)
+									{
+										Submission *submission = *submissionIt;
+										Problem *problem = submission->GetProblem();
+										memset(str, 0, 16);
+										sprintf(str, "%d", idx);
+										string idxStr(str);
+										unsigned short sid = submission->GetID();
+										memset(str, 0, 16);
+										sprintf(str, "%d", sid);
+										targetVars->operator[]("submissionID") = string(str);
+										memset(str, 0, 16);
+										sprintf(str, "%ld", submission->GetTimeMS());
+										targetVars->operator[]("submissionTime") = string(str);
+										memset(str, 0, 16);
+										sprintf(str, "%ld", submission->GetTimeMS());
+										targetVars->operator[]("submissionProblemName") = problem->GetName();
+										memset(str, 0, 16);
+										sprintf(str, "%d", problem->GetID());
+										targetVars->operator[]("submissionProblemID") = string(str);
+										submissionIt++;
+										if(submissionIt == submissions->end())
 											done = true;
 									}
 									else if(num)
@@ -493,19 +536,6 @@ namespace beachjudge
 									embPage->AddToStream(stream, client, session, GETMap, targetVars);
 								}
 								delete embPage;
-
-								if(!loopTarget.compare("teams"))
-								{
-									targetVars->erase("teamName");
-									targetVars->erase("teamID");
-									targetVars->erase("teamIdx");
-								}
-								else if(!loopTarget.compare("problems"))
-								{
-									targetVars->erase("problemName");
-									targetVars->erase("problemID");
-									targetVars->erase("problemIdx");
-								}
 								doLoop = false;
 							}
 							else

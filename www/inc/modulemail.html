@@ -2,9 +2,9 @@ $if:isTeam
 <div class="panel panel-default">
 		<h2>Ask Question</h2>
 	<div class="panel-body">
-		<form role="form" method="post" action="/">
+		<form role="form" method="post" action="/" enctype="multipart/form-data">
+			<input type="hidden" name="cmd" value="askQuestion">
 			<div class="form-group">
-				
 				<label for="problemID">Problem</label>
 				<select class="form-control" name="problemID">
 					$startLoop:problems
@@ -16,9 +16,6 @@ $if:isTeam
 				<label for="question">Message</label>
 				<textarea name="question" id="message" cols="30" rows="10" class="form-control"></textarea>
 			</div>
-			
-
-			<input type="hidden" name="cmd" value="askQuestion">
 			<button type="submit" class="btn btn-default">Submit</button>
 		</form>
 	</div>

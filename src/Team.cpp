@@ -118,6 +118,7 @@ namespace beachjudge
 	{
 		m_id = m_totalPenalties = 0;
 		m_totalScore = 0;
+		m_numActiveSubmissions = 0;
 	}
 	Team::~Team()
 	{
@@ -152,5 +153,18 @@ namespace beachjudge
 	bool Team::IsJudge() const
 	{
 		return m_isJudge;
+	}
+	vector<Submission *> *Team::GetSubmissions()
+	{
+		return &m_submissions;
+	}
+	void Team::AddSubmission(Submission *submission)
+	{
+		m_numActiveSubmissions++;
+		m_submissions.push_back(submission);
+	}
+	unsigned short Team::GetNumActiveSubmissions() const
+	{
+		return m_numActiveSubmissions;
 	}
 }

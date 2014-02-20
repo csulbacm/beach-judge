@@ -10,12 +10,12 @@ $if:loggedIn
 				<h2>Submission</h2>
 				<div class="panel-body">
 					<ul class="nav nav-stacked">
-						$startLoop:problems
-						<li><a href="/submission?s=0">
-							<strong>$get:problemName</strong> &mdash;
-							Compile Error
+						$startLoop:mySubmissions
+						<li><a href="/submission?s=$get:submissionID">
+							<strong>$get:submissionProblemName</strong> &mdash;
+							Pending
 						</a></li>
-						$endLoop:problems
+						$endLoop:mySubmissions
 					</ul>
 				</div>
 			</div>

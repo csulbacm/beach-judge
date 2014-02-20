@@ -5,6 +5,7 @@
 #include <string>
 #include <cstdlib>
 #include <map>
+#include <vector>
 
 //- Beach Judge -
 #include <BeachJudge/Socket.h>
@@ -14,10 +15,11 @@ namespace beachjudge
 {
 	class Team
 	{
-		unsigned short m_id, m_totalPenalties;
+		unsigned short m_id, m_totalPenalties, m_numActiveSubmissions;
 		unsigned long m_totalScore;
 		std::string m_name, m_password;
 		bool m_isJudge;
+		std::vector<Submission *> m_submissions;
 
 		Team();
 
@@ -40,6 +42,9 @@ namespace beachjudge
 		unsigned short GetTotalPenalties() const;
 		unsigned long GetTotalScore() const;
 		bool IsJudge() const;
+		std::vector<Submission *> *GetSubmissions();
+		void AddSubmission(Submission *submission);
+		unsigned short GetNumActiveSubmissions() const;
 	};
 }
 
