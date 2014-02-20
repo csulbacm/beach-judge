@@ -198,7 +198,7 @@ namespace beachjudge
 		string chunk, varChunk, arg, val, loopTarget;
 		string strictArg, strictVal, strictLoopTarget;
 		stringstream loopStream;
-		vector<string> ifStack;
+		vector<pair<unsigned char, string> > ifStack;
 		map<string, string> localVars, *targetVars = 0;
 		if(masterLocalVars)
 			targetVars = masterLocalVars;
@@ -213,14 +213,52 @@ namespace beachjudge
 			{
 				if(session)
 				{
-					for(vector<string>::iterator it = ifStack.begin(); it != ifStack.end(); it++)
-						if(session->GetVariable(*it) == 0)
+					for(vector<pair<unsigned char, string> >::iterator it = ifStack.begin(); it != ifStack.end(); it++)
+					{
+						unsigned char ifType = it->first;
+						if(ifType == 0)
 						{
-							valid = false;
-							break;
+							if(session->GetVariable(it->second) == 0)
+							{
+								valid = false;
+								break;
+							}
 						}
+						else if(ifType == 'n')
+						{
+							if(!it->second.compare("0"))
+							{
+								valid = false;
+								break;
+							}
+						}
+						else if(ifType == 'z')
+						{
+							if(it->second.compare("0"))
+							{
+								valid = false;
+								break;
+							}
+						}
+						else if(ifType == 'u')
+						{
+							if(it->second.size())
+							{
+								valid = false;
+								break;
+							}
+						}
+						else if(ifType == 'd')
+						{
+							if(!it->second.size())
+							{
+								valid = false;
+								break;
+							}
+						}
+					}
 				}
-				else if(ifStack.front().compare("loggedOut"))
+				else if(ifStack.front().second.compare("loggedOut"))
 					valid = false;
 			}
 
@@ -289,25 +327,34 @@ namespace beachjudge
 								if(lastPeek == '}')
 								{
 									pageStream.get();
-									if(targetVars->count(eval))
+									if(eval.find("GET_") == 0)
+									{
+										eval = eval.substr(4);
+										if(GETMap->count(eval))
+										{
+											eval = GETMap->operator[](eval);
+											arg.append(eval);
+										}
+									}
+									else if(targetVars->count(eval))
 									{
 										eval = targetVars->operator[](eval);
 										arg.append(eval);
 									}
-									else
+/*									else
 									{
 										arg.push_back('{');
 										arg.append(eval);
 										arg.push_back('}');
 									}
-									strictArg.push_back(lastPeek);
+*/									strictArg.push_back(lastPeek);
 								}
-								else
+/*								else
 								{
 									arg.push_back('{');
 									arg.append(eval);
 								}
-							}
+*/							}
 						}
 						else if(argPeek == '=')
 						{
@@ -354,25 +401,35 @@ namespace beachjudge
 										if(lastPeek == '}')
 										{
 											pageStream.get();
-											if(targetVars->count(eval))
+											
+											if(eval.find("GET_") == 0)
+											{
+												eval = eval.substr(4);
+												if(GETMap->count(eval))
+												{
+													eval = GETMap->operator[](eval);
+													val.append(eval);
+												}
+											}
+											else if(targetVars->count(eval))
 											{
 												eval = targetVars->operator[](eval);
 												val.append(eval);
 											}
-											else
+/*											else
 											{
 												val.push_back('{');
 												val.append(eval);
 												val.push_back('}');
 											}
-											strictVal.push_back(lastPeek);
+*/											strictVal.push_back(lastPeek);
 										}
-										else
+/*										else
 										{
 											val.push_back('{');
 											val.append(eval);
 										}
-									}
+*/									}
 								}
 								else
 									break;
@@ -391,14 +448,70 @@ namespace beachjudge
 				if(doLoop)
 					loopStream << "$" << varChunk << ":" << arg;
 				else
-					ifStack.push_back(arg);
+					ifStack.push_back(pair<unsigned char, string>(0, arg));
 			}
 			else if(!varChunk.compare("endif"))
 			{
 				if(doLoop)
 					loopStream << "$" << varChunk << ":" << arg;
 				else
-					ifStack.erase(find(ifStack.begin(), ifStack.end(), arg));
+					ifStack.erase(find(ifStack.begin(), ifStack.end(), pair<unsigned char, string>(0, arg)));
+			}
+			else if(!varChunk.compare("ifz"))
+			{
+				if(doLoop)
+					loopStream << "$" << varChunk << ":" << arg;
+				else
+					ifStack.push_back(pair<unsigned char, string>('z', arg));
+			}
+			else if(!varChunk.compare("endifz"))
+			{
+				if(doLoop)
+					loopStream << "$" << varChunk << ":" << arg;
+				else
+					ifStack.erase(find(ifStack.begin(), ifStack.end(), pair<unsigned char, string>('z', arg)));
+			}
+			else if(!varChunk.compare("ifnz"))
+			{
+				if(doLoop)
+					loopStream << "$" << varChunk << ":" << arg;
+				else
+					ifStack.push_back(pair<unsigned char, string>('n', arg));
+			}
+			else if(!varChunk.compare("endifnz"))
+			{
+				if(doLoop)
+					loopStream << "$" << varChunk << ":" << arg;
+				else
+					ifStack.erase(find(ifStack.begin(), ifStack.end(), pair<unsigned char, string>('n', arg)));
+			}
+			else if(!varChunk.compare("ifu"))
+			{
+				if(doLoop)
+					loopStream << "$" << varChunk << ":" << arg;
+				else
+					ifStack.push_back(pair<unsigned char, string>('u', arg));
+			}
+			else if(!varChunk.compare("endifu"))
+			{
+				if(doLoop)
+					loopStream << "$" << varChunk << ":" << arg;
+				else
+					ifStack.erase(find(ifStack.begin(), ifStack.end(), pair<unsigned char, string>('u', arg)));
+			}
+			else if(!varChunk.compare("ifd"))
+			{
+				if(doLoop)
+					loopStream << "$" << varChunk << ":" << arg;
+				else
+					ifStack.push_back(pair<unsigned char, string>('d', arg));
+			}
+			else if(!varChunk.compare("endifd"))
+			{
+				if(doLoop)
+					loopStream << "$" << varChunk << ":" << arg;
+				else
+					ifStack.erase(find(ifStack.begin(), ifStack.end(), pair<unsigned char, string>('d', arg)));
 			}
 			else if(valid)
 			{
@@ -567,8 +680,8 @@ namespace beachjudge
 					{
 						if(targetVars->count(arg))
 							stream << targetVars->operator[](arg);
-						else
-							stream << "$" << varChunk << ":" << arg;
+//						else
+//							stream << "$" << varChunk << ":" << arg;
 					}
 				}
 				else if(!varChunk.compare("GET"))
@@ -579,8 +692,8 @@ namespace beachjudge
 					{
 						if(GETMap->count(arg))
 							stream << GETMap->operator[](arg);
-						else
-							stream << "$" << varChunk << ":" << arg;
+//						else
+//							stream << "$" << varChunk << ":" << arg;
 					}
 				}
 				else if(!varChunk.compare("include"))
