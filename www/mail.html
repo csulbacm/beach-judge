@@ -34,6 +34,7 @@ $if:isJudge
 		</h2>
 	<div class="panel-body">
 		$loadQuestion:{GET_q}
+		$ifd:{questionID}
 		<p>
 			<strong>From:</strong>
 			<span>
@@ -52,10 +53,20 @@ $if:isJudge
 				<label for="answer">Message</label>
 				<textarea name="answer" id="answer" cols="30" rows="10" class="form-control"></textarea>
 			</div>
-			
-
 			<button type="submit" class="btn btn-default">Submit</button>
 		</form>
+		<form role="form"rolmethod="post" action="/mail">
+			<input type="hidden" name="cmd" value="dismissQuestion">
+			<input type="hidden" name="questionID" value="$get:questionID">
+			<button type="submit" class="btn btn-default">Dismiss</button>
+		</form>
+		$endifd:{questionID}
+
+		$ifu:{questionID}
+		<p>
+			Select a question to answer it.
+		</p>
+		$endifu:{questionID}
 	</div>
 </div>
 		</div>

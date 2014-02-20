@@ -397,6 +397,18 @@ namespace beachjudge
 										question->Answer(postArgMap["answer"]);
 								}
 				}
+				else if(!cmd.compare("dismissQuestion"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+							if(postArgMap.count("questionID"))
+							{
+								Question *question = Question::LookupByID(atoi(postArgMap["questionID"].c_str()));
+								if(question)
+									delete question;
+							}
+				}
 				else if(!cmd.compare("submit"))
 				{
 					Team *team = session->GetTeam();

@@ -69,6 +69,7 @@ namespace beachjudge
 	}
 	void LoadAnsweredQuestionsForProblem(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
 	{
+		cout << "LOAD ANSWERED" << endl;
 		unsigned short id = atoi(arg.c_str());
 		Problem *problem = Problem::LookupByID(id);
 		if(problem)
