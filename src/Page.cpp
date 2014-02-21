@@ -50,10 +50,6 @@ namespace beachjudge
 			{
 				Problem *problem = question->GetProblem();
 				char str[8];
-				string questionKey("question");
-				string questionIDKey("questionID");
-				string askerKey("asker");
-				string answerKey("answer");
 				memset(str, 0, 8);
 				sprintf(str, "%d", question->GetID());
 				targetVars->operator[]("question") = question->GetText();
@@ -67,9 +63,23 @@ namespace beachjudge
 			}
 		}
 	}
+	void LoadTeam(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
+	{
+		unsigned short id = atoi(arg.c_str());
+		if(id == 0)
+			return;
+		Team *team = Team::LookupByID(id);
+		if(team)
+		{
+			char str[8];
+			memset(str, 0, 8);
+			sprintf(str, "%d", team->GetID());
+			targetVars->operator[]("teamName") = team->GetName();
+			targetVars->operator[]("teamID") = string(str);
+		}
+	}
 	void LoadAnsweredQuestionsForProblem(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
 	{
-		cout << "LOAD ANSWERED" << endl;
 		unsigned short id = atoi(arg.c_str());
 		Problem *problem = Problem::LookupByID(id);
 		if(problem)
@@ -172,6 +182,7 @@ namespace beachjudge
 		RegisterTemplate("echo", &Echo);
 		RegisterTemplate("teamID", &TeamID);
 		RegisterTemplate("teamName", &TeamName);
+		RegisterTemplate("loadTeam", &LoadTeam);
 		RegisterTemplate("loadQuestion", &LoadQuestion);
 		RegisterTemplate("loadUnansweredQuestionsForProblem", &LoadUnansweredQuestionsForProblem);
 		RegisterTemplate("loadAnsweredQuestionsForProblem", &LoadAnsweredQuestionsForProblem);
