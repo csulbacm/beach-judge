@@ -637,13 +637,23 @@ namespace beachjudge
 											teamIt++;
 										if(teamIt != teamsByID.end())
 										{
-											targetVars->operator[]("teamName") = teamIt->second->GetName();
+											Team *tTeam = teamIt->second;
+											targetVars->operator[]("teamName") = tTeam->GetName();
 											memset(str, 0, 16);
 											sprintf(str, "%d", teamIt->first);
 											targetVars->operator[]("teamID") = string(str);
 											memset(str, 0, 16);
 											sprintf(str, "%d", idx);
 											targetVars->operator[]("teamIdx") = string(str);
+											memset(str, 0, 16);
+											sprintf(str, "%0.2f", tTeam->GetTotalScore());
+											targetVars->operator[]("teamTotalScore") = string(str);
+											memset(str, 0, 16);
+											sprintf(str, "%d", tTeam->GetTotalPenalties());
+											targetVars->operator[]("teamTotalPenalties") = string(str);
+											memset(str, 0, 16);
+											sprintf(str, "%d", tTeam->GetNumSolutions());
+											targetVars->operator[]("teamNumSolutions") = string(str);
 											teamIt++;
 										}
 										if(teamIt == teamsByID.end())

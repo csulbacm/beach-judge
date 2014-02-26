@@ -15,8 +15,8 @@ namespace beachjudge
 {
 	class Team
 	{
-		unsigned short m_id, m_totalPenalties, m_numActiveSubmissions;
-		unsigned long m_totalScore;
+		unsigned short m_id, m_totalPenalties, m_numActiveSubmissions, m_numSolutions;
+		float m_totalScore;
 		std::string m_name, m_password;
 		bool m_isJudge;
 		std::vector<Submission *> m_submissions;
@@ -41,7 +41,8 @@ namespace beachjudge
 		std::string GetName() const;
 		unsigned short GetID() const;
 		unsigned short GetTotalPenalties() const;
-		unsigned long GetTotalScore() const;
+		unsigned short GetNumSolutions() const;
+		float GetTotalScore() const;
 		bool IsJudge() const;
 		std::vector<Submission *> *GetSubmissions();
 		void AddSubmission(Submission *submission);

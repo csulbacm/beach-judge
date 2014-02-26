@@ -99,7 +99,7 @@ namespace beachjudge
 				Team *team = LookupByID(id);
 				if(!team)
 					team = Create(name, "", id);
-				team->m_name = name;
+				team->SetName(name);
 				team->m_password = password;
 
 				g_teamByIDMap[id] = team;
@@ -116,8 +116,8 @@ namespace beachjudge
 
 	Team::Team()
 	{
-		m_id = m_totalPenalties = 0;
-		m_totalScore = 0;
+		m_id = m_totalPenalties = m_numSolutions = 0;
+		m_totalScore = 0.f;
 		m_numActiveSubmissions = 0;
 	}
 	Team::~Team()
@@ -152,7 +152,11 @@ namespace beachjudge
 	{
 		return m_totalPenalties;
 	}
-	unsigned long Team::GetTotalScore() const
+	unsigned short Team::GetNumSolutions() const
+	{
+		return m_numSolutions;
+	}
+	float Team::GetTotalScore() const
 	{
 		return m_totalScore;
 	}
