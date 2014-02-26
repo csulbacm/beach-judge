@@ -1,0 +1,49 @@
+$set:title=Problems
+$include:inc/dochead.html
+$include:inc/navi.html
+$if:isJudge
+<div class="container content">
+	<div class="panel panel-default">
+		<h2>Problems</h2>
+		<div class="panel-body">
+			<table class="table ">
+				<thead>
+					<tr style="font-weight:bold;">
+						<td>No.</td>
+						<td>Name</td>
+						<td>PDF</td>
+						<td>Sample Tests</td>
+						<td>Questions</td>
+					</tr>
+				</thead>
+				<tbody>
+					$startLoop:problems
+					<tr>
+						<td>$get:problemID</td>
+						<td>$get:problemName</td>
+						<td>
+							<a href="/file?f=info&p=$get:problemID" target="_blank">PDF</a>
+							<a href="/upload?cmd=pdf&id=$get:problemID" class="glyphicon glyphicon-upload"></a>
+						</td>
+						<td>
+							<a href="/file?f=sample&p=$get:problemID" target="_blank" class="glyphicon glyphicon-file"></a>
+							<a href="/upload?cmd=sample&id=$get:problemID" class="glyphicon glyphicon-upload"></a>
+						</td>
+						<td>
+							
+							<a href="#" class="glyphicon glyphicon-envelope"></a>
+						</td>
+					</tr>
+					$endLoop:problems
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+$endif:isJudge
+
+$include:inc/teamforbid.html
+$include:inc/loginstandalone.html
+
+$include:inc/docfooter.php

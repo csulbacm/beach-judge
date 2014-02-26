@@ -1,5 +1,7 @@
- <div class="panel panel-default">
-		<h2>Problems</h2>
+<div class="panel panel-default">
+		<h2>Problems
+		$if:isJudge<a href="/problems" class="btn btn-default more" style="float:right">Edit</a>$endif:isJudge
+		</h2>
 	<div class="panel-body">
 		<table class="table ">
 			<thead>
@@ -7,7 +9,7 @@
 					<td>No.</td>
 					<td>Name</td>
 					<td>PDF</td>
-					<td>Test Files</td>
+					<td>Sample Tests</td>
 					<td>Questions</td>
 				</tr>
 			</thead>
@@ -17,9 +19,7 @@
 					<td>$get:problemID</td>
 					<td>$get:problemName</td>
 					<td>
-						<a href="#">
-							PDF 
-						</a>
+						<a href="/file?f=info&p=$get:problemID" target="_blank">PDF</a>
 					</td>
 					<td>
 						<a href="#" class="glyphicon glyphicon-file">

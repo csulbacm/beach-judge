@@ -64,13 +64,36 @@ namespace beachjudge
 
 		inFile.close();
 	}
+	void HTTP::LoadAttachment(stringstream &stream, string file, string attachmentName)
+	{
+		ifstream inFile(file.c_str(), ios::binary);
+
+		stream << "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Disposition: attachment; filename=\"" << attachmentName << "\"\r\nContent-type: */*\r\n";
+
+		string img;
+
+		while(!inFile.eof())
+		{
+			char c;
+			inFile.get(c);
+			img.push_back(c);
+		}
+
+		unsigned long size = img.size();
+		stream << "Content-Length: " << size << "\r\n\r\n";
+		
+		for(unsigned long a = 0; a < size; a++)
+			stream << img[a];
+
+		inFile.close();
+	}
 	void HTTP::CloseHeader(stringstream &stream)
 	{
 		stream << "\r\n";
 	}
 	void HTTP::HandleClient(Socket *client)
 	{
-		stringstream reqStream;
+		stringstream reqStream(ios::in | ios::out | ios::binary);
 
 		{
 			char sbuff[1025];
@@ -100,9 +123,11 @@ namespace beachjudge
 		string method, uri, htmlVersion;
 		uriRequest >> method >> uri >> htmlVersion;
 
-		string file(wwwPrefix), arguments, type;
+		string file(wwwPrefix), arguments, type, requestFileName;
 
-		bool e404 = false, loggingOut = false;
+		bool e404 = false, loggingOut = false, fileRequest = false;
+
+		map<string, string> getArgMap;
 
 		{
 			string uriCopy = uri;
@@ -115,26 +140,61 @@ namespace beachjudge
 				uriCopy = uriCopy.substr(0, argToken);
 			}
 
+			{
+				string arg, args;
+				stringstream argStream(arguments);
+				while(getline(argStream, arg, '='))
+				{
+					string val;
+					getline(argStream, val, '&');
+					if(arg.size() && val.size())
+						getArgMap[arg] = val;
+				}
+			}
+
 			if(uriCopy.length() == 1)
 				file.append("/index.html");
 			else
 			{
-				if(!uriCopy.compare("/logout")) //- TODO: Find a better way to do this -
-					loggingOut = true;
-
-				string testPath = file;
-				testPath.append(uriCopy);
-				if(fileExists(testPath.c_str()))
-					file = testPath;
+				if(!uriCopy.compare("/file"))
+				{
+					fileRequest = true;
+					if(getArgMap.count("f"))
+					{
+						string fileRequestType = getArgMap["f"];
+						if(!fileRequestType.compare("info"))
+							if(getArgMap.count("p")) //- TODO: Verify security -
+							{
+								string testFile = "compo/problems/";
+								testFile.append(getArgMap["p"]);
+								testFile.append(".pdf");
+								if(fileExists(testFile.c_str()))
+								{
+									file = testFile;
+									requestFileName = getArgMap["p"];
+									requestFileName.append(".pdf");
+								}
+								else
+									e404 = true;
+							}
+					}
+				}
 				else
 				{
-					testPath.append(".html");
-					if(fileExists(testPath.c_str()))
-						file = testPath;
+					if(!uriCopy.compare("/logout")) //- TODO: Find a better way to do this -
+						loggingOut = true;
+
+					string testFile = file;
+					testFile.append(uriCopy);
+					if(fileExists(testFile.c_str()))
+						file = testFile;
 					else
 					{
-						file.append("/404.html");
-						e404 = true;
+						testFile.append(".html");
+						if(fileExists(testFile.c_str()))
+							file = testFile;
+						else
+							e404 = true;
 					}
 				}
 			}
@@ -212,8 +272,10 @@ namespace beachjudge
 				unsigned short len = client->Read(sbuff, 256);
 				if(len)
 				{
-					string part(sbuff);
-					reqStream << part;
+					for(unsigned short a = 0; a < len; a++)
+						reqStream.put(sbuff[a]);
+//					string part(sbuff);
+//					reqStream << part;
 					if(session)
 					{
 						if(!session->GetTeam()->IsJudge())
@@ -225,19 +287,6 @@ namespace beachjudge
 				}
 			}
 			while(client->HasRead());
-		}
-
-		map<string, string> getArgMap;
-		{
-			string arg, args;
-			stringstream argStream(arguments);
-			while(getline(argStream, arg, '='))
-			{
-				string val;
-				getline(argStream, val, '&');
-				if(arg.size() && val.size())
-					getArgMap[arg] = val;
-			}
 		}
 
 //		cout << reqStream.str() << endl;
@@ -276,7 +325,7 @@ namespace beachjudge
 						part = reqStream.str().substr(lastPart, nextPart - lastPart);
 						if(part.size() > 2)
 						{
-							istringstream partStream(part);
+							istringstream partStream(part, ios::in | ios::binary);
 							string contentDisposition, cdArg, postArgName;
 							getline(partStream, contentDisposition);
 							getline(partStream, contentDisposition);
@@ -315,10 +364,18 @@ namespace beachjudge
 
 							if(readFile)
 							{
-								stringstream partValueStream;
+								stringstream partValueStream(ios::in | ios::out | ios::binary);
+								while(!partStream.eof())
+								{
+									char c;
+									partStream.get(c);
+									partValueStream.put(c);
+								}
+								piece = partValueStream.str().substr(0, partValueStream.str().size() - 3);
+/*								stringstream partValueStream(ios::in | ios::out | ios::binary);
 								while(getline(partStream, piece))
 									partValueStream << piece << endl;
-								piece = partValueStream.str().substr(0, partValueStream.str().size() - 1);
+								piece = partValueStream.str().substr(0, partValueStream.str().size() - 1);*/
 							}
 							else
 								getline(partStream, piece, '\r');
@@ -478,6 +535,36 @@ namespace beachjudge
 									}
 								}
 				}
+				else if(!cmd.compare("pdf"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+							if(postArgMap.count("problemID"))
+								if(postArgMap.count("file"))
+								{
+									Problem *problem = Problem::LookupByID(atoi(postArgMap["problemID"].c_str()));
+									if(problem)
+									{
+										string sourceFile = postArgMap["sourceFile"];
+										transform(sourceFile.begin(), sourceFile.end(), sourceFile.begin(), ::tolower);
+										string ext = fileExt(sourceFile.c_str());
+										if(!ext.compare("pdf"))
+										{
+											string pdfFile = "compo/problems/";
+											createFolder(pdfFile.c_str());
+											char idStr[8];
+											memset(idStr, 0, 8);
+											sprintf(idStr, "%d", problem->GetID());
+											pdfFile.append(idStr);
+											pdfFile.append(".pdf");
+											ofstream pdfFileOut(pdfFile.c_str(), ios::out | ios::binary);
+											pdfFileOut << postArgMap["file"];
+											pdfFileOut.close();
+										}
+									}
+								}
+				}
 			}
 			else
 			{
@@ -493,7 +580,13 @@ namespace beachjudge
 			}
 		}
 
-		stringstream webPageStream;
+		stringstream webPageStream(ios::in | ios::out | ios::binary);
+
+		if(e404) //- TODO: Determine if this is truly redundant and fix it -
+		{
+			file = wwwPrefix;
+			file.append("/404.html");
+		}
 
 		bool img = false;
 		if(type.length())
@@ -505,6 +598,13 @@ namespace beachjudge
 			LoadImage(webPageStream, file);
 			string response = webPageStream.str();
 			client->Write((char *)response.c_str(), response.length());
+		}
+		else if(fileRequest && !e404)
+		{
+	//		LoadAttachment(webPageStream, file, requestFileName);
+			LoadImage(webPageStream, file);
+			string response = webPageStream.str();
+			client->Write((char *)response.c_str(), response.length()); 
 		}
 		else
 		{
