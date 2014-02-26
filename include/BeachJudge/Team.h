@@ -37,6 +37,7 @@ namespace beachjudge
 
 		void SetPassword(std::string password);
 		bool TestPassword(std::string password);
+		void SetName(std::string name);
 		std::string GetName() const;
 		unsigned short GetID() const;
 		unsigned short GetTotalPenalties() const;

@@ -74,8 +74,8 @@ namespace beachjudge
 			char str[8];
 			memset(str, 0, 8);
 			sprintf(str, "%d", team->GetID());
-			targetVars->operator[]("teamName") = team->GetName();
-			targetVars->operator[]("teamID") = string(str);
+			targetVars->operator[]("loadedTeamName") = team->GetName();
+			targetVars->operator[]("loadedTeamID") = string(str);
 		}
 	}
 	void LoadAnsweredQuestionsForProblem(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)

@@ -24,13 +24,15 @@ $if:isJudge
 		<div class="col-md-8 ">
 
 			$loadTeam:{GET_t}
-			$ifd:{teamID}
+			$ifd:{loadedTeamID}
 			<div class="panel panel-default">
-				<h2>Manage Team $get:teamID
+				<h2>Manage Team "$get:loadedTeamName"
 		
 					</h2>
 				<div class="panel-body">
 					<form role="form" method="post" action="/teams">
+						<input type="hidden" name="cmd" value="manageTeam">
+						<input type="hidden" name="teamID" value="$get:loadedTeamID">
 						<div class="form-group">
 							<label for="newTeamName">Name</label>
 							<input type="text" class="form-control" 
@@ -43,12 +45,11 @@ $if:isJudge
 						</div>
 						
 
-							<input type="hidden" name="cmd" value="createTeam">
 						<button type="submit" class="btn btn-default">Submit</button>
 					</form>
 				</div>
 			</div>
-			$endifd:{teamID}
+			$endifd:{loadedTeamID}
 
 			<div class="panel panel-default">
 				<h2>Create Team

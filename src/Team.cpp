@@ -122,8 +122,8 @@ namespace beachjudge
 	}
 	Team::~Team()
 	{
-		g_teamByNameMap.erase(this->m_name);
-		g_teamByIDMap.erase(this->m_id);
+		g_teamByNameMap.erase(m_name);
+		g_teamByIDMap.erase(m_id);
 	}
 	void Team::SetPassword(string password)
 	{
@@ -133,6 +133,12 @@ namespace beachjudge
 	{
 		password = sha1Convert(password);
 		return m_password.compare(password) == 0;
+	}
+	void Team::SetName(string name)
+	{
+		g_teamByNameMap.erase(m_name);
+		m_name = name;
+		g_teamByNameMap[name] = this;
 	}
 	string Team::GetName() const
 	{

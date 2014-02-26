@@ -368,6 +368,41 @@ namespace beachjudge
 									}
 								}
 				}
+				else if(!cmd.compare("manageTeam"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+							if(postArgMap.count("teamID"))
+							{
+								Team *targetTeam = Team::LookupByID(atoi(postArgMap["teamID"].c_str()));
+								if(targetTeam)
+								{
+									bool didSomething = false;
+									if(postArgMap.count("newTeamName"))
+									{
+										string name = postArgMap["newTeamName"];
+										if(name.length())
+											if(!Team::LookupByName(name))
+											{
+												targetTeam->SetName(name);
+												didSomething = true;
+											}
+									}
+									if(postArgMap.count("newTeamPass"))
+									{
+										string pass = postArgMap["newTeamPass"];
+										if(pass.length())
+										{
+											targetTeam->SetPassword(pass);
+											didSomething = true;
+										}
+									}
+									if(didSomething)
+										Team::SaveToDatabase();
+								}
+							}
+				}
 				else if(!cmd.compare("askQuestion"))
 				{
 					Team *team = session->GetTeam();
