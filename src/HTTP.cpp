@@ -64,11 +64,14 @@ namespace beachjudge
 
 		inFile.close();
 	}
-	void HTTP::LoadAttachment(stringstream &stream, string file, string attachmentName)
+	void HTTP::LoadBinaryFile(stringstream &stream, string file, string name, bool isAttachment)
 	{
 		ifstream inFile(file.c_str(), ios::binary);
 
-		stream << "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Disposition: attachment; filename=\"" << attachmentName << "\"\r\nContent-type: */*\r\n";
+		stream << "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Disposition:";
+		if(isAttachment)
+			stream << " attachment;";
+		stream << " filename=\"" << name << "\"\r\nContent-type: */*\r\n";
 
 		string img;
 
@@ -163,6 +166,7 @@ namespace beachjudge
 					{
 						string fileRequestType = getArgMap["f"];
 						if(!fileRequestType.compare("info"))
+						{
 							if(getArgMap.count("p")) //- TODO: Verify security -
 							{
 								string testFile = "compo/problems/";
@@ -177,6 +181,26 @@ namespace beachjudge
 								else
 									e404 = true;
 							}
+						}
+						else if(!fileRequestType.compare("sample"))
+						{
+							if(getArgMap.count("p")) //- TODO: Verify security -
+							{
+								string testFile = "compo/problems/";
+								testFile.append(getArgMap["p"]);
+								testFile.append("-sample.zip");
+								if(fileExists(testFile.c_str()))
+								{
+									file = testFile;
+									requestFileName = getArgMap["p"];
+									requestFileName.append("-sample.zip");
+								}
+								else
+									e404 = true;
+							}
+						}
+						else
+							e404 = true;
 					}
 				}
 				else
@@ -565,6 +589,36 @@ namespace beachjudge
 									}
 								}
 				}
+				else if(!cmd.compare("sample"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+							if(postArgMap.count("problemID"))
+								if(postArgMap.count("file"))
+								{
+									Problem *problem = Problem::LookupByID(atoi(postArgMap["problemID"].c_str()));
+									if(problem)
+									{
+										string sourceFile = postArgMap["sourceFile"];
+										transform(sourceFile.begin(), sourceFile.end(), sourceFile.begin(), ::tolower);
+										string ext = fileExt(sourceFile.c_str());
+										if(!ext.compare("zip"))
+										{
+											string sampleFile = "compo/problems/";
+											createFolder(sampleFile.c_str());
+											char idStr[8];
+											memset(idStr, 0, 8);
+											sprintf(idStr, "%d", problem->GetID());
+											sampleFile.append(idStr);
+											sampleFile.append("-sample.zip");
+											ofstream sampleFileOut(sampleFile.c_str(), ios::out | ios::binary);
+											sampleFileOut << postArgMap["file"];
+											sampleFileOut.close();
+										}
+									}
+								}
+				}
 			}
 			else
 			{
@@ -601,8 +655,7 @@ namespace beachjudge
 		}
 		else if(fileRequest && !e404)
 		{
-	//		LoadAttachment(webPageStream, file, requestFileName);
-			LoadImage(webPageStream, file);
+			LoadBinaryFile(webPageStream, file, requestFileName);
 			string response = webPageStream.str();
 			client->Write((char *)response.c_str(), response.length()); 
 		}

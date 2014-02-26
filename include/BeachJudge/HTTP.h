@@ -20,7 +20,7 @@ namespace beachjudge
 		static void SetSessionCookie(std::stringstream &stream, std::string target, std::string value);
 		static void CloseHeader(std::stringstream &stream);
 		static void LoadImage(std::stringstream &stream, std::string file);
-		static void LoadAttachment(std::stringstream &stream, std::string file, std::string attachmentName);
+		static void LoadBinaryFile(std::stringstream &stream, std::string file, std::string name, bool isAttachment = false);
 
 		static void HandleClient(Socket *client);
 	};
