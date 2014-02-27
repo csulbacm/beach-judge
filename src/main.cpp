@@ -9,6 +9,7 @@
 #include <BeachJudge/Base.h>
 #include <BeachJudge/HTTP.h>
 #include <BeachJudge/Page.h>
+#include <BeachJudge/Competition.h>
 #include <BeachJudge/Problem.h>
 #include <BeachJudge/Thread.h>
 #include <BeachJudge/Socket.h>
@@ -27,6 +28,15 @@ void *commandFunc(void *arg)
 	{
 		if(!cmd.compare("sessions"))
 			Session::ListCurrent();
+		if(!cmd.compare("start"))
+		{
+			Competition *competition = Competition::GetCurrent();
+			if(competition)
+			{
+				competition->Start();
+				competition->SaveToFile("compo/compo.txt");
+			}
+		}
 	}
 
 	Thread::Exit(0);
@@ -85,6 +95,11 @@ int main(int argc, char **argv)
 
 	print("Beach Judge v%s\n", getVersionString().c_str());
 
+	Competition *competition = Competition::CreateFromFile("compo/compo.txt");
+	if(!competition)
+		competition = Competition::Create(5400);
+	competition->SetCurrent();
+
 	Team::Create("judge", "root", 0, true);
 	Team::Create("dummy", "1234", 1);
 
@@ -116,6 +131,7 @@ int main(int argc, char **argv)
 		sleepMS(5000);
 	}
 
+	delete competition;
 	commandThread.Join();
 	webServerThread.Join();
 	Question::Cleanup();

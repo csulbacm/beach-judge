@@ -8,7 +8,7 @@ $if:loggedIn
 				$startLoop:problems
 				$loadAnsweredQuestionsForProblem:{problemID}
 				$startLoop:x{questionCount}
-				<h2>$get:question{idx}</h2>
+				<h2>Problem $get:problemID - $get:question{idx}</h2>
 				<p>$get:answer{idx}</p>
 				<hr>
 				$endLoop:x{questionCount}

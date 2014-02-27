@@ -11,6 +11,7 @@
 #include <BeachJudge/Page.h>
 #include <BeachJudge/Question.h>
 #include <BeachJudge/Problem.h>
+#include <BeachJudge/Competition.h>
 
 using namespace std;
 
@@ -21,6 +22,22 @@ namespace beachjudge
 	map<string, Page *> g_pageMap;
 	map<string, void (*)(stringstream &, Socket *, Session *, string, map<string, string> *)> g_templateMap;
 
+	void TimeLeft(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
+	{
+		Competition *competition = Competition::GetCurrent();
+		if(competition)
+			stream << competition->GetTimeLeft();
+		else
+			stream << 0;
+	}
+	void Duration(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
+	{
+		Competition *competition = Competition::GetCurrent();
+		if(competition)
+			stream << competition->GetDuration();
+		else
+			stream << 1;
+	}
 	void TeamID(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
 	{
 		Team *team = session->GetTeam();
@@ -180,7 +197,8 @@ namespace beachjudge
 	void Page::RegisterDefaultTemplates()
 	{
 		RegisterTemplate("echo", &Echo);
-		RegisterTemplate("teamID", &TeamID);
+		RegisterTemplate("timeLeft", &TimeLeft);
+		RegisterTemplate("duration", &Duration);
 		RegisterTemplate("teamName", &TeamName);
 		RegisterTemplate("loadTeam", &LoadTeam);
 		RegisterTemplate("loadQuestion", &LoadQuestion);

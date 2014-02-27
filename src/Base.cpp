@@ -1,6 +1,7 @@
 //- Standard Library -
 #include <cstdarg>
 #include <cstdio>
+#include <ctime>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -131,6 +132,10 @@ namespace beachjudge
 	}
 
 	unsigned long g_startTimeMS = getRunTimeMS(); //- TODO: Verify if we can get away with doing this -
+	unsigned long getRealTimeS()
+	{
+		return (unsigned long)time(0);
+	}
 	unsigned long getRunTimeMS()
 	{
 		unsigned long currTimeMS;
