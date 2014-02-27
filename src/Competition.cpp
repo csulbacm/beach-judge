@@ -1,11 +1,13 @@
 //- Standard Library -
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <cstdlib>
 
 //- Beach Judge -
 #include <BeachJudge/Base.h>
 #include <BeachJudge/Competition.h>
+#include <BeachJudge/Question.h>
 
 using namespace std;
 
@@ -38,6 +40,28 @@ namespace beachjudge
 			{
 				getline(inFile, in);
 				competition->m_endTimeS = atoi(in.c_str());
+			}
+			else if(!in.compare("questions"))
+			{
+				getline(inFile, in, '\t');
+				Problem *problem = Problem::LookupByID(atoi(in.c_str()));
+				getline(inFile, in);
+				stringstream questionsStream(in);
+				while(getline(questionsStream, in, '\t'))
+				{
+					stringstream questionInfo(in);
+					unsigned short tID;
+					bool answered;
+					questionInfo >> tID >> answered;
+					string text, answer;
+					Team *team = Team::LookupByID(tID);
+					getline(questionsStream, text, '\t');
+					if(answered)
+						getline(questionsStream, answer, '\t');
+					Question *question = Question::Create(text, team, problem);
+					if(answered)
+						question->Answer(answer);
+				}
 			}
 		}
 
@@ -97,6 +121,23 @@ namespace beachjudge
 		ofstream outFile(file.c_str());
 		outFile << "duration\t" << m_duration << endl;
 		outFile << "endTime\t" << m_endTimeS << endl;
+		map<Problem *, vector<Question *> > &questionByProblem = Question::GetQuestionsByProblem();
+		for(map<Problem *, vector<Question *> >::iterator it = questionByProblem.begin(); it != questionByProblem.end(); it++)
+		{
+			Problem *problem = it->first;
+			outFile << "questions\t" << problem->GetID();
+			vector<Question *> &questions = it->second;
+			for(vector<Question *>::iterator itB = questions.begin(); itB != questions.end(); itB++)
+			{
+				Question *question = *itB;
+				bool isAnswered = question->IsAnswered();
+				outFile << "\t" << question->GetTeam()->GetID() << " " << isAnswered << "\t" << question->GetText();
+				if(isAnswered)
+					outFile << "\t" << question->GetAnswer();
+			}
+			outFile << endl;
+		}
+
 		outFile.close();
 	}
 }

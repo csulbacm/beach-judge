@@ -7,6 +7,7 @@
 //- Beach Judge -
 #include <BeachJudge/Base.h>
 #include <BeachJudge/Question.h>
+#include <BeachJudge/Competition.h>
 #include <BeachJudge/Page.h>
 #include <BeachJudge/Session.h>
 #include <BeachJudge/HTTP.h>
@@ -117,6 +118,7 @@ namespace beachjudge
 		client->GetPeerIP4Info(&addr, &port);
 
 		Session *session = 0;
+		Competition *competition = Competition::GetCurrent();
 
 		string str;
 
@@ -497,6 +499,8 @@ namespace beachjudge
 									{
 										string question = postArgMap["question"];
 										Question::Create(question, team, problem);
+										if(competition)
+											competition->SaveToFile("compo/compo.txt");
 									}
 								}
 				}
@@ -510,7 +514,11 @@ namespace beachjudge
 								{
 									Question *question = Question::LookupByID(atoi(postArgMap["questionID"].c_str()));
 									if(question)
+									{
 										question->Answer(postArgMap["answer"]);
+										if(competition)
+											competition->SaveToFile("compo/compo.txt");
+									}
 								}
 				}
 				else if(!cmd.compare("dismissQuestion"))
@@ -522,7 +530,11 @@ namespace beachjudge
 							{
 								Question *question = Question::LookupByID(atoi(postArgMap["questionID"].c_str()));
 								if(question)
+								{
 									delete question;
+									if(competition)
+										competition->SaveToFile("compo/compo.txt");
+								}
 							}
 				}
 				else if(!cmd.compare("submit"))

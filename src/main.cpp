@@ -95,11 +95,6 @@ int main(int argc, char **argv)
 
 	print("Beach Judge v%s\n", getVersionString().c_str());
 
-	Competition *competition = Competition::CreateFromFile("compo/compo.txt");
-	if(!competition)
-		competition = Competition::Create(5400);
-	competition->SetCurrent();
-
 	Team::Create("judge", "root", 0, true);
 	Team::Create("dummy", "1234", 1);
 
@@ -108,6 +103,11 @@ int main(int argc, char **argv)
 
 	Problem::Create(1, "Cell Phone Headache");
 	Problem::Create(2, "Adding Reversed Numbers");
+
+	Competition *competition = Competition::CreateFromFile("compo/compo.txt");
+	if(!competition)
+		competition = Competition::Create(5400);
+	competition->SetCurrent();
 
 	Page::RegisterDefaultTemplates();
 
