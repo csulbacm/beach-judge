@@ -268,8 +268,10 @@ namespace beachjudge
 				stringstream cookieStream(right);
 				while(getline(cookieStream, cookie, '='))
 				{
+					if(cookie.at(0) == ' ')
+						cookie = cookie.substr(1);
 					string val;
-					getline(cookieStream, val, '&');
+					getline(cookieStream, val, ';');
 
 					if(!cookie.compare("BEACHJUDGESESSID"))
 					{
