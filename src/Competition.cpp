@@ -7,6 +7,7 @@
 //- Beach Judge -
 #include <BeachJudge/Base.h>
 #include <BeachJudge/Competition.h>
+#include <BeachJudge/Problem.h>
 #include <BeachJudge/Question.h>
 
 using namespace std;
@@ -39,7 +40,8 @@ namespace beachjudge
 			else if(!in.compare("endTime"))
 			{
 				getline(inFile, in);
-				competition->m_endTimeS = atoi(in.c_str());
+				competition->m_endTimeMS = atol(in.c_str());
+				competition->m_startTimeMS = competition->m_endTimeMS - competition->m_duration; //- TODO: Clean this up -
 			}
 			else if(!in.compare("questions"))
 			{
@@ -63,6 +65,21 @@ namespace beachjudge
 						question->Answer(answer);
 				}
 			}
+			else if(!in.compare("submissions"))
+			{
+				getline(inFile, in);
+				stringstream submissionsStream(in);
+				while(getline(submissionsStream, in, '\t'))
+				{
+					stringstream submissionInfo(in);
+					unsigned short sID, tID, pID, cType;
+					unsigned long timeMS;
+					submissionInfo >> sID >> tID >> pID >> cType >> timeMS;
+					Team *team = Team::LookupByID(tID);
+					Problem *problem = Problem::LookupByID(pID);
+					Submission::Create(team, problem, (CodeType)cType, timeMS, sID);
+				}
+			}
 		}
 
 		inFile.close();
@@ -78,7 +95,7 @@ namespace beachjudge
 
 	Competition::Competition()
 	{
-		m_startTimeS = m_endTimeS = m_duration = 0;
+		m_startTimeMS = m_endTimeMS = m_duration = 0;
 		m_isRunning = false;
 	}
 	Competition::~Competition()
@@ -86,14 +103,18 @@ namespace beachjudge
 	}
 	void Competition::Start()
 	{
-		m_startTimeS = getRealTimeS();
-		if(m_endTimeS < m_startTimeS)
-			m_endTimeS = m_startTimeS + m_duration;
+		if(m_startTimeMS == 0)
+		{
+			m_startTimeMS = getRealTimeMS();
+			m_endTimeMS = m_startTimeMS + m_duration;
+		}
 		m_isRunning = true;
 	}
 	void Competition::Stop()
 	{
 		m_isRunning = false;
+		m_startTimeMS = 0;
+		m_endTimeMS = 0;
 	}
 	bool Competition::IsRunning() const
 	{
@@ -101,15 +122,19 @@ namespace beachjudge
 	}
 	unsigned long Competition::GetTimeLeft() const
 	{
-		unsigned long currTimeS = getRealTimeS();
-		if(currTimeS > m_endTimeS)
+		unsigned long currTimeMS = getRealTimeMS();
+		if(currTimeMS > m_endTimeMS)
 			return 0;
 		else
-			return m_endTimeS - currTimeS;
+			return m_endTimeMS - currTimeMS;
 	}
 	unsigned long Competition::GetDuration() const
 	{
 		return m_duration;
+	}
+	unsigned long Competition::CalculateTimeScore(unsigned long timeMS)
+	{
+		return m_duration - (m_endTimeMS - timeMS);
 	}
 	void Competition::SetCurrent()
 	{
@@ -120,7 +145,7 @@ namespace beachjudge
 		createFolder(filePath(file.c_str()).c_str());
 		ofstream outFile(file.c_str());
 		outFile << "duration\t" << m_duration << endl;
-		outFile << "endTime\t" << m_endTimeS << endl;
+		outFile << "endTime\t" << m_endTimeMS << endl;
 		map<Problem *, vector<Question *> > &questionByProblem = Question::GetQuestionsByProblem();
 		for(map<Problem *, vector<Question *> >::iterator it = questionByProblem.begin(); it != questionByProblem.end(); it++)
 		{
@@ -136,6 +161,16 @@ namespace beachjudge
 					outFile << "\t" << question->GetAnswer();
 			}
 			outFile << endl;
+		}
+		map<unsigned short, Submission *> &submissions = Submission::GetSubmissionsByID();
+		if(submissions.size())
+			outFile << "submissions";
+		for(map<unsigned short, Submission *>::iterator it = submissions.begin(); it != submissions.end(); it++)
+		{
+			Submission *submission = it->second;
+			Team *team = submission->GetTeam();
+			Problem *problem = submission->GetProblem();
+			outFile << "\t" << submission->GetID() << " " << team->GetID() << " " << problem->GetID() << " " << submission->GetCodeType() << " " << submission->GetTimeMS();
 		}
 
 		outFile.close();

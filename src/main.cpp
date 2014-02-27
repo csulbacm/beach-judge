@@ -101,12 +101,12 @@ int main(int argc, char **argv)
 	Team::SetDatabase("compo/teams.txt");
 	Team::LoadFromDatabase();
 
-	Problem::Create(1, "Cell Phone Headache");
-	Problem::Create(2, "Adding Reversed Numbers");
+	Problem::Create(1, "The Skyline Problem");
+	Problem::Create(2, "Ugly Numbers");
 
 	Competition *competition = Competition::CreateFromFile("compo/compo.txt");
 	if(!competition)
-		competition = Competition::Create(5400);
+		competition = Competition::Create(7200000);
 	competition->SetCurrent();
 
 	Page::RegisterDefaultTemplates();

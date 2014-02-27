@@ -26,7 +26,7 @@ namespace beachjudge
 	{
 		Competition *competition = Competition::GetCurrent();
 		if(competition)
-			stream << competition->GetTimeLeft();
+			stream << competition->GetTimeLeft() / 1000;
 		else
 			stream << 0;
 	}
@@ -34,7 +34,7 @@ namespace beachjudge
 	{
 		Competition *competition = Competition::GetCurrent();
 		if(competition)
-			stream << competition->GetDuration();
+			stream << competition->GetDuration() / 1000;
 		else
 			stream << 1;
 	}

@@ -18,17 +18,24 @@ namespace beachjudge
 	map<unsigned short, Problem *> g_problemsByID;
 	map<unsigned short, Submission *> g_submissionsByID;
 
-	Submission *Submission::Create(Team *team, Problem *problem, CodeType codeType, unsigned long timeMS)
+	Submission *Submission::Create(Team *team, Problem *problem, CodeType codeType, unsigned long timeMS, unsigned short id)
 	{
 		if(team->GetNumActiveSubmissions() >= TEAM_MAX_NUMACTIVESUBMISSIONS)
 			return 0;
 
 		Submission *submission = new Submission();
-		do
+
+
+		if(id == 0)
 		{
-			submission->m_id = (unsigned short)rand();
+			do
+			{
+				submission->m_id = (unsigned short)rand();
+			}
+			while(g_submissionsByID.count(submission->m_id));
 		}
-		while(g_submissionsByID.count(submission->m_id));
+		else
+			submission->m_id = id; //- TODO: Clean this up -
 		g_submissionsByID[submission->m_id] = submission;
 
 		submission->m_codeType = codeType;
@@ -60,6 +67,10 @@ namespace beachjudge
 		team->AddSubmission(submission);
 		return submission;
 	}
+	map<unsigned short, Submission *> &Submission::GetSubmissionsByID()
+	{
+		return g_submissionsByID;
+	}
 
 	Submission::Submission()
 	{
@@ -88,6 +99,10 @@ namespace beachjudge
 	unsigned short Submission::GetID() const
 	{
 		return m_id;
+	}
+	CodeType Submission::GetCodeType() const
+	{
+		return m_codeType;
 	}
 	string Submission::GetSourceFile() const
 	{

@@ -132,11 +132,11 @@ namespace beachjudge
 	}
 
 	unsigned long g_startTimeMS = getRunTimeMS(); //- TODO: Verify if we can get away with doing this -
-	unsigned long getRealTimeS()
+	unsigned long getStartTimeMS()
 	{
-		return (unsigned long)time(0);
+		return g_startTimeMS;
 	}
-	unsigned long getRunTimeMS()
+	unsigned long getRealTimeMS()
 	{
 		unsigned long currTimeMS;
 
@@ -158,6 +158,10 @@ namespace beachjudge
 				currTimeMS = GetTickCount();
 		#endif
 
-		return currTimeMS - g_startTimeMS;
+		return currTimeMS;
+	}
+	unsigned long getRunTimeMS()
+	{
+		return getRealTimeMS() - g_startTimeMS;
 	}
 }

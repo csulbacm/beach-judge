@@ -31,7 +31,8 @@ namespace beachjudge
 		Submission();
 
 	public:
-		static Submission *Create(Team *team, Problem *problem, CodeType codeType, unsigned long timeMS);
+		static Submission *Create(Team *team, Problem *problem, CodeType codeType, unsigned long timeMS, unsigned short id = 0);
+		static std::map<unsigned short, Submission *> &GetSubmissionsByID();
 
 		~Submission();
 
@@ -39,6 +40,7 @@ namespace beachjudge
 		Problem *GetProblem() const;
 		unsigned long GetTimeMS() const;
 		unsigned short GetID() const;
+		CodeType GetCodeType() const;
 		std::string GetSourceFile() const;
 	};
 

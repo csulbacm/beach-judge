@@ -561,7 +561,10 @@ namespace beachjudge
 										else if(!ext.compare("c"))
 											codeType = CodeType_C;
 
-										Submission *submission = Submission::Create(team, problem, codeType, getRunTimeMS());
+										unsigned long timeScore = 0;
+										if(competition)
+											timeScore = competition->CalculateTimeScore(getRealTimeMS());
+										Submission *submission = Submission::Create(team, problem, codeType, timeScore);
 										if(submission)
 										{
 											string codeFile = submission->GetSourceFile();
@@ -569,6 +572,9 @@ namespace beachjudge
 											ofstream srcFileOut(codeFile.c_str());
 											srcFileOut << postArgMap["code"];
 											srcFileOut.close();
+
+											if(competition)
+												competition->SaveToFile("compo/compo.txt");
 										}
 									}
 								}
