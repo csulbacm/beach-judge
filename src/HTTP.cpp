@@ -20,6 +20,12 @@ using namespace std;
 
 const char *wwwPrefix = "../www";
 
+#ifdef _WIN32
+	#define SPRINTF sprintf_s
+#else
+	#define SPRINTF	sprintf
+#endif
+
 namespace beachjudge
 {
 	void HTTP::OpenHeader_OK(stringstream &stream)
@@ -340,7 +346,7 @@ namespace beachjudge
 				{
 					string part;
 					size_t nextPart, lastPart, boundarySize = boundary.size();
-					lastPart = reqStream.tellg();
+					lastPart = (size_t)reqStream.tellg();
 					bool doIt = true;
 					while(doIt)
 					{
@@ -599,7 +605,7 @@ namespace beachjudge
 											createFolder(pdfFile.c_str());
 											char idStr[8];
 											memset(idStr, 0, 8);
-											sprintf(idStr, "%d", problem->GetID());
+											SPRINTF(idStr, "%d", problem->GetID());
 											pdfFile.append(idStr);
 											pdfFile.append(".pdf");
 											ofstream pdfFileOut(pdfFile.c_str(), ios::out | ios::binary);
@@ -629,7 +635,7 @@ namespace beachjudge
 											createFolder(sampleFile.c_str());
 											char idStr[8];
 											memset(idStr, 0, 8);
-											sprintf(idStr, "%d", problem->GetID());
+											SPRINTF(idStr, "%d", problem->GetID());
 											sampleFile.append(idStr);
 											sampleFile.append("-sample.zip");
 											ofstream sampleFileOut(sampleFile.c_str(), ios::out | ios::binary);

@@ -72,7 +72,6 @@ void *webServerFunc(void *arg)
 	while(true)
 	{
 		Socket *client = server->Accept(); //- TODO: Fix Non-Blocking Sockets -
-
 		Thread *clientThread = new Thread(&clientHandlerFunc);
 
 		pair<Socket *, Thread *> *data = new pair<Socket *, Thread *>();

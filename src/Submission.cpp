@@ -9,6 +9,12 @@
 #include <BeachJudge/Submission.h>
 #include <BeachJudge/Team.h>
 
+#ifdef _WIN32
+	#define SPRINTF sprintf_s
+#else
+	#define SPRINTF	sprintf
+#endif
+
 using namespace std;
 
 #define TEAM_MAX_NUMACTIVESUBMISSIONS 10
@@ -46,7 +52,7 @@ namespace beachjudge
 		createFolder(sourceFile.c_str());
 		char idStr[8];
 		memset(idStr, 0, 8);
-		sprintf(idStr, "%d", submission->m_id);
+		SPRINTF(idStr, "%d", submission->m_id);
 		sourceFile.append(string(idStr));
 		switch(codeType)
 		{

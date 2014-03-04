@@ -10,6 +10,12 @@
 #include <BeachJudge/Base.h>
 #include <BeachJudge/Session.h>
 
+#ifdef _WIN32
+	#define SPRINTF sprintf_s
+#else
+	#define SPRINTF	sprintf
+#endif
+
 using namespace std;
 
 #define BEACHJUDGE_SESSION_EXPIREMS 30 * 60 * 1000 //- TODO: Externalize to Config -
@@ -27,7 +33,7 @@ namespace beachjudge
 
 	Session *Session::Create(unsigned long address, unsigned short port, Team *team)
 	{
-		Session *session = Lookup(address);
+		Session *session = LookupByAddress(address);
 		if(!session)
 		{
 			session = new Session();
@@ -38,7 +44,7 @@ namespace beachjudge
 			{
 				char buff[4];
 				memset(buff, 0, 4);
-				sprintf(buff, "%d", (unsigned short)(address & 0xFF));
+				SPRINTF(buff, "%d", (unsigned short)(address & 0xFF));
 				addrStr.append(buff);
 				address >>= 8;
 				if(a < 3)
@@ -66,6 +72,12 @@ namespace beachjudge
 	{
 		if(g_sessionIDMap.count(id))
 			return g_sessionIDMap[id];
+		return 0;
+	}
+	Session *Session::LookupByAddress(unsigned long address)
+	{
+		if(g_sessionMap.count(address))
+			return g_sessionMap[address];
 		return 0;
 	}
 	void Session::Cleanup(bool deleteAll)

@@ -258,10 +258,27 @@ namespace beachjudge
 		FD_ZERO(&writeFlags);
 		FD_SET(m_socket, &readFlags);
 		FD_SET(m_socket, &writeFlags);
-		FD_SET(STDIN_FILENO, &readFlags);
-		FD_SET(STDIN_FILENO, &writeFlags);
+
+		//- TODO: Fix this to match the standard -
+		#ifdef _WIN32
+			FD_SET(0, &readFlags);
+			FD_SET(0, &writeFlags);
+		#endif
+	
+		#ifdef _linux
+			FD_SET(STDIN_FILENO, &readFlags);
+			FD_SET(STDIN_FILENO, &writeFlags);
+		#endif
+
 		int ret = select(m_socket + 1, &readFlags, &writeFlags, (fd_set *)0, &waitd);
-		return FD_ISSET(m_socket, &readFlags);
+		
+		#ifdef _WIN32
+			return FD_ISSET(m_socket, &readFlags) == 0;
+		#endif
+
+		#ifdef _linux
+			return FD_ISSET(m_socket, &readFlags);
+		#endif
 	}
 	bool Socket::SetBlocking(bool isBlocking)
 	{

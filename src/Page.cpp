@@ -17,6 +17,12 @@ using namespace std;
 
 const char *includePrefix = "../www/";
 
+#ifdef _WIN32
+	#define SPRINTF sprintf_s
+#else
+	#define SPRINTF	sprintf
+#endif
+
 namespace beachjudge
 {
 	map<string, Page *> g_pageMap;
@@ -68,13 +74,13 @@ namespace beachjudge
 				Problem *problem = question->GetProblem();
 				char str[8];
 				memset(str, 0, 8);
-				sprintf(str, "%d", question->GetID());
+				SPRINTF(str, "%d", question->GetID());
 				targetVars->operator[]("question") = question->GetText();
 				targetVars->operator[]("questionID") = string(str);
 				targetVars->operator[]("asker") = question->GetTeam()->GetName();
 				targetVars->operator[]("answer") = question->GetAnswer();
 				memset(str, 0, 8);
-				sprintf(str, "%d", problem->GetID());
+				SPRINTF(str, "%d", problem->GetID());
 				targetVars->operator[]("questionProblemID") = string(str);
 				targetVars->operator[]("questionProblemName") = problem->GetName();
 			}
@@ -90,7 +96,7 @@ namespace beachjudge
 		{
 			char str[8];
 			memset(str, 0, 8);
-			sprintf(str, "%d", team->GetID());
+			SPRINTF(str, "%d", team->GetID());
 			targetVars->operator[]("loadedTeamName") = team->GetName();
 			targetVars->operator[]("loadedTeamID") = string(str);
 		}
@@ -114,7 +120,7 @@ namespace beachjudge
 					{
 						idx++;
 						memset(str, 0, 8);
-						sprintf(str, "%d", idx);
+						SPRINTF(str, "%d", idx);
 						string idxStr(str);
 						string questionKey("question");
 						string questionIDKey("questionID");
@@ -122,7 +128,7 @@ namespace beachjudge
 						string answerKey("answer");
 						unsigned short qid = question->GetID();
 						memset(str, 0, 8);
-						sprintf(str, "%d", qid);
+						SPRINTF(str, "%d", qid);
 						string idStr(str);
 						targetVars->operator[](questionKey.append(idxStr)) = question->GetText();
 						targetVars->operator[](questionIDKey.append(idxStr)) = idStr;
@@ -131,7 +137,7 @@ namespace beachjudge
 					}
 				}
 				memset(str, 0, 8);
-				sprintf(str, "%d", idx);
+				SPRINTF(str, "%d", idx);
 				targetVars->operator[]("questionCount") = string(str);
 			}
 			else
@@ -162,14 +168,14 @@ namespace beachjudge
 					{
 						idx++;
 						memset(str, 0, 8);
-						sprintf(str, "%d", idx);
+						SPRINTF(str, "%d", idx);
 						string idxStr(str);
 						string questionKey("question");
 						string questionIDKey("questionID");
 						string askerKey("asker");
 						unsigned short qid = question->GetID();
 						memset(str, 0, 8);
-						sprintf(str, "%d", qid);
+						SPRINTF(str, "%d", qid);
 						string idStr(str);
 						targetVars->operator[](questionKey.append(idxStr)) = question->GetText();
 						targetVars->operator[](questionIDKey.append(idxStr)) = idStr;
@@ -177,7 +183,7 @@ namespace beachjudge
 					}
 				}
 				memset(str, 0, 8);
-				sprintf(str, "%d", idx);
+				SPRINTF(str, "%d", idx);
 				targetVars->operator[]("questionCount") = string(str);
 			}
 			else
@@ -645,7 +651,7 @@ namespace beachjudge
 									idx++;
 									char str[16];
 									memset(str, 0, 16);
-									sprintf(str, "%d", idx);
+									SPRINTF(str, "%d", idx);
 									targetVars->operator[]("idx") = string(str);
 									if(num)
 										targetVars->operator[](numIdx) = string(str);
@@ -658,19 +664,19 @@ namespace beachjudge
 											Team *tTeam = teamIt->second;
 											targetVars->operator[]("teamName") = tTeam->GetName();
 											memset(str, 0, 16);
-											sprintf(str, "%d", teamIt->first);
+											SPRINTF(str, "%d", teamIt->first);
 											targetVars->operator[]("teamID") = string(str);
 											memset(str, 0, 16);
-											sprintf(str, "%d", idx);
+											SPRINTF(str, "%d", idx);
 											targetVars->operator[]("teamIdx") = string(str);
 											memset(str, 0, 16);
-											sprintf(str, "%0.2f", tTeam->GetTotalScore());
+											SPRINTF(str, "%0.2f", tTeam->GetTotalScore());
 											targetVars->operator[]("teamTotalScore") = string(str);
 											memset(str, 0, 16);
-											sprintf(str, "%d", tTeam->GetTotalPenalties());
+											SPRINTF(str, "%d", tTeam->GetTotalPenalties());
 											targetVars->operator[]("teamTotalPenalties") = string(str);
 											memset(str, 0, 16);
-											sprintf(str, "%d", tTeam->GetNumSolutions());
+											SPRINTF(str, "%d", tTeam->GetNumSolutions());
 											targetVars->operator[]("teamNumSolutions") = string(str);
 											teamIt++;
 										}
@@ -681,10 +687,10 @@ namespace beachjudge
 									{
 										targetVars->operator[]("problemName") = problemIt->second->GetName();
 										memset(str, 0, 16);
-										sprintf(str, "%d", problemIt->first);
+										SPRINTF(str, "%d", problemIt->first);
 										targetVars->operator[]("problemID") = string(str);
 										memset(str, 0, 16);
-										sprintf(str, "%d", idx);
+										SPRINTF(str, "%d", idx);
 										targetVars->operator[]("problemIdx") = string(str);
 										problemIt++;
 										if(problemIt == problemsByID.end())
@@ -695,20 +701,20 @@ namespace beachjudge
 										Submission *submission = *submissionIt;
 										Problem *problem = submission->GetProblem();
 										memset(str, 0, 16);
-										sprintf(str, "%d", idx);
+										SPRINTF(str, "%d", idx);
 										string idxStr(str);
 										unsigned short sid = submission->GetID();
 										memset(str, 0, 16);
-										sprintf(str, "%d", sid);
+										SPRINTF(str, "%d", sid);
 										targetVars->operator[]("submissionID") = string(str);
 										memset(str, 0, 16);
-										sprintf(str, "%ld", submission->GetTimeMS());
+										SPRINTF(str, "%ld", submission->GetTimeMS());
 										targetVars->operator[]("submissionTime") = string(str);
 										memset(str, 0, 16);
-										sprintf(str, "%ld", submission->GetTimeMS());
+										SPRINTF(str, "%ld", submission->GetTimeMS());
 										targetVars->operator[]("submissionProblemName") = problem->GetName();
 										memset(str, 0, 16);
-										sprintf(str, "%d", problem->GetID());
+										SPRINTF(str, "%d", problem->GetID());
 										targetVars->operator[]("submissionProblemID") = string(str);
 										submissionIt++;
 										if(submissionIt == submissions->end())

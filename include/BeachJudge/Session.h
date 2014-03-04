@@ -24,6 +24,7 @@ namespace beachjudge
 		static void Cleanup(bool deleteAll = false);
 		static Session *Create(unsigned long address, unsigned short port, Team *team);
 		static Session *Lookup(unsigned short id);
+		static Session *LookupByAddress(unsigned long address);
 
 		static void ListCurrent();
 
