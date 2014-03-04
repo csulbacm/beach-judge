@@ -164,13 +164,16 @@ namespace beachjudge
 		}
 		map<unsigned short, Submission *> &submissions = Submission::GetSubmissionsByID();
 		if(submissions.size())
-			outFile << "submissions";
-		for(map<unsigned short, Submission *>::iterator it = submissions.begin(); it != submissions.end(); it++)
 		{
-			Submission *submission = it->second;
-			Team *team = submission->GetTeam();
-			Problem *problem = submission->GetProblem();
-			outFile << "\t" << submission->GetID() << " " << team->GetID() << " " << problem->GetID() << " " << submission->GetCodeType() << " " << submission->GetTimeMS();
+			outFile << "submissions";
+			for(map<unsigned short, Submission *>::iterator it = submissions.begin(); it != submissions.end(); it++)
+			{
+				Submission *submission = it->second;
+				Team *team = submission->GetTeam();
+				Problem *problem = submission->GetProblem();
+				outFile << "\t" << submission->GetID() << " " << team->GetID() << " " << problem->GetID() << " " << submission->GetCodeType() << " " << submission->GetTimeMS();
+			}
+			outFile << endl;
 		}
 
 		outFile.close();

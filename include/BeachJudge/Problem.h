@@ -6,57 +6,16 @@
 #include <vector>
 #include <string>
 
+//- Beach Judge -
+#include <BeachJudge/Submission.h>
+
 namespace beachjudge
 {
-	typedef enum CodeType
-	{
-		CodeType_Unknown,
-		CodeType_C,
-		CodeType_CPP,
-		CodeType_Java
-	} CodeType;
-
-	class Team;
-	class Problem;
-
-	class Submission
-	{
-		CodeType m_codeType;
-		unsigned short m_id;
-		Team *m_team;
-		Problem *m_problem;
-		unsigned long m_timeMS;
-		std::string m_sourceFile;
-
-		Submission();
-
-	public:
-		static Submission *Create(Team *team, Problem *problem, CodeType codeType, unsigned long timeMS, unsigned short id = 0);
-		static std::map<unsigned short, Submission *> &GetSubmissionsByID();
-
-		~Submission();
-
-		Team *GetTeam() const;
-		Problem *GetProblem() const;
-		unsigned long GetTimeMS() const;
-		unsigned short GetID() const;
-		CodeType GetCodeType() const;
-		std::string GetSourceFile() const;
-	};
-
-	class Solution : public Submission
-	{
-		unsigned short m_penalties;
-
-	public:
-		Solution(Team *team, Problem *problem, unsigned long timeMS, unsigned short penalties);
-	};
-
 	class Problem
 	{
 		unsigned short m_id;
 		std::string m_name, m_pdfPath;
-		std::map<unsigned long, Solution *> m_solutions;
+		std::map<unsigned long, Submission *> m_solutions;
 		std::vector<std::pair<std::string, std::string> > m_tests;
 
 		Problem();

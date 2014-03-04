@@ -30,6 +30,7 @@ set(INC
 	${INC_DIR}/BeachJudge/Question.h
 	${INC_DIR}/BeachJudge/Session.h
 	${INC_DIR}/BeachJudge/Socket.h
+	${INC_DIR}/BeachJudge/Submission.h
 	${INC_DIR}/BeachJudge/Team.h
 	${INC_DIR}/BeachJudge/Thread.h
 	${EXT_INC_DIR}/sha1.h
@@ -44,6 +45,7 @@ set(SRC
 	${SRC_DIR}/Question.cpp
 	${SRC_DIR}/Session.cpp
 	${SRC_DIR}/Socket.cpp
+	${SRC_DIR}/Submission.cpp
 	${SRC_DIR}/Team.cpp
 	${SRC_DIR}/Thread.cpp
 	${SRC_DIR}/main.cpp
