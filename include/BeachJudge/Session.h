@@ -22,9 +22,11 @@ namespace beachjudge
 
 	public:
 		static void Cleanup(bool deleteAll = false);
-		static Session *Create(unsigned long address, unsigned short port, Team *team);
+		static Session *Create(unsigned long address, unsigned short port, Team *team, unsigned short id = 0);
 		static Session *Lookup(unsigned short id);
 		static Session *LookupByAddress(unsigned long address);
+		static void LoadFromFile(const char *file);
+		static void SaveAll();
 
 		static void ListCurrent();
 

@@ -655,7 +655,10 @@ namespace beachjudge
 							Team *team = Team::LookupByName(postArgMap["team"]);
 							if(team)
 								if(team->TestPassword(postArgMap["passwd"]))
+								{
 									session = Session::Create(addr, port, team);
+									Session::SaveAll();
+								}
 						}
 			}
 		}
@@ -720,6 +723,7 @@ namespace beachjudge
 			{
 				delete session;
 				session = 0;
+				Session::SaveAll();
 			}
 	}
 }

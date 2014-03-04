@@ -100,6 +100,8 @@ int main(int argc, char **argv)
 	Team::SetDatabase("compo/teams.txt");
 	Team::LoadFromDatabase();
 
+	Session::LoadFromFile("compo/sessions.txt");
+
 	Problem::Create(1, "The Skyline Problem");
 	Problem::Create(2, "Ugly Numbers");
 

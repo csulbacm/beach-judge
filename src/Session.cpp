@@ -5,6 +5,8 @@
 #include <cstdio>
 #include <cstring>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 
 //- Beach Judge -
 #include <BeachJudge/Base.h>
@@ -31,7 +33,7 @@ namespace beachjudge
 	map<unsigned short, Session *> g_sessionIDMap;
 	vector<Session *> g_sessionVec;
 
-	Session *Session::Create(unsigned long address, unsigned short port, Team *team)
+	Session *Session::Create(unsigned long address, unsigned short port, Team *team, unsigned short id)
 	{
 		Session *session = LookupByAddress(address);
 		if(!session)
@@ -52,11 +54,17 @@ namespace beachjudge
 			}
 			session->m_addressString = addrStr;
 
-			do
+			//- TODO: Make sure this is safe -
+			if(id)
+				session->m_id = id;
+			else
 			{
-				session->m_id = (unsigned short)rand();
+				do
+				{
+					session->m_id = (unsigned short)rand();
+				}
+				while(g_sessionIDMap.count(session->m_id) || session->m_id == 0);
 			}
-			while(g_sessionIDMap.count(session->m_id));
 			g_sessionIDMap[session->m_id] = session;
 			g_sessionVec.push_back(session);
 		}
@@ -65,7 +73,8 @@ namespace beachjudge
 		session->m_variables["isTeam"] = team->IsJudge() ? 0 : 1;
 		session->m_port = port;
 		session->m_team = team;
-		session->ResetTimeout();
+		if(id == 0) //- TODO: This should be cleaner, but this occurs if the session was loaded from the file -
+			session->ResetTimeout();
 		return session;
 	}
 	Session *Session::Lookup(unsigned short id)
@@ -82,7 +91,7 @@ namespace beachjudge
 	}
 	void Session::Cleanup(bool deleteAll)
 	{
-		unsigned long currTimeMS = getRunTimeMS();
+		unsigned long currTimeMS = getRealTimeMS();
 		while(g_sessionVec.size())
 		{
 			Session *session = g_sessionVec.back();
@@ -91,14 +100,45 @@ namespace beachjudge
 			else
 				break;
 		}
+		if(!deleteAll)
+			Session::SaveAll();
 	}
+	void Session::SaveAll() //- TODO: Don't save all sessions in one file -
+	{
+		createFolder("compo");
+		ofstream outFile("compo/sessions.txt");
+		for(map<unsigned short, Session *>::iterator it = g_sessionIDMap.begin(); it != g_sessionIDMap.end(); it++)
+		{
+			Session *session = it->second;
+			outFile << session->m_id << "\t" << session->m_address << "\t" << session->m_port << "\t" << session->m_team->GetID() << "\t" << session->m_expireTimeMS << endl;
+		}
+		outFile.close();
+	}
+	void Session::LoadFromFile(const char *file)
+	{
+		if(fileExists(file))
+		{
+			ifstream inFile(file);
+			string in;
+			while(getline(inFile, in))
+			{
+				stringstream inStream(in);
+				unsigned short id, port, teamID;
+				unsigned long address, expireTimeMS;
+				inStream >> id >> address >> port >> teamID >> expireTimeMS;
 
+				Team *team = Team::LookupByID(teamID);
+				if(team)
+					Session::Create(address, port, team, id);
+			}
+		}
+	}
 	void Session::ListCurrent()
 	{
 		if(g_sessionMap.size())
 		{
 			cout << "Current Sessions:" << endl;
-			unsigned long currTimeMS = getRunTimeMS();
+			unsigned long currTimeMS = getRealTimeMS();
 			for(map<unsigned long, Session *>::iterator it = g_sessionMap.begin(); it != g_sessionMap.end(); it++)
 			{
 				Session *session = it->second;
@@ -146,7 +186,8 @@ namespace beachjudge
 	}
 	void Session::ResetTimeout()
 	{
-		m_expireTimeMS = getRunTimeMS() + BEACHJUDGE_SESSION_EXPIREMS;
+		m_expireTimeMS = getRealTimeMS() + BEACHJUDGE_SESSION_EXPIREMS;
 		sort(g_sessionVec.begin(), g_sessionVec.end(), SessionExpireComp);
+		Session::SaveAll();
 	}
 }
