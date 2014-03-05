@@ -28,6 +28,7 @@ namespace beachjudge
 		unsigned long CalculateTimeScore(unsigned long timeMS);
 		void SetCurrent();
 		void SaveToFile(std::string file);
+		void ClearAll();
 	};
 }
 

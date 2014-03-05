@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
+#include <iostream>
 
 //- Beach Judge -
 #include <BeachJudge/Base.h>
@@ -29,7 +30,6 @@ namespace beachjudge
 			return 0;
 
 		Submission *submission = new Submission();
-
 
 		if(id == 0)
 		{
@@ -82,6 +82,11 @@ namespace beachjudge
 			return g_submissionsByID[id];
 		return 0;
 	}
+	void Submission::Cleanup()
+	{
+		while(g_submissionsByID.size())
+			delete g_submissionsByID.rbegin()->second;
+	}
 
 	Submission::Submission()
 	{
@@ -94,6 +99,8 @@ namespace beachjudge
 	Submission::~Submission()
 	{
 		g_submissionsByID.erase(m_id);
+		if(m_team)
+			m_team->RemoveSubmission(this);
 	}
 	Team *Submission::GetTeam() const
 	{

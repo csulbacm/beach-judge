@@ -43,6 +43,10 @@ namespace beachjudge
 		in.close();
 		return exists;
 	}
+	bool fileDelete(const char *file)
+	{
+		return remove(file) == 0;
+	}
 	string fileExt(const char *file)
 	{
 		string str(file);

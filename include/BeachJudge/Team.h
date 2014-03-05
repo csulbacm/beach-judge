@@ -46,6 +46,7 @@ namespace beachjudge
 		bool IsJudge() const;
 		std::vector<Submission *> *GetSubmissions();
 		void AddSubmission(Submission *submission);
+		void RemoveSubmission(Submission *submission);
 		unsigned short GetNumActiveSubmissions() const;
 	};
 }

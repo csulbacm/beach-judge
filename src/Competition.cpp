@@ -10,6 +10,12 @@
 #include <BeachJudge/Problem.h>
 #include <BeachJudge/Question.h>
 
+#ifdef _WIN32
+	#define SPRINTF sprintf_s
+#else
+	#define SPRINTF	sprintf
+#endif
+
 using namespace std;
 
 namespace beachjudge
@@ -177,5 +183,18 @@ namespace beachjudge
 		}
 
 		outFile.close();
+	}
+	void Competition::ClearAll()
+	{
+		map<unsigned short, Submission *> &submissions = Submission::GetSubmissionsByID();
+		if(submissions.size())
+			for(map<unsigned short, Submission *>::iterator it = submissions.begin(); it != submissions.end(); it++)
+			{
+				Submission *submission = it->second;
+				fileDelete(submission->GetSourceFile().c_str());
+			}
+		Question::Cleanup();
+		Submission::Cleanup();
+		fileDelete("compo/compo.txt");
 	}
 }

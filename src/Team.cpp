@@ -173,6 +173,15 @@ namespace beachjudge
 		m_numActiveSubmissions++;
 		m_submissions.push_back(submission);
 	}
+	void Team::RemoveSubmission(Submission *submission)
+	{
+		vector<Submission *>::iterator it = find(m_submissions.begin(), m_submissions.end(), submission);
+		if(it != m_submissions.end())
+		{
+			m_numActiveSubmissions--;
+			m_submissions.erase(it);
+		}
+	}
 	unsigned short Team::GetNumActiveSubmissions() const
 	{
 		return m_numActiveSubmissions;
