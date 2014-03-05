@@ -76,6 +76,12 @@ namespace beachjudge
 	{
 		return g_submissionsByID;
 	}
+	Submission *Submission::LookupByID(unsigned short id)
+	{
+		if(g_submissionsByID.count(id))
+			return g_submissionsByID[id];
+		return 0;
+	}
 
 	Submission::Submission()
 	{

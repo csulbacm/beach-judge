@@ -11,7 +11,7 @@ $if:loggedIn
 				<div class="panel-body">
 					<ul class="nav nav-stacked">
 						$startLoop:mySubmissions
-						<li><a href="/submission?s=$get:submissionID">
+						<li><a href="/submissions?s=$get:submissionID">
 							<strong>$get:submissionProblemName</strong> &mdash;
 							Pending
 						</a></li>
@@ -30,16 +30,24 @@ $if:loggedIn
 		
 		</h2>
 	<div class="panel-body">
-
+		$loadSubmission:{GET_s}
+		$ifd:{loadedSubmissionID}
 		<p>
 			<strong>Question</strong>
 			<span>
-				 Buckets - Success
+				 $get:loadedSubmissionProblemName - Success
 			</span>
 		</p>
-
 		<hr />
-			<pre><code>// my first program in C++<br/>#include &lt;iostream&gt;<br/><br/>int main()<br/>{<br/>  std::cout &lt;&lt; &quot;Hello World!&quot;;<br/>}</code></pre>
+			<pre><code>$getCode:{loadedSubmissionID}</code></pre>
+
+		$endifd:{loadedSubmissionID}
+
+		$ifu:{loadedSubmissionID}
+		<p>
+			Select a submission to review it.
+		</p>
+		$endifu:{loadedSubmissionID}
 	</div>
 </div>
 		</div>

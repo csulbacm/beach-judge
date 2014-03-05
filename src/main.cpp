@@ -17,6 +17,7 @@
 #include <BeachJudge/Team.h>
 
 #define BEACHJUDGE_SESSION_CLEANUPTICKMS 15 * 60 * 1000 //- TODO: Externalize to Config -
+#define BEACHJUDGE_COMPETITION_TICKMS 1000 //- TODO: Externalize to Config -
 
 using namespace std;
 using namespace beachjudge;
@@ -119,9 +120,17 @@ int main(int argc, char **argv)
 	commandThread.Start(0);
 
 	unsigned long sessionCleanupMS = getRunTimeMS() + BEACHJUDGE_SESSION_CLEANUPTICKMS;
+	unsigned long competitionTickMS = getRunTimeMS() + BEACHJUDGE_COMPETITION_TICKMS;
 	while(true)
 	{
 		unsigned long currTimeMS = getRunTimeMS();
+
+		if(currTimeMS >= competitionTickMS)
+		{
+			if(competition->GetTimeLeft() == 0)
+				competition->Stop();
+			competitionTickMS += BEACHJUDGE_COMPETITION_TICKMS;
+		}
 
 		if(currTimeMS >= sessionCleanupMS)
 		{
@@ -129,7 +138,7 @@ int main(int argc, char **argv)
 			sessionCleanupMS += BEACHJUDGE_SESSION_CLEANUPTICKMS;
 		}
 
-		sleepMS(5000);
+		sleepMS(500);
 	}
 
 	delete competition;

@@ -60,6 +60,66 @@ namespace beachjudge
 	{
 		cout << "Echo: " << arg << endl;
 	}
+	void LoadSubmission(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
+	{
+		unsigned short id = atoi(arg.c_str());
+		Team *team = 0;
+		if(session)
+			team = session->GetTeam();
+		Submission *submission = Submission::LookupByID(id);
+		if(submission)
+		{
+			if(team == submission->GetTeam() || team->IsJudge())
+			{
+				Problem *problem = submission->GetProblem();
+				char str[8];
+				memset(str, 0, 8);
+				SPRINTF(str, "%d", submission->GetID());
+				targetVars->operator[]("loadedSubmissionID") = string(str);
+				memset(str, 0, 8);
+				SPRINTF(str, "%d", problem->GetID());
+				targetVars->operator[]("loadedSubmissionProblemID") = string(str);
+				targetVars->operator[]("loadedSubmissionProblemName") = problem->GetName();
+				memset(str, 0, 8);
+				SPRINTF(str, "%d", submission->GetTeam()->GetID());
+				targetVars->operator[]("loadedSubmissionTeamID") = string(str);
+				targetVars->operator[]("loadedSubmissionTeamName") = submission->GetTeam()->GetName();
+			}
+		}
+	}
+	void GetCode(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
+	{
+		unsigned short id = atoi(arg.c_str());
+		Team *team = 0;
+		if(session)
+			team = session->GetTeam();
+		Submission *submission = Submission::LookupByID(id);
+		if(submission)
+		{
+			string file = submission->GetSourceFile(), in;
+			if(fileExists(file.c_str()))
+			{
+				ifstream inFile(file, ios::in | ios::binary);
+				while(getline(inFile, in))
+				{
+					for(string::iterator it = in.begin(); it != in.end(); it++)
+					{
+						char &c = *it;
+						if((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == ' ')
+							stream.put(c);
+						else if((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~') || c == '\t')
+						{
+							char part[8];
+							memset(part, 0, 8);
+							SPRINTF(part, "&#%d", c);
+							stream << part;
+						}
+					}
+					stream << "<br/>";
+				}
+			}
+		}
+	}
 	void LoadQuestion(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
 	{
 		unsigned short id = atoi(arg.c_str());
@@ -205,9 +265,11 @@ namespace beachjudge
 		RegisterTemplate("echo", &Echo);
 		RegisterTemplate("timeLeft", &TimeLeft);
 		RegisterTemplate("duration", &Duration);
+		RegisterTemplate("getCode", &GetCode);
 		RegisterTemplate("teamName", &TeamName);
 		RegisterTemplate("loadTeam", &LoadTeam);
 		RegisterTemplate("loadQuestion", &LoadQuestion);
+		RegisterTemplate("loadSubmission", &LoadSubmission);
 		RegisterTemplate("loadUnansweredQuestionsForProblem", &LoadUnansweredQuestionsForProblem);
 		RegisterTemplate("loadAnsweredQuestionsForProblem", &LoadAnsweredQuestionsForProblem);
 	}
