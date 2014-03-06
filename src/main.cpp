@@ -120,8 +120,13 @@ int main(int argc, char **argv)
 
 	Session::LoadFromFile("compo/sessions.txt");
 
-	Problem::Create(1, "The Skyline Problem");
-	Problem::Create(2, "Ugly Numbers");
+	if(fileExists("compo/problems.txt"))
+		Problem::LoadFromFile("compo/problems.txt");
+	else
+	{
+		Problem::Create(1, "The Skyline Problem");
+		Problem::Create(2, "Ugly Numbers");
+	}
 
 	Competition *competition = Competition::CreateFromFile("compo/compo.txt");
 	if(!competition)

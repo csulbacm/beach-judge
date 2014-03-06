@@ -3,6 +3,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
+#include <fstream>
+#include <string>
 
 //- Beach Judge -
 #include <BeachJudge/Base.h>
@@ -34,6 +36,17 @@ namespace beachjudge
 	map<unsigned short, Problem *> &Problem::GetProblemsByID()
 	{
 		return g_problemsByID;
+	}
+	void Problem::LoadFromFile(const char *file)
+	{
+		ifstream inFile(file);
+		unsigned short id;
+		string name;
+		while(inFile >> id)
+		{
+			getline(inFile, name);
+			Create(id, name.substr(1));
+		}
 	}
 
 	Problem::Problem()

@@ -261,12 +261,12 @@ namespace beachjudge
 
 		//- TODO: Fix this to match the standard -
 		#ifdef _WIN32
-//			FD_SET(0, &readFlags);
-//			FD_SET(0, &writeFlags);
+			FD_SET(0, &readFlags);
+			FD_SET(0, &writeFlags);
 		#endif
 	
 		//- TODO: Determine if this is necessary -
-		#ifdef _linux
+		#ifdef linux
 			FD_SET(STDIN_FILENO, &readFlags);
 			FD_SET(STDIN_FILENO, &writeFlags);
 		#endif
@@ -277,7 +277,7 @@ namespace beachjudge
 			return FD_ISSET(m_socket, &readFlags) != 0;
 		#endif
 
-		#ifdef _linux
+		#ifdef linux
 			return FD_ISSET(m_socket, &readFlags);
 		#endif
 	}

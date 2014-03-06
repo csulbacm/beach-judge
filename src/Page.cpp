@@ -113,7 +113,7 @@ namespace beachjudge
 			string file = submission->GetSourceFile(), in;
 			if(fileExists(file.c_str()))
 			{
-				ifstream inFile(file, ios::in | ios::binary);
+				ifstream inFile(file.c_str(), ios::in | ios::binary);
 				while(getline(inFile, in))
 				{
 					for(string::iterator it = in.begin(); it != in.end(); it++)
@@ -307,7 +307,7 @@ namespace beachjudge
 		Page *page = new Page();
 		page->m_fileSource = file;
 		page->m_html = html;
-		page->m_isTemp = true; //- TODO: Remove this for caching -
+//		page->m_isTemp = true; //- TODO: Remove this for caching -
 		g_pageMap[file] = page;
 		return page;
 	}

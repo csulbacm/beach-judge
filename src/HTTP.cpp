@@ -320,6 +320,7 @@ namespace beachjudge
 					else if(reqStream.str().size() > ANON_COMM_LIMIT)
 						return;
 				}
+				cout << reqStream.str().size() << endl;
 			}
 			while(client->HasRead());
 		}

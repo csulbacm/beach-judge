@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 //- Beach Judge -
 #include <BeachJudge/Base.h>
