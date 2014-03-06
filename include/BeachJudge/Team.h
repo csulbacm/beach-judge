@@ -20,6 +20,8 @@ namespace beachjudge
 		std::string m_name, m_password;
 		bool m_isJudge;
 		std::vector<Submission *> m_submissions;
+		std::map<Problem *, float> m_scores;
+		std::map<Problem *, unsigned short> m_penalties;
 
 		Team();
 
@@ -32,6 +34,8 @@ namespace beachjudge
 		static void LoadFromDatabase();
 		static void DeleteAll();
 		static std::map<unsigned short, Team *> &GetTeamsByID();
+		static void SaveScores();
+		static void LoadScores();
 
 		~Team();
 
@@ -48,6 +52,10 @@ namespace beachjudge
 		void AddSubmission(Submission *submission);
 		void RemoveSubmission(Submission *submission);
 		unsigned short GetNumActiveSubmissions() const;
+		float GetScore(Problem *problem);
+		void AddScore(Problem *problem, float score);
+		unsigned short GetPenalties(Problem *problem);
+		void AddPenalty(Problem *problem);
 	};
 }
 

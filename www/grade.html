@@ -32,13 +32,34 @@ $if:isJudge
 		$loadSubmission:{GET_s}
 		$ifd:{loadedSubmissionID}
 		<p>
-			<strong>Problem</strong>
+			<strong>Problem:</strong>
 			<span>
-				 $get:loadedSubmissionProblemName - $get:loadedSubmissionStatus
+				 $get:loadedSubmissionProblemName
+			</span>
+		</p>
+		<p>
+			<strong>Team:</strong>
+			<span>
+				 $get:loadedSubmissionTeamName
 			</span>
 		</p>
 		<hr />
 			<pre><code>$getCode:{loadedSubmissionID}</code></pre>
+
+		<form class="navbar-form navbar-left" role="form" method="post" action="/grade">
+			<input type="hidden" name="cmd" value="grade">
+			<input type="hidden" name="submissionID" value="$get:loadedSubmissionID">
+			<div class="form-group">
+				<select class="form-control" name="grading">
+					<option value="2">Not Executable</option>
+					<option value="3">Time Limit Exceeded</option>
+					<option value="4">Wrong Answer</option>
+					<option value="5">Presentation Error</option>
+					<option value="1">Accepted</option>
+				</select>
+			</div>
+			<button type="submit" class="btn btn-default">Grade</button>
+		</form>
 
 		$endifd:{loadedSubmissionID}
 

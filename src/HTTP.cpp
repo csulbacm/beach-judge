@@ -8,6 +8,7 @@
 #include <BeachJudge/Base.h>
 #include <BeachJudge/Question.h>
 #include <BeachJudge/Competition.h>
+#include <BeachJudge/Problem.h>
 #include <BeachJudge/Page.h>
 #include <BeachJudge/Session.h>
 #include <BeachJudge/HTTP.h>
@@ -542,6 +543,31 @@ namespace beachjudge
 									delete question;
 									if(competition)
 										competition->SaveToFile("compo/compo.txt");
+								}
+							}
+				}
+				else if(!cmd.compare("grade"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+							if(postArgMap.count("grading") && postArgMap.count("submissionID"))
+							{
+								Submission *submission = Submission::LookupByID(atoi(postArgMap["submissionID"].c_str()));
+								if(submission)
+								{
+									SubStatus status = (SubStatus)atoi(postArgMap["grading"].c_str());
+									submission->SetStatus(status);
+									Team *team = submission->GetTeam();
+									Problem *problem = submission->GetProblem();
+									if(status == SubStatus_Accepted)
+										team->AddScore(problem, ((float)submission->GetTimeMS()) / 1000.f);
+									else
+										team->AddPenalty(problem);
+									Team::SaveScores();
+									Competition *compo = Competition::GetCurrent();
+									if(compo)
+										compo->SaveToFile("compo/compo.txt");
 								}
 							}
 				}

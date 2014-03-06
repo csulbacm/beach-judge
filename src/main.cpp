@@ -128,6 +128,8 @@ int main(int argc, char **argv)
 		competition = Competition::Create(7200000);
 	competition->SetCurrent();
 
+	Team::LoadScores();
+
 	Page::RegisterDefaultTemplates();
 
 	Thread webServerThread(&webServerFunc);

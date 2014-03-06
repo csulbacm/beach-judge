@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <iostream>
+#include <sstream>
 
 //- Beach Judge -
 #include <BeachJudge/Base.h>
@@ -113,6 +114,63 @@ namespace beachjudge
 		while(g_teamByIDMap.size())
 			delete g_teamByIDMap.begin()->second;
 	}
+	void Team::SaveScores()
+	{
+		string scoreDatabase = "compo/scores.txt";
+		createFolder(filePath(scoreDatabase.c_str()).c_str());
+		ofstream outFile(scoreDatabase.c_str());
+		for(map<unsigned short, Team *>::iterator it = g_teamByIDMap.begin(); it != g_teamByIDMap.end(); it++)
+		{
+			Team *team = it->second;
+			if(team->m_penalties.size())
+			{
+				outFile << team->m_id;
+				for(map<Problem *, unsigned short>::iterator itB = team->m_penalties.begin(); itB != team->m_penalties.end(); itB++)
+				{
+					Problem *problem = itB->first;
+					outFile << "\t" << problem->GetID();
+					if(team->m_scores.count(problem))
+						outFile << " " << team->m_scores[problem];
+					else
+						outFile << " 0";
+					outFile << " " << itB->second;
+				}
+				outFile << endl;
+			}
+		}
+		outFile.close();
+	}
+	void Team::LoadScores()
+	{
+		string scoreDatabase = "compo/scores.txt";
+		if(fileExists(scoreDatabase.c_str()))
+		{
+			ifstream inFile(scoreDatabase.c_str());
+			string line, in;
+			while(getline(inFile, line))
+			{
+				stringstream lineStream(line);
+				getline(lineStream, in, '\t');
+				stringstream inStream(in);
+				unsigned short teamID;
+				inStream >> teamID;
+				Team *team = LookupByID(teamID);
+				if(team)
+					while(getline(lineStream, in, '\t'))
+					{
+						stringstream tabStream(in);
+						unsigned short problemID, score, penalties;
+						tabStream >> problemID >> score >> penalties;
+						Problem *problem = Problem::LookupByID(problemID);
+						if(problem)
+						{
+							team->m_scores[problem] = score;
+							team->m_penalties[problem] = penalties;
+						}
+					}
+			}
+		}
+	}
 
 	Team::Team()
 	{
@@ -185,5 +243,35 @@ namespace beachjudge
 	unsigned short Team::GetNumActiveSubmissions() const
 	{
 		return m_numActiveSubmissions;
+	}
+	float Team::GetScore(Problem *problem)
+	{
+		if(m_scores.count(problem))
+			return m_scores[problem];
+		return 0.f;
+	}
+	void Team::AddScore(Problem *problem, float score)
+	{
+		if(m_scores.count(problem))
+			m_scores[problem] += score;
+		else
+			m_scores[problem] = score;
+		if(!m_penalties.count(problem))
+			m_penalties[problem] = 0;
+		m_totalScore += score;
+	}
+	unsigned short Team::GetPenalties(Problem *problem)
+	{
+		if(m_penalties.count(problem))
+			return m_penalties[problem];
+		return 0;
+	}
+	void Team::AddPenalty(Problem *problem)
+	{
+		if(m_penalties.count(problem))
+			m_penalties[problem]++;
+		else
+			m_penalties[problem] = 1;
+		m_totalPenalties++;
 	}
 }
