@@ -38,6 +38,15 @@ void *commandFunc(void *arg)
 				competition->SaveToFile("compo/compo.txt");
 			}
 		}
+		else if(!cmd.compare("stop"))
+		{
+			Competition *competition = Competition::GetCurrent();
+			if(competition)
+			{
+				competition->Stop();
+				competition->SaveToFile("compo/compo.txt");
+			}
+		}
 		else if(!cmd.compare("clearAll"))
 		{
 			Competition *competition = Competition::GetCurrent();

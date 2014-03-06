@@ -545,6 +545,34 @@ namespace beachjudge
 								}
 							}
 				}
+				else if(!cmd.compare("startCompo"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+						{
+							Competition *compo = Competition::GetCurrent();
+							if(compo)
+							{
+								compo->Start();
+								compo->SaveToFile("compo/compo.txt");
+							}
+						}
+				}
+				else if(!cmd.compare("stopCompo"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+						{
+							Competition *compo = Competition::GetCurrent();
+							if(compo)
+							{
+								compo->Stop();
+								compo->SaveToFile("compo/compo.txt");
+							}
+						}
+				}
 				else if(!cmd.compare("submit"))
 				{
 					Team *team = session->GetTeam();

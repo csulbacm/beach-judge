@@ -32,7 +32,20 @@ namespace beachjudge
 	{
 		Competition *competition = Competition::GetCurrent();
 		if(competition)
-			stream << competition->GetTimeLeft() / 1000;
+		{
+			if(competition->IsRunning())
+				stream << competition->GetTimeLeft() / 1000;
+			else
+				stream << 0;
+		}
+		else
+			stream << 0;
+	}
+	void TeamTotalScore(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
+	{
+		Team *team = session->GetTeam();
+		if(team)
+			stream << team->GetTotalScore();
 		else
 			stream << 0;
 	}
@@ -268,6 +281,7 @@ namespace beachjudge
 		RegisterTemplate("duration", &Duration);
 		RegisterTemplate("getCode", &GetCode);
 		RegisterTemplate("teamName", &TeamName);
+		RegisterTemplate("teamTotalScore", &TeamTotalScore);
 		RegisterTemplate("loadTeam", &LoadTeam);
 		RegisterTemplate("loadQuestion", &LoadQuestion);
 		RegisterTemplate("loadSubmission", &LoadSubmission);
@@ -780,6 +794,7 @@ namespace beachjudge
 									{
 										Submission *submission = *submissionIt;
 										Problem *problem = submission->GetProblem();
+										Team *subTeam = submission->GetTeam();
 										memset(str, 0, 16);
 										SPRINTF(str, "%d", idx);
 										string idxStr(str);
@@ -796,6 +811,10 @@ namespace beachjudge
 										memset(str, 0, 16);
 										SPRINTF(str, "%d", problem->GetID());
 										targetVars->operator[]("submissionProblemID") = string(str);
+										targetVars->operator[]("submissionTeamName") = subTeam->GetName();
+										memset(str, 0, 16);
+										SPRINTF(str, "%d", subTeam->GetID());
+										targetVars->operator[]("submissionTeamID") = string(str);
 										targetVars->operator[]("submissionStatus") = submission->GetStatusText();
 										submissionIt++;
 										if(submissionIt == submissions->end())

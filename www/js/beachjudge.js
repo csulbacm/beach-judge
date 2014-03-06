@@ -47,12 +47,12 @@ function timer(t)
 		clearInterval(counter);
 		return;
 	}
-	timeLeft = timeLeft - 1;
 	var percent = parseInt(timeLeft * 100 / totalTime) + "%";
 	timeText.innerHTML = timeLeft.toString().toHHMMSS();
 	document.getElementById("timeLeft_bar").style.width = percent;
 	document.getElementById("timeLeft_barText").innerHTML = percent;
-	if(timeLeft <= 0)
+	timeLeft = timeLeft - 1;
+	if(timeLeft < 0)
 	{
 		clearInterval(counter);
 		return;

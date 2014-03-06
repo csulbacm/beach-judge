@@ -12,7 +12,7 @@ $if:isJudge
 					<ul class="nav nav-stacked">
 						$startLoop:pendingSubmissions
 						<li><a href="/grade?s=$get:submissionID">
-							<strong>$get:submissionProblemName</strong>
+							<strong>$get:submissionTeamName - $get:submissionProblemName</strong>
 						</a></li>
 						$endLoop:pendingSubmissions
 					</ul>
@@ -32,7 +32,7 @@ $if:isJudge
 		$loadSubmission:{GET_s}
 		$ifd:{loadedSubmissionID}
 		<p>
-			<strong>Question</strong>
+			<strong>Problem</strong>
 			<span>
 				 $get:loadedSubmissionProblemName - $get:loadedSubmissionStatus
 			</span>
