@@ -1,7 +1,7 @@
-$set:title=Submission
+$set:title=Grade
 $include:inc/dochead.html
 $include:inc/navi.html
-$if:loggedIn
+$if:isJudge
 <div class="container content">
 	<div class="row">
 		<div class="col-md-4 ">
@@ -10,12 +10,11 @@ $if:loggedIn
 				<h2>Submission</h2>
 				<div class="panel-body">
 					<ul class="nav nav-stacked">
-						$startLoop:mySubmissions
-						<li><a href="/submissions?s=$get:submissionID">
-							<strong>$get:submissionProblemName</strong> &mdash;
-							$get:submissionStatus
+						$startLoop:pendingSubmissions
+						<li><a href="/grade?s=$get:submissionID">
+							<strong>$get:submissionProblemName</strong>
 						</a></li>
-						$endLoop:mySubmissions
+						$endLoop:pendingSubmissions
 					</ul>
 				</div>
 			</div>
@@ -45,7 +44,7 @@ $if:loggedIn
 
 		$ifu:{loadedSubmissionID}
 		<p>
-			Select a submission on the left.
+			Select a submission to review it.
 		</p>
 		$endifu:{loadedSubmissionID}
 	</div>
@@ -54,6 +53,9 @@ $if:loggedIn
 	</div>
 </div>
 
-$endif:loggedIn
+$endif:isJudge
+
+$include:inc/teamforbid.html
 $include:inc/loginstandalone.html
+
 $include:inc/docfooter.php

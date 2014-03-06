@@ -35,7 +35,7 @@ namespace beachjudge
 
 	Session *Session::Create(unsigned long address, unsigned short port, Team *team, unsigned short id)
 	{
-		Session *session = LookupByAddress(address);
+		Session *session = Lookup(id);
 		if(!session)
 		{
 			session = new Session();

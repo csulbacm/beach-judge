@@ -16,12 +16,23 @@ namespace beachjudge
 		CodeType_Java
 	} CodeType;
 
+	typedef enum SubStatus
+	{
+		SubStatus_Pending,
+		SubStatus_Accepted,
+		SubStatus_NotExecutable,
+		SubStatus_TimeLimitExceeded,
+		SubStatus_WrongAnswer,
+		SubStatus_PresentationError
+	} SubStatus;
+
 	class Team;
 	class Problem;
 
 	class Submission
 	{
 		CodeType m_codeType;
+		SubStatus m_subStatus;
 		unsigned short m_id;
 		Team *m_team;
 		Problem *m_problem;
@@ -31,8 +42,9 @@ namespace beachjudge
 		Submission();
 
 	public:
-		static Submission *Create(Team *team, Problem *problem, CodeType codeType, unsigned long timeMS, unsigned short id = 0);
+		static Submission *Create(Team *team, Problem *problem, CodeType codeType, unsigned long timeMS, SubStatus subStatus = SubStatus_Pending, unsigned short id = 0);
 		static std::map<unsigned short, Submission *> &GetSubmissionsByID();
+		static std::vector<Submission *> *GetPendingSubmissions();
 		static Submission *LookupByID(unsigned short id);
 		static void Cleanup();
 
@@ -44,6 +56,9 @@ namespace beachjudge
 		unsigned short GetID() const;
 		CodeType GetCodeType() const;
 		std::string GetSourceFile() const;
+		SubStatus GetStatus() const;
+		void SetStatus(SubStatus status);
+		std::string GetStatusText() const;
 	};
 }
 

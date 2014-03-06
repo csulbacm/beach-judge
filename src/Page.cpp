@@ -84,6 +84,7 @@ namespace beachjudge
 				SPRINTF(str, "%d", submission->GetTeam()->GetID());
 				targetVars->operator[]("loadedSubmissionTeamID") = string(str);
 				targetVars->operator[]("loadedSubmissionTeamName") = submission->GetTeam()->GetName();
+				targetVars->operator[]("loadedSubmissionStatus") = submission->GetStatusText();
 			}
 		}
 	}
@@ -677,8 +678,6 @@ namespace beachjudge
 								map<unsigned short, Problem *> &problemsByID = Problem::GetProblemsByID();
 								vector<Submission *>::iterator submissionIt;
 								vector<Submission *> *submissions = 0;
-								if(team)
-									submissions = team->GetSubmissions();
 								unsigned short num = 0;
 								if(loopTarget.size() > 1)
 									num = atoi(&loopTarget.c_str()[1]);
@@ -695,8 +694,27 @@ namespace beachjudge
 								{
 									if(team)
 									{
+										submissions = team->GetSubmissions();
 										if(submissions->size())
 											submissionIt = submissions->begin();
+										else
+											done = true;
+									}
+									else
+										done = true;
+								}
+								else if(!loopTarget.compare("pendingSubmissions"))
+								{
+									if(team)
+									{
+										if(team->IsJudge())
+										{
+											submissions = Submission::GetPendingSubmissions();
+											if(submissions->size())
+												submissionIt = submissions->begin();
+											else
+												done = true;
+										}
 										else
 											done = true;
 									}
@@ -758,7 +776,7 @@ namespace beachjudge
 										if(problemIt == problemsByID.end())
 											done = true;
 									}
-									else if(!loopTarget.compare("mySubmissions") && team)
+									else if((!loopTarget.compare("mySubmissions") || !loopTarget.compare("pendingSubmissions")) && team)
 									{
 										Submission *submission = *submissionIt;
 										Problem *problem = submission->GetProblem();
@@ -778,6 +796,7 @@ namespace beachjudge
 										memset(str, 0, 16);
 										SPRINTF(str, "%d", problem->GetID());
 										targetVars->operator[]("submissionProblemID") = string(str);
+										targetVars->operator[]("submissionStatus") = submission->GetStatusText();
 										submissionIt++;
 										if(submissionIt == submissions->end())
 											done = true;

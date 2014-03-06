@@ -78,12 +78,12 @@ namespace beachjudge
 				while(getline(submissionsStream, in, '\t'))
 				{
 					stringstream submissionInfo(in);
-					unsigned short sID, tID, pID, cType;
+					unsigned short sID, tID, pID, cType, sStatus;
 					unsigned long timeMS;
-					submissionInfo >> sID >> tID >> pID >> cType >> timeMS;
+					submissionInfo >> sID >> tID >> pID >> cType >> sStatus >> timeMS;
 					Team *team = Team::LookupByID(tID);
 					Problem *problem = Problem::LookupByID(pID);
-					Submission::Create(team, problem, (CodeType)cType, timeMS, sID);
+					Submission::Create(team, problem, (CodeType)cType, timeMS, (SubStatus)sStatus, sID);
 				}
 			}
 		}
@@ -177,7 +177,7 @@ namespace beachjudge
 				Submission *submission = it->second;
 				Team *team = submission->GetTeam();
 				Problem *problem = submission->GetProblem();
-				outFile << "\t" << submission->GetID() << " " << team->GetID() << " " << problem->GetID() << " " << submission->GetCodeType() << " " << submission->GetTimeMS();
+				outFile << "\t" << submission->GetID() << " " << team->GetID() << " " << problem->GetID() << " " << submission->GetCodeType() << " " << submission->GetStatus() << " " << submission->GetTimeMS();
 			}
 			outFile << endl;
 		}

@@ -4,6 +4,7 @@
 #include <cstring>
 #include <cstdio>
 #include <iostream>
+#include <algorithm>
 
 //- Beach Judge -
 #include <BeachJudge/Base.h>
@@ -23,8 +24,14 @@ using namespace std;
 namespace beachjudge
 {
 	map<unsigned short, Submission *> g_submissionsByID;
+	vector<Submission *> g_pendingSubmissions;
+	
+	bool PendingSubmissionComp(Submission *subA, Submission *subB)
+	{
+		return subA->GetTimeMS() < subB->GetTimeMS();
+	}
 
-	Submission *Submission::Create(Team *team, Problem *problem, CodeType codeType, unsigned long timeMS, unsigned short id)
+	Submission *Submission::Create(Team *team, Problem *problem, CodeType codeType, unsigned long timeMS, SubStatus subStatus, unsigned short id)
 	{
 		if(team->GetNumActiveSubmissions() >= TEAM_MAX_NUMACTIVESUBMISSIONS)
 			return 0;
@@ -44,6 +51,7 @@ namespace beachjudge
 		g_submissionsByID[submission->m_id] = submission;
 
 		submission->m_codeType = codeType;
+		submission->m_subStatus = subStatus;
 		submission->m_team = team;
 		submission->m_problem = problem;
 		submission->m_timeMS = timeMS;
@@ -70,11 +78,20 @@ namespace beachjudge
 		}
 		submission->m_sourceFile = sourceFile;
 		team->AddSubmission(submission);
+		if(subStatus == SubStatus_Pending)
+		{
+			g_pendingSubmissions.push_back(submission);
+			sort(g_pendingSubmissions.begin(), g_pendingSubmissions.end(), PendingSubmissionComp);
+		}
 		return submission;
 	}
 	map<unsigned short, Submission *> &Submission::GetSubmissionsByID()
 	{
 		return g_submissionsByID;
+	}
+	vector<Submission *> *Submission::GetPendingSubmissions()
+	{
+		return &g_pendingSubmissions;
 	}
 	Submission *Submission::LookupByID(unsigned short id)
 	{
@@ -95,10 +112,13 @@ namespace beachjudge
 		m_team = 0;
 		m_problem = 0;
 		m_codeType = CodeType_Unknown;
+		m_subStatus = SubStatus_Pending;
 	}
 	Submission::~Submission()
 	{
 		g_submissionsByID.erase(m_id);
+		if(m_subStatus == SubStatus_Pending)
+			g_pendingSubmissions.erase(find(g_pendingSubmissions.begin(), g_pendingSubmissions.end(), this));
 		if(m_team)
 			m_team->RemoveSubmission(this);
 	}
@@ -125,5 +145,39 @@ namespace beachjudge
 	string Submission::GetSourceFile() const
 	{
 		return m_sourceFile;
+	}
+	SubStatus Submission::GetStatus() const
+	{
+		return m_subStatus;
+	}
+	void Submission::SetStatus(SubStatus status)
+	{
+		if(status == SubStatus_Pending && m_subStatus != SubStatus_Pending)
+		{
+			g_pendingSubmissions.push_back(this);
+			sort(g_pendingSubmissions.begin(), g_pendingSubmissions.end(), PendingSubmissionComp);
+		}
+		if(status != SubStatus_Pending && m_subStatus == SubStatus_Pending)
+			g_pendingSubmissions.erase(find(g_pendingSubmissions.begin(), g_pendingSubmissions.end(), this));
+		m_subStatus = status;
+	}
+	string Submission::GetStatusText() const
+	{
+		switch(m_subStatus)
+		{
+		case SubStatus_Accepted:
+			return "Accepted";
+		case SubStatus_NotExecutable:
+			return "Not Executable";
+		case SubStatus_Pending:
+			return "Pending";
+		case SubStatus_PresentationError:
+			return "Presentation Error";
+		case SubStatus_TimeLimitExceeded:
+			return "Time Limit Exceeded";
+		case SubStatus_WrongAnswer:
+			return "Wrong Answer";
+		}
+		return "";
 	}
 }
