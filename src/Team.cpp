@@ -167,6 +167,7 @@ namespace beachjudge
 						{
 							team->m_scores[problem] = score;
 							team->m_penalties[problem] = penalties;
+							problem->AddSolver(team);
 						}
 					}
 			}

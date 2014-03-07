@@ -12,6 +12,7 @@ $include:inc/navi.html
 		<!--/ table col -->
 		<div class="col-md-6">
 			$startLoop:problems
+			$loadProblemScores:{problemID}
 			<!-- table col -->
 			<div class="panel panel-default">
 			<h2>Scores: $get:problemName</h2>
@@ -30,14 +31,14 @@ $include:inc/navi.html
 							</tr>
 						</thead>
 						<tbody>
-							$startLoop:teams
+							$startLoop:x{solverCount}
 							<tr>
-								<td>$get:idx</td>
-								<td>$get:teamName</td>
-								<td>123123.1232</td>
-								<td>1</td>
+								<td>$get:teamID{idx}</td>
+								<td>$get:teamName{idx}</td>
+								<td>$get:score{idx}</td>
+								<td>$get:penalties{idx}</td>
 							</tr>
-							$endLoop:teams
+							$endLoop:x{solverCount}
 						</tbody>
 					</table>
 				</div>

@@ -196,5 +196,6 @@ namespace beachjudge
 		Question::Cleanup();
 		Submission::Cleanup();
 		fileDelete("compo/compo.txt");
+		fileDelete("compo/scores.txt");
 	}
 }

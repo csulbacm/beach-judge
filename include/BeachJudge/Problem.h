@@ -15,8 +15,8 @@ namespace beachjudge
 	{
 		unsigned short m_id;
 		std::string m_name, m_pdfPath;
-		std::map<unsigned long, Submission *> m_solutions;
 		std::vector<std::pair<std::string, std::string> > m_tests;
+		std::vector<Team *> m_solvers;
 
 		Problem();
 
@@ -30,6 +30,9 @@ namespace beachjudge
 
 		std::string GetName() const;
 		unsigned short GetID() const;
+		void AddSolver(Team *team);
+		void RemoveSolver(Team *team);
+		std::vector<Team *> *GetSolvers();
 	};
 }
 

@@ -5,16 +5,34 @@
 #include <cstdio>
 #include <fstream>
 #include <string>
+#include <algorithm>
 
 //- Beach Judge -
 #include <BeachJudge/Base.h>
 #include <BeachJudge/Problem.h>
+#include <BeachJudge/Team.h>
 
 using namespace std;
 
 namespace beachjudge
 {
 	map<unsigned short, Problem *> g_problemsByID;
+
+	Problem *g_workingProblem = 0;
+	bool SolverComp(Team *teamA, Team *teamB)
+	{
+		float scoreA = teamA->GetScore(g_workingProblem);
+		float scoreB = teamB->GetScore(g_workingProblem);
+		unsigned short penA = teamA->GetPenalties(g_workingProblem);
+		unsigned short penB = teamB->GetPenalties(g_workingProblem);
+		if(scoreA == 0.f && scoreB == 0.f)
+			return penA > penB;
+		if(scoreA == 0.f)
+			return true;
+		if(scoreB == 0.f)
+			return false;
+		return scoreA < scoreB;
+	}
 
 	Problem *Problem::Create(unsigned short id, string name)
 	{
@@ -64,5 +82,19 @@ namespace beachjudge
 	unsigned short Problem::GetID() const
 	{
 		return m_id;
+	}
+	void Problem::AddSolver(Team *team)
+	{
+		m_solvers.push_back(team);
+		g_workingProblem = this;
+		sort(m_solvers.begin(), m_solvers.end(), SolverComp);
+	}
+	void Problem::RemoveSolver(Team *team)
+	{
+		m_solvers.erase(find(m_solvers.begin(), m_solvers.end(), team));
+	}
+	vector<Team *> *Problem::GetSolvers()
+	{
+		return &m_solvers;
 	}
 }

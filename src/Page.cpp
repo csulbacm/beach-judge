@@ -175,6 +175,52 @@ namespace beachjudge
 			targetVars->operator[]("loadedTeamID") = string(str);
 		}
 	}
+	void LoadProblemScores(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
+	{
+		unsigned short id = atoi(arg.c_str());
+		Problem *problem = Problem::LookupByID(id);
+		if(problem)
+		{
+			char str[16];
+			memset(str, 0, 16);
+			SPRINTF(str, "%d", id - 1);
+			string probIdxStr(str);
+			vector<Team *> *solvers = problem->GetSolvers();
+			if(solvers->size())
+			{
+				unsigned short idx = 0;
+				for(vector<Team *>::iterator itB = solvers->begin(); itB != solvers->end(); itB++)
+				{
+					Team *team = *itB;
+					idx++;
+					memset(str, 0, 16);
+					SPRINTF(str, "%d", idx);
+					string idxStr(str);
+					string teamNameKey("teamName");
+					string teamIDKey("teamID");
+					string scoreKey("score");
+					string penaltyKey("penalties");
+					unsigned short tID = team->GetID();
+					memset(str, 0, 16);
+					SPRINTF(str, "%d", tID);
+					string idStr(str);
+					targetVars->operator[](teamNameKey.append(idxStr)) = team->GetName();
+					targetVars->operator[](teamIDKey.append(idxStr)) = idStr;
+					memset(str, 0, 16);
+					SPRINTF(str, "%0.2f", team->GetScore(problem));
+					targetVars->operator[](scoreKey.append(idxStr)) = string(str);
+					memset(str, 0, 16);
+					SPRINTF(str, "%d", team->GetPenalties(problem));
+					targetVars->operator[](penaltyKey.append(idxStr)) = string(str);
+				}
+				memset(str, 0, 16);
+				SPRINTF(str, "%d", (unsigned short)solvers->size());
+				targetVars->operator[]("solverCount") = string(str);
+			}
+			else
+				targetVars->operator[]("solverCount") = "0";
+		}
+	}
 	void LoadAnsweredQuestionsForProblem(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
 	{
 		unsigned short id = atoi(arg.c_str());
@@ -287,6 +333,7 @@ namespace beachjudge
 		RegisterTemplate("loadSubmission", &LoadSubmission);
 		RegisterTemplate("loadUnansweredQuestionsForProblem", &LoadUnansweredQuestionsForProblem);
 		RegisterTemplate("loadAnsweredQuestionsForProblem", &LoadAnsweredQuestionsForProblem);
+		RegisterTemplate("loadProblemScores", &LoadProblemScores);
 	}
 	Page *Page::Create(string file)
 	{

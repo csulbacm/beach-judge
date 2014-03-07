@@ -296,7 +296,7 @@ namespace beachjudge
 		}
 		while(line.size() > 1);
 
-		sleepMS(10);
+		sleepMS(100);
 
 		if(client->HasRead())
 		{
@@ -321,6 +321,7 @@ namespace beachjudge
 						return;
 				}
 				cout << reqStream.str().size() << endl;
+				sleepMS(16);
 			}
 			while(client->HasRead());
 		}
@@ -562,9 +563,10 @@ namespace beachjudge
 									Team *team = submission->GetTeam();
 									Problem *problem = submission->GetProblem();
 									if(status == SubStatus_Accepted)
-										team->AddScore(problem, ((float)submission->GetTimeMS()) / 1000.f);
+										team->AddScore(problem, ((float)Competition::GetCurrent()->CalculateTimeScore(submission->GetTimeMS())) / 1000.f);
 									else
 										team->AddPenalty(problem);
+									problem->AddSolver(team);
 									Team::SaveScores();
 									Competition *compo = Competition::GetCurrent();
 									if(compo)
