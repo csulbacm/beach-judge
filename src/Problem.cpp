@@ -85,8 +85,11 @@ namespace beachjudge
 	}
 	void Problem::AddSolver(Team *team)
 	{
-		m_solvers.push_back(team);
-		g_workingProblem = this;
+		if(find(m_solvers.begin(), m_solvers.end(), team) == m_solvers.end())
+		{
+			m_solvers.push_back(team);
+			g_workingProblem = this;
+		}
 		sort(m_solvers.begin(), m_solvers.end(), SolverComp);
 	}
 	void Problem::RemoveSolver(Team *team)

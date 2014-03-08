@@ -563,7 +563,7 @@ namespace beachjudge
 									Team *team = submission->GetTeam();
 									Problem *problem = submission->GetProblem();
 									if(status == SubStatus_Accepted)
-										team->AddScore(problem, ((float)Competition::GetCurrent()->CalculateTimeScore(submission->GetTimeMS())) / 1000.f);
+										team->AddScore(problem, ((float)submission->GetTimeMS()) / 1000.f);
 									else
 										team->AddPenalty(problem);
 									problem->AddSolver(team);

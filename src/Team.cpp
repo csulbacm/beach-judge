@@ -160,7 +160,8 @@ namespace beachjudge
 					while(getline(lineStream, in, '\t'))
 					{
 						stringstream tabStream(in);
-						unsigned short problemID, score, penalties;
+						unsigned short problemID, penalties;
+						float score;
 						tabStream >> problemID >> score >> penalties;
 						Problem *problem = Problem::LookupByID(problemID);
 						if(problem)
