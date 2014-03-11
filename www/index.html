@@ -5,16 +5,22 @@ $include:inc/navi.html
 $if:loggedIn
 <div class="container content">
 	<div class="row">
+		$if:isTeam
 		<div class="col-md-6">
-				$if:isTeam
-					$include:inc/modulesubmit.html
-				$endif:isTeam
-				$include:inc/modulemail.html
+			$include:inc/modulesubmit.html
+			$include:inc/modulemail.html
 		</div>
 		<div class="col-md-6">
-				$include:inc/modulestatus.html
-				$include:inc/modulegetproblems.html
+			$include:inc/modulestatus.html
+			$include:inc/modulegetproblems.html
 		</div>
+		$endif:isTeam
+		$if:isJudge
+		<div>
+			$include:inc/modulestatus.html
+			$include:inc/modulegetproblems.html
+		</div>
+		$endif:isJudge
 	</div>
 </div>
 

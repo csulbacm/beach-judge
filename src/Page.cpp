@@ -49,6 +49,14 @@ namespace beachjudge
 		else
 			stream << 0;
 	}
+	void TeamTotalPenalties(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
+	{
+		Team *team = session->GetTeam();
+		if(team)
+			stream << team->GetTotalPenalties();
+		else
+			stream << 0;
+	}
 	void Duration(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
 	{
 		Competition *competition = Competition::GetCurrent();
@@ -328,6 +336,7 @@ namespace beachjudge
 		RegisterTemplate("getCode", &GetCode);
 		RegisterTemplate("teamName", &TeamName);
 		RegisterTemplate("teamTotalScore", &TeamTotalScore);
+		RegisterTemplate("teamTotalPenalties", &TeamTotalPenalties);
 		RegisterTemplate("loadTeam", &LoadTeam);
 		RegisterTemplate("loadQuestion", &LoadQuestion);
 		RegisterTemplate("loadSubmission", &LoadSubmission);

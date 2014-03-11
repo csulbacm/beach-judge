@@ -603,45 +603,56 @@ namespace beachjudge
 							}
 						}
 				}
+				else if(!cmd.compare("clearData"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+						{
+							Competition *compo = Competition::GetCurrent();
+							if(compo)
+								compo->ClearAll();
+						}
+				}
 				else if(!cmd.compare("submit"))
 				{
 					Team *team = session->GetTeam();
 					if(team)
 						if(!team->IsJudge())
-							if(postArgMap.count("problemID"))
-								if(postArgMap.count("code"))
+							if(postArgMap.count("problemID") && postArgMap.count("code") && postArgMap.count("codeType"))
+							{
+								Problem *problem = Problem::LookupByID(atoi(postArgMap["problemID"].c_str()));
+								if(problem)
 								{
-									Problem *problem = Problem::LookupByID(atoi(postArgMap["problemID"].c_str()));
-									if(problem)
+/*									CodeType codeType = CodeType_Unknown;
+									string sourceFile = postArgMap["sourceFile"];
+									transform(sourceFile.begin(), sourceFile.end(), sourceFile.begin(), ::tolower);
+									string ext = fileExt(sourceFile.c_str());
+									if(!ext.compare("cpp"))
+										codeType = CodeType_CPP;
+									else if(!ext.compare("java"))
+										codeType = CodeType_Java;
+									else if(!ext.compare("c"))
+										codeType = CodeType_C;
+*/
+									CodeType codeType = (CodeType)atoi(postArgMap["codeType"].c_str());
+									unsigned long timeScore = 0;
+									if(competition)
+										timeScore = competition->CalculateTimeScore(getRealTimeMS());
+									Submission *submission = Submission::Create(team, problem, codeType, timeScore);
+									if(submission)
 									{
-										CodeType codeType = CodeType_Unknown;
-										string sourceFile = postArgMap["sourceFile"];
-										transform(sourceFile.begin(), sourceFile.end(), sourceFile.begin(), ::tolower);
-										string ext = fileExt(sourceFile.c_str());
-										if(!ext.compare("cpp"))
-											codeType = CodeType_CPP;
-										else if(!ext.compare("java"))
-											codeType = CodeType_Java;
-										else if(!ext.compare("c"))
-											codeType = CodeType_C;
+										string codeFile = submission->GetSourceFile();
 
-										unsigned long timeScore = 0;
+										ofstream srcFileOut(codeFile.c_str());
+										srcFileOut << postArgMap["code"];
+										srcFileOut.close();
+
 										if(competition)
-											timeScore = competition->CalculateTimeScore(getRealTimeMS());
-										Submission *submission = Submission::Create(team, problem, codeType, timeScore);
-										if(submission)
-										{
-											string codeFile = submission->GetSourceFile();
-
-											ofstream srcFileOut(codeFile.c_str());
-											srcFileOut << postArgMap["code"];
-											srcFileOut.close();
-
-											if(competition)
-												competition->SaveToFile("compo/compo.txt");
-										}
+											competition->SaveToFile("compo/compo.txt");
 									}
 								}
+							}
 				}
 				else if(!cmd.compare("pdf"))
 				{

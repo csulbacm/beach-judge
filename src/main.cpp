@@ -51,9 +51,7 @@ void *commandFunc(void *arg)
 		{
 			Competition *competition = Competition::GetCurrent();
 			if(competition)
-			{
 				competition->ClearAll();
-			}
 		}
 	}
 

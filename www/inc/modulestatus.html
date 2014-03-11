@@ -1,5 +1,5 @@
 <div class="panel panel-default">
-  <h2>Team Status</h2>
+  <h2>Competition</h2>
   <div class="panel-body">
     
     <div class="jumbotron" style="padding:15px; margin-bottom:0;">
@@ -14,7 +14,9 @@
       $if:isTeam
       <p style="text-align:center;">
       <strong>Score:</strong>
-      $teamTotalScore
+      $teamTotalScore<br/>
+      <strong>Penalties:</strong>
+      $teamTotalPenalties
       </p>
       $endif:isTeam
 
@@ -27,6 +29,10 @@
         <form role="form" method="post" style="float: left" action="/">
           <input type="hidden" name="cmd" value="stopCompo">
           <button type="submit" class="btn btn-default">Stop</button>
+        </form>
+        <form role="form" method="post" style="float: left" action="/">
+          <input type="hidden" name="cmd" value="clearData">
+          <button type="submit" class="btn btn-default">Clear Data</button>
         </form>
         <div style="clear: both"></div>
       </div>
