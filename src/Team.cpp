@@ -125,7 +125,7 @@ namespace beachjudge
 			Team *team = it->second;
 			if(team->m_penalties.size())
 			{
-				outFile << team->m_id;
+				outFile << team->m_id << " " << team->m_totalScore << " " << team->m_totalPenalties;
 				for(map<Problem *, unsigned short>::iterator itB = team->m_penalties.begin(); itB != team->m_penalties.end(); itB++)
 				{
 					Problem *problem = itB->first;
@@ -153,9 +153,12 @@ namespace beachjudge
 				stringstream lineStream(line);
 				getline(lineStream, in, '\t');
 				stringstream inStream(in);
-				unsigned short teamID;
-				inStream >> teamID;
+				unsigned short teamID, totalPenalties;
+				float totalScore;
+				inStream >> teamID >> totalScore >> totalPenalties;
 				Team *team = LookupByID(teamID);
+				team->m_totalScore = totalScore;
+				team->m_totalPenalties = totalPenalties;
 				if(team)
 					while(getline(lineStream, in, '\t'))
 					{
