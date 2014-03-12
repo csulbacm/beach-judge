@@ -142,6 +142,21 @@ namespace beachjudge
 	{
 		return m_codeType;
 	}
+	string Submission::GetCodeTypeText() const
+	{
+		switch(m_codeType)
+		{
+		case CodeType_Unknown:
+			return "Unknown";
+		case CodeType_C:
+			return "C";
+		case CodeType_CPP:
+			return "C++";
+		case CodeType_Java:
+			return "Java";
+		}
+		return "";
+	}
 	string Submission::GetSourceFile() const
 	{
 		return m_sourceFile;

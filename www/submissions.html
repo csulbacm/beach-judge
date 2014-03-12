@@ -33,9 +33,15 @@ $if:loggedIn
 		$loadSubmission:{GET_s}
 		$ifd:{loadedSubmissionID}
 		<p>
-			<strong>Problem</strong>
+			<strong>Problem:</strong>
 			<span>
 				 $get:loadedSubmissionProblemName - $get:loadedSubmissionStatus
+			</span>
+		</p>
+		<p>
+			<strong>Code Type:</strong>
+			<span>
+				 $get:loadedSubmissionCodeType
 			</span>
 		</p>
 		<hr />

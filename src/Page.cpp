@@ -106,6 +106,7 @@ namespace beachjudge
 				targetVars->operator[]("loadedSubmissionTeamID") = string(str);
 				targetVars->operator[]("loadedSubmissionTeamName") = submission->GetTeam()->GetName();
 				targetVars->operator[]("loadedSubmissionStatus") = submission->GetStatusText();
+				targetVars->operator[]("loadedSubmissionCodeType") = submission->GetCodeTypeText();
 			}
 		}
 	}
@@ -872,6 +873,7 @@ namespace beachjudge
 										SPRINTF(str, "%d", subTeam->GetID());
 										targetVars->operator[]("submissionTeamID") = string(str);
 										targetVars->operator[]("submissionStatus") = submission->GetStatusText();
+										targetVars->operator[]("submissionCodeType") = submission->GetCodeTypeText();
 										submissionIt++;
 										if(submissionIt == submissions->end())
 											done = true;

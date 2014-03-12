@@ -55,6 +55,7 @@ namespace beachjudge
 		unsigned long GetTimeMS() const;
 		unsigned short GetID() const;
 		CodeType GetCodeType() const;
+		std::string GetCodeTypeText() const;
 		std::string GetSourceFile() const;
 		SubStatus GetStatus() const;
 		void SetStatus(SubStatus status);
