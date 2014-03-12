@@ -13,6 +13,8 @@
 //- SHA1 -
 #include <sha1.h>
 
+#define PENALTY 1200.f
+
 using namespace std;
 
 namespace beachjudge
@@ -264,6 +266,7 @@ namespace beachjudge
 			m_scores[problem] = score;
 		if(!m_penalties.count(problem))
 			m_penalties[problem] = 0;
+		m_scores[problem] += m_penalties[problem] * PENALTY;
 		m_totalScore += score;
 	}
 	unsigned short Team::GetPenalties(Problem *problem)
