@@ -10,11 +10,11 @@ $if:isJudge
 				<h2>Teams</h2>
 				<div class="panel-body">
 					<ul class="nav nav-stacked">
-						$startLoop:teams
+						$startLoop:teamsByName
 						<li><a href="/teams?t=$get:teamID">
 							<strong>$get:teamName</strong>
 						</a></li>
-						$endLoop:teams
+						$endLoop:teamsByName
 					</ul>
 				</div>
 			</div>

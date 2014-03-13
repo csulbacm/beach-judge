@@ -34,10 +34,14 @@ namespace beachjudge
 	}
 	bool ByScoreComp(Team *teamA, Team *teamB)
 	{
-		if(teamA->GetNumSolutions() < teamB->GetNumSolutions())
+		if(teamA->GetNumSolutions() > teamB->GetNumSolutions())
 			return true;
+		if(teamA->GetNumSolutions() < teamB->GetNumSolutions())
+			return false;
 		if(teamA->GetTotalScore() < teamB->GetTotalScore())
 			return true;
+		if(teamA->GetTotalScore() > teamB->GetTotalScore())
+			return false;
 		return teamA->GetName().compare(teamB->GetName()) < 0;
 	}
 	bool ByNameComp(Team *teamA, Team *teamB)
