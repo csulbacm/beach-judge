@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
+#include <csignal>
 #include <iostream>
 #include <algorithm>
 
@@ -194,5 +195,32 @@ namespace beachjudge
 			return "Wrong Answer";
 		}
 		return "";
+	}
+	SubStatus Submission::AutoTest() //- TODO: Handle Unknown Code Type -
+	{
+		string target("../scripts/"), sourceFile("./");
+		sourceFile.append(m_sourceFile);
+		switch(m_codeType)
+		{
+		case CodeType_C:
+			target.append("compile_cpp.sh");
+			break;
+		case CodeType_CPP:
+			target.append("compile_c.sh");
+			break;
+		case CodeType_Java:
+			target.append("compile_java.sh");
+			break;
+		}
+		target.append(" ");
+		target.append(sourceFile);
+		target.append(" > result.out");
+		system(target.c_str());
+		system("cat result.out");
+		system("./aout");
+		fileDelete("result.out");
+		fileDelete("aout");
+
+		return SubStatus_Accepted;
 	}
 }

@@ -60,6 +60,7 @@ namespace beachjudge
 		SubStatus GetStatus() const;
 		void SetStatus(SubStatus status);
 		std::string GetStatusText() const;
+		SubStatus AutoTest();
 	};
 }
 

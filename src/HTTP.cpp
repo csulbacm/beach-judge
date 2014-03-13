@@ -559,6 +559,8 @@ namespace beachjudge
 								Submission *submission = Submission::LookupByID(atoi(postArgMap["submissionID"].c_str()));
 								if(submission)
 								{
+									submission->AutoTest();
+/*									
 									SubStatus status = (SubStatus)atoi(postArgMap["grading"].c_str());
 									submission->SetStatus(status);
 									Team *team = submission->GetTeam();
@@ -572,7 +574,7 @@ namespace beachjudge
 									Competition *compo = Competition::GetCurrent();
 									if(compo)
 										compo->SaveToFile("compo/compo.txt");
-								}
+*/								}
 							}
 				}
 				else if(!cmd.compare("startCompo"))
