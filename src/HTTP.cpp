@@ -635,21 +635,24 @@ namespace beachjudge
 									else if(!ext.compare("c"))
 										codeType = CodeType_C;
 */
-									CodeType codeType = (CodeType)atoi(postArgMap["codeType"].c_str());
-									unsigned long timeScore = 0;
-									if(competition)
-										timeScore = competition->CalculateTimeScore(getRealTimeMS());
-									Submission *submission = Submission::Create(team, problem, codeType, timeScore);
-									if(submission)
+									if(postArgMap["code"].length())
 									{
-										string codeFile = submission->GetSourceFile();
-
-										ofstream srcFileOut(codeFile.c_str());
-										srcFileOut << postArgMap["code"];
-										srcFileOut.close();
-
+										CodeType codeType = (CodeType)atoi(postArgMap["codeType"].c_str());
+										unsigned long timeScore = 0;
 										if(competition)
-											competition->SaveToFile("compo/compo.txt");
+											timeScore = competition->CalculateTimeScore(getRealTimeMS());
+										Submission *submission = Submission::Create(team, problem, codeType, timeScore);
+										if(submission)
+										{
+											string codeFile = submission->GetSourceFile();
+
+											ofstream srcFileOut(codeFile.c_str());
+											srcFileOut << postArgMap["code"];
+											srcFileOut.close();
+
+											if(competition)
+												competition->SaveToFile("compo/compo.txt");
+										}
 									}
 								}
 							}
