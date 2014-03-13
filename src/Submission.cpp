@@ -63,6 +63,7 @@ namespace beachjudge
 		memset(idStr, 0, 8);
 		SPRINTF(idStr, "%d", submission->m_id);
 		sourceFile.append(string(idStr));
+		submission->m_base = sourceFile;
 		switch(codeType)
 		{
 		case CodeType_CPP:
@@ -198,15 +199,19 @@ namespace beachjudge
 	}
 	SubStatus Submission::AutoTest() //- TODO: Handle Unknown Code Type -
 	{
-		string target("../scripts/"), sourceFile("./");
+		string target("../scripts/"), sourceFile("./"), execFile("./"), resultFile("./");
 		sourceFile.append(m_sourceFile);
+		execFile.append(m_base);
+		execFile.append(".out");
+		resultFile.append(m_base);
+		resultFile.append(".log");
 		switch(m_codeType)
 		{
 		case CodeType_C:
-			target.append("compile_cpp.sh");
+			target.append("compile_c.sh");
 			break;
 		case CodeType_CPP:
-			target.append("compile_c.sh");
+			target.append("compile_cpp.sh");
 			break;
 		case CodeType_Java:
 			target.append("compile_java.sh");
@@ -214,12 +219,13 @@ namespace beachjudge
 		}
 		target.append(" ");
 		target.append(sourceFile);
-		target.append(" > result.out");
+		target.append(" ");
+		target.append(execFile);
+		target.append(" > ");
+		target.append(resultFile.c_str());
 		system(target.c_str());
-		system("cat result.out");
-		system("./aout");
-		fileDelete("result.out");
-		fileDelete("aout");
+		fileDelete(resultFile.c_str());
+		fileDelete(execFile.c_str());
 
 		return SubStatus_Accepted;
 	}

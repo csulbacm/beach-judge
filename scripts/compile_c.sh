@@ -1,2 +1,2 @@
 #!/bin/bash
-gcc $1 -o a.out
+gcc $1 -o $2

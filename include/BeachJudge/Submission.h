@@ -37,7 +37,7 @@ namespace beachjudge
 		Team *m_team;
 		Problem *m_problem;
 		unsigned long m_timeMS;
-		std::string m_sourceFile;
+		std::string m_sourceFile, m_base;
 
 		Submission();
 

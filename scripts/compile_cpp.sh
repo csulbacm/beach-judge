@@ -1,2 +1,2 @@
 #!/bin/bash
-g++ $1 a.out
+g++ $1 -o $2
