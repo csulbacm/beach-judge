@@ -22,6 +22,7 @@ namespace beachjudge
 	string g_teamDatabase = "teams.txt";
 	map<string, Team *> g_teamByNameMap;
 	map<unsigned short, Team *> g_teamByIDMap;
+	vector<Team *> g_teamsByScore, g_teamsByName;
 	
 	string sha1Convert(string str)
 	{
@@ -30,6 +31,18 @@ namespace beachjudge
 		sha1::calc(str.c_str(), str.length(), buff);
 		sha1::toHexString(buff, hex);
 		return string(hex);
+	}
+	bool ByScoreComp(Team *teamA, Team *teamB)
+	{
+		if(teamA->GetNumSolutions() < teamB->GetNumSolutions())
+			return true;
+		if(teamA->GetTotalScore() < teamB->GetTotalScore())
+			return true;
+		return teamA->GetName().compare(teamB->GetName()) < 0;
+	}
+	bool ByNameComp(Team *teamA, Team *teamB)
+	{
+		return teamA->GetName().compare(teamB->GetName()) < 0;
 	}
 
 	map<unsigned short, Team *> &Team::GetTeamsByID()
@@ -67,6 +80,13 @@ namespace beachjudge
 			}
 			team->m_id = id;
 			g_teamByIDMap[team->m_id] = team;
+			if(team->m_id != 0)
+			{
+				g_teamsByScore.push_back(team);
+				g_teamsByName.push_back(team);
+			}
+			sort(g_teamsByScore.begin(), g_teamsByScore.end(), ByScoreComp);
+			sort(g_teamsByName.begin(), g_teamsByName.end(), ByNameComp);
 		}
 
 		team->m_password = sha1Convert(password);
@@ -127,7 +147,7 @@ namespace beachjudge
 			Team *team = it->second;
 			if(team->m_penalties.size())
 			{
-				outFile << team->m_id << " " << team->m_totalScore << " " << team->m_totalPenalties;
+				outFile << team->m_id << " " << team->m_totalScore << " " << team->m_totalPenalties << " " << team->m_numSolutions;
 				for(map<Problem *, unsigned short>::iterator itB = team->m_penalties.begin(); itB != team->m_penalties.end(); itB++)
 				{
 					Problem *problem = itB->first;
@@ -155,12 +175,13 @@ namespace beachjudge
 				stringstream lineStream(line);
 				getline(lineStream, in, '\t');
 				stringstream inStream(in);
-				unsigned short teamID, totalPenalties;
+				unsigned short teamID, totalPenalties, numSolutions;
 				float totalScore;
-				inStream >> teamID >> totalScore >> totalPenalties;
+				inStream >> teamID >> totalScore >> totalPenalties >> numSolutions;
 				Team *team = LookupByID(teamID);
 				team->m_totalScore = totalScore;
 				team->m_totalPenalties = totalPenalties;
+				team->m_numSolutions = numSolutions;
 				if(team)
 					while(getline(lineStream, in, '\t'))
 					{
@@ -177,7 +198,16 @@ namespace beachjudge
 						}
 					}
 			}
+			sort(g_teamsByScore.begin(), g_teamsByScore.end(), ByScoreComp);
 		}
+	}
+	vector<Team *> *Team::GetTeamsByScore()
+	{
+		return &g_teamsByScore;
+	}
+	vector<Team *> *Team::GetTeamsByName()
+	{
+		return &g_teamsByName;
 	}
 
 	Team::Team()
@@ -190,6 +220,8 @@ namespace beachjudge
 	{
 		g_teamByNameMap.erase(m_name);
 		g_teamByIDMap.erase(m_id);
+		g_teamsByName.erase(find(g_teamsByName.begin(), g_teamsByName.end(), this));
+		g_teamsByScore.erase(find(g_teamsByScore.begin(), g_teamsByScore.end(), this));
 	}
 	void Team::SetPassword(string password)
 	{
@@ -205,6 +237,7 @@ namespace beachjudge
 		g_teamByNameMap.erase(m_name);
 		m_name = name;
 		g_teamByNameMap[name] = this;
+		sort(g_teamsByName.begin(), g_teamsByName.end(), ByNameComp);
 	}
 	string Team::GetName() const
 	{
@@ -263,11 +296,16 @@ namespace beachjudge
 		if(m_scores.count(problem))
 			m_scores[problem] += score;
 		else
+		{
 			m_scores[problem] = score;
+			m_numSolutions++;
+		}
 		if(!m_penalties.count(problem))
 			m_penalties[problem] = 0;
 		m_scores[problem] += m_penalties[problem] * PENALTY;
 		m_totalScore += score;
+
+		sort(g_teamsByScore.begin(), g_teamsByScore.end(), ByScoreComp);
 	}
 	unsigned short Team::GetPenalties(Problem *problem)
 	{
@@ -286,6 +324,9 @@ namespace beachjudge
 	void Team::Reset()
 	{
 		m_totalPenalties = 0;
+		m_numSolutions = 0;
 		m_totalScore = 0.f;
+
+		sort(g_teamsByScore.begin(), g_teamsByScore.end(), ByScoreComp);
 	}
 }

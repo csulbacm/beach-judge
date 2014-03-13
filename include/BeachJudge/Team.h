@@ -34,6 +34,8 @@ namespace beachjudge
 		static void LoadFromDatabase();
 		static void DeleteAll();
 		static std::map<unsigned short, Team *> &GetTeamsByID();
+		static std::vector<Team *> *GetTeamsByScore();
+		static std::vector<Team *> *GetTeamsByName();
 		static void SaveScores();
 		static void LoadScores();
 

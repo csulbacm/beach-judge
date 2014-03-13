@@ -134,7 +134,7 @@ namespace beachjudge
 						{
 							char part[8];
 							memset(part, 0, 8);
-							SPRINTF(part, "&#%d", c);
+							SPRINTF(part, "&#%d;", c);
 							stream << part;
 						}
 					}
@@ -749,6 +749,8 @@ namespace beachjudge
 								map<unsigned short, Problem *> &problemsByID = Problem::GetProblemsByID();
 								vector<Submission *>::iterator submissionIt;
 								vector<Submission *> *submissions = 0;
+								vector<Team *> *teamVec = 0;
+								vector<Team *>::iterator teamVecIt;
 								unsigned short num = 0;
 								if(loopTarget.size() > 1)
 									num = atoi(&loopTarget.c_str()[1]);
@@ -759,6 +761,16 @@ namespace beachjudge
 								bool done = false;
 								if(!loopTarget.compare("teams"))
 									teamIt = teamsByID.begin();
+								else if(!loopTarget.compare("teamsByScore"))
+								{
+									teamVec = Team::GetTeamsByScore();
+									teamVecIt = teamVec->begin();
+								}
+								else if(!loopTarget.compare("teamsByName"))
+								{
+									teamVec = Team::GetTeamsByName();
+									teamVecIt = teamVec->begin();
+								}
 								else if(!loopTarget.compare("problems"))
 									problemIt = problemsByID.begin();
 								else if(!loopTarget.compare("mySubmissions"))
@@ -832,6 +844,32 @@ namespace beachjudge
 											teamIt++;
 										}
 										if(teamIt == teamsByID.end())
+											done = true;
+									}
+									else if(!loopTarget.compare("teamsByScore") || !loopTarget.compare("teamsByName"))
+									{
+										if(teamVecIt != teamVec->end())
+										{
+											Team *tTeam = *teamVecIt;
+											targetVars->operator[]("teamName") = tTeam->GetName();
+											memset(str, 0, 16);
+											SPRINTF(str, "%d", tTeam->GetID());
+											targetVars->operator[]("teamID") = string(str);
+											memset(str, 0, 16);
+											SPRINTF(str, "%d", idx);
+											targetVars->operator[]("teamIdx") = string(str);
+											memset(str, 0, 16);
+											SPRINTF(str, "%0.2f", tTeam->GetTotalScore());
+											targetVars->operator[]("teamTotalScore") = string(str);
+											memset(str, 0, 16);
+											SPRINTF(str, "%d", tTeam->GetTotalPenalties());
+											targetVars->operator[]("teamTotalPenalties") = string(str);
+											memset(str, 0, 16);
+											SPRINTF(str, "%d", tTeam->GetNumSolutions());
+											targetVars->operator[]("teamNumSolutions") = string(str);
+											teamVecIt++;
+										}
+										if(teamVecIt == teamVec->end())
 											done = true;
 									}
 									else if(!loopTarget.compare("problems"))
