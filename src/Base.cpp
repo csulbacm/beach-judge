@@ -52,6 +52,12 @@ namespace beachjudge
 		string str(file);
 		return str.substr(str.find_last_of(".") + 1);
 	}
+	unsigned long fileSize(const char *file)
+	{
+		ifstream inFile(file, ios::in | ios::binary);
+		inFile.seekg(0, ifstream::end);
+		return (unsigned long)inFile.tellg(); 
+	}
 	string filePath(const char *file)
 	{
 		string str(file);

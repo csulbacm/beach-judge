@@ -56,6 +56,7 @@ namespace beachjudge
 		void AddScore(Problem *problem, float score);
 		unsigned short GetPenalties(Problem *problem);
 		void AddPenalty(Problem *problem);
+		void Reset();
 	};
 }
 

@@ -192,7 +192,19 @@ namespace beachjudge
 			{
 				Submission *submission = it->second;
 				fileDelete(submission->GetSourceFile().c_str());
+				string base = submission->GetBase();
+				string logFile(base), execFile(base);
+				logFile.append(".log");
+				execFile.append(".out");
+				fileDelete(logFile.c_str());
+				fileDelete(execFile.c_str());
 			}
+		map<unsigned short, Team *> &teamsByID = Team::GetTeamsByID();
+		for(map<unsigned short, Team *>::iterator it = teamsByID.begin(); it != teamsByID.end(); it++)
+		{
+			Team *team = it->second;
+			team->Reset();
+		}
 		Question::Cleanup();
 		Submission::Cleanup();
 		fileDelete("compo/compo.txt");

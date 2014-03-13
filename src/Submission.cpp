@@ -197,6 +197,10 @@ namespace beachjudge
 		}
 		return "";
 	}
+	string Submission::GetBase() const
+	{
+		return m_base;
+	}
 	SubStatus Submission::AutoTest() //- TODO: Handle Unknown Code Type -
 	{
 		string target("../scripts/"), sourceFile("./"), execFile("./"), resultFile("./");
@@ -221,11 +225,14 @@ namespace beachjudge
 		target.append(sourceFile);
 		target.append(" ");
 		target.append(execFile);
-		target.append(" > ");
-		target.append(resultFile.c_str());
+		target.append(" ");
+		target.append(resultFile);
 		system(target.c_str());
-		fileDelete(resultFile.c_str());
-		fileDelete(execFile.c_str());
+
+		if(fileSize(resultFile.c_str()))
+			cout << "Compilation Error" << endl;
+	//	fileDelete(resultFile.c_str());
+	//	fileDelete(execFile.c_str());
 
 		return SubStatus_Accepted;
 	}

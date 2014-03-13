@@ -283,4 +283,9 @@ namespace beachjudge
 			m_penalties[problem] = 1;
 		m_totalPenalties++;
 	}
+	void Team::Reset()
+	{
+		m_totalPenalties = 0;
+		m_totalScore = 0.f;
+	}
 }

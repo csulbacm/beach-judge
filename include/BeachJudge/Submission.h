@@ -57,6 +57,7 @@ namespace beachjudge
 		CodeType GetCodeType() const;
 		std::string GetCodeTypeText() const;
 		std::string GetSourceFile() const;
+		std::string GetBase() const;
 		SubStatus GetStatus() const;
 		void SetStatus(SubStatus status);
 		std::string GetStatusText() const;
