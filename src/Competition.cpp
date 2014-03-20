@@ -41,12 +41,12 @@ namespace beachjudge
 			if(!in.compare("duration"))
 			{
 				getline(inFile, in);
-				competition->m_duration = atoi(in.c_str());
+				competition->m_duration = atoll(in.c_str());
 			}
 			else if(!in.compare("endTime"))
 			{
 				getline(inFile, in);
-				competition->m_endTimeMS = atol(in.c_str());
+				competition->m_endTimeMS = atoll(in.c_str());
 				competition->m_startTimeMS = competition->m_endTimeMS - competition->m_duration; //- TODO: Clean this up -
 			}
 			else if(!in.compare("questions"))
