@@ -32,7 +32,7 @@ namespace beachjudge
 		return subA->GetTimeMS() < subB->GetTimeMS();
 	}
 
-	Submission *Submission::Create(Team *team, Problem *problem, CodeType codeType, unsigned long timeMS, SubStatus subStatus, unsigned short id)
+	Submission *Submission::Create(Team *team, Problem *problem, CodeType codeType, unsigned long long timeMS, SubStatus subStatus, unsigned short id)
 	{
 		if(team->GetNumActiveSubmissions() >= TEAM_MAX_NUMACTIVESUBMISSIONS)
 			return 0;
@@ -132,7 +132,7 @@ namespace beachjudge
 	{
 		return m_problem;
 	}
-	unsigned long Submission::GetTimeMS() const
+	unsigned long long Submission::GetTimeMS() const
 	{
 		return m_timeMS;
 	}

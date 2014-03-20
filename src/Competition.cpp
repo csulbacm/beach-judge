@@ -79,7 +79,7 @@ namespace beachjudge
 				{
 					stringstream submissionInfo(in);
 					unsigned short sID, tID, pID, cType, sStatus;
-					unsigned long timeMS;
+					unsigned long long timeMS;
 					submissionInfo >> sID >> tID >> pID >> cType >> sStatus >> timeMS;
 					Team *team = Team::LookupByID(tID);
 					Problem *problem = Problem::LookupByID(pID);
@@ -92,7 +92,7 @@ namespace beachjudge
 
 		return competition;
 	}
-	Competition *Competition::Create(unsigned long duration)
+	Competition *Competition::Create(unsigned long long duration)
 	{
 		Competition *competition = new Competition();
 		competition->m_duration = duration;
@@ -126,19 +126,19 @@ namespace beachjudge
 	{
 		return m_isRunning;
 	}
-	unsigned long Competition::GetTimeLeft() const
+	unsigned long long Competition::GetTimeLeft() const
 	{
-		unsigned long currTimeMS = getRealTimeMS();
+		unsigned long long currTimeMS = getRealTimeMS();
 		if(currTimeMS > m_endTimeMS)
 			return 0;
 		else
 			return m_endTimeMS - currTimeMS;
 	}
-	unsigned long Competition::GetDuration() const
+	unsigned long long Competition::GetDuration() const
 	{
 		return m_duration;
 	}
-	unsigned long Competition::CalculateTimeScore(unsigned long timeMS)
+	unsigned long long Competition::CalculateTimeScore(unsigned long long timeMS)
 	{
 		return m_duration - (m_endTimeMS - timeMS);
 	}

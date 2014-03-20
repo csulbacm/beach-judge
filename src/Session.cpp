@@ -91,7 +91,7 @@ namespace beachjudge
 	}
 	void Session::Cleanup(bool deleteAll)
 	{
-		unsigned long currTimeMS = getRealTimeMS();
+		unsigned long long currTimeMS = getRealTimeMS();
 		while(g_sessionVec.size())
 		{
 			Session *session = g_sessionVec.back();
@@ -124,7 +124,8 @@ namespace beachjudge
 			{
 				stringstream inStream(in);
 				unsigned short id, port, teamID;
-				unsigned long address, expireTimeMS;
+				unsigned long address;
+				unsigned long long expireTimeMS;
 				inStream >> id >> address >> port >> teamID >> expireTimeMS;
 
 				Team *team = Team::LookupByID(teamID);
@@ -138,7 +139,7 @@ namespace beachjudge
 		if(g_sessionMap.size())
 		{
 			cout << "Current Sessions:" << endl;
-			unsigned long currTimeMS = getRealTimeMS();
+			unsigned long long currTimeMS = getRealTimeMS();
 			for(map<unsigned long, Session *>::iterator it = g_sessionMap.begin(); it != g_sessionMap.end(); it++)
 			{
 				Session *session = it->second;
@@ -162,7 +163,7 @@ namespace beachjudge
 		g_sessionIDMap.erase(this->m_id);
 		g_sessionVec.erase(find(g_sessionVec.begin(), g_sessionVec.end(), this));
 	}
-	unsigned long Session::GetExpireTimeMS() const
+	unsigned long long Session::GetExpireTimeMS() const
 	{
 		return m_expireTimeMS;
 	}

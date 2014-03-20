@@ -141,11 +141,11 @@ int main(int argc, char **argv)
 	Thread commandThread(&commandFunc);
 	commandThread.Start(0);
 
-	unsigned long sessionCleanupMS = getRunTimeMS() + BEACHJUDGE_SESSION_CLEANUPTICKMS;
-	unsigned long competitionTickMS = getRunTimeMS() + BEACHJUDGE_COMPETITION_TICKMS;
+	unsigned long long sessionCleanupMS = getRunTimeMS() + BEACHJUDGE_SESSION_CLEANUPTICKMS;
+	unsigned long long competitionTickMS = getRunTimeMS() + BEACHJUDGE_COMPETITION_TICKMS;
 	while(true)
 	{
-		unsigned long currTimeMS = getRunTimeMS();
+		unsigned long long currTimeMS = getRunTimeMS();
 
 		if(currTimeMS >= competitionTickMS)
 		{

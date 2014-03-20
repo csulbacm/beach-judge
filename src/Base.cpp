@@ -141,14 +141,14 @@ namespace beachjudge
 		#endif
 	}
 
-	unsigned long g_startTimeMS = getRunTimeMS(); //- TODO: Verify if we can get away with doing this -
-	unsigned long getStartTimeMS()
+	unsigned long long g_startTimeMS = getRunTimeMS(); //- TODO: Verify if we can get away with doing this -
+	unsigned long long getStartTimeMS()
 	{
 		return g_startTimeMS;
 	}
-	unsigned long getRealTimeMS()
+	unsigned long long getRealTimeMS()
 	{
-		unsigned long currTimeMS;
+		unsigned long long currTimeMS;
 
 		#ifdef linux
 			struct timeval currTime;
@@ -162,15 +162,15 @@ namespace beachjudge
 			{
 				LARGE_INTEGER count;
 				QueryPerformanceCounter(&count);
-				currTimeMS = (unsigned long)((1000 * count.QuadPart) / frequency.QuadPart);
+				currTimeMS = (unsigned long long)((1000 * count.QuadPart) / frequency.QuadPart);
 			}
 			else
-				currTimeMS = GetTickCount();
+				currTimeMS = (unsigned long long)GetTickCount();
 		#endif
 
 		return currTimeMS;
 	}
-	unsigned long getRunTimeMS()
+	unsigned long long getRunTimeMS()
 	{
 		return getRealTimeMS() - g_startTimeMS;
 	}

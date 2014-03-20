@@ -36,13 +36,13 @@ namespace beachjudge
 		unsigned short m_id;
 		Team *m_team;
 		Problem *m_problem;
-		unsigned long m_timeMS;
+		unsigned long long m_timeMS;
 		std::string m_sourceFile, m_base;
 
 		Submission();
 
 	public:
-		static Submission *Create(Team *team, Problem *problem, CodeType codeType, unsigned long timeMS, SubStatus subStatus = SubStatus_Pending, unsigned short id = 0);
+		static Submission *Create(Team *team, Problem *problem, CodeType codeType, unsigned long long timeMS, SubStatus subStatus = SubStatus_Pending, unsigned short id = 0);
 		static std::map<unsigned short, Submission *> &GetSubmissionsByID();
 		static std::vector<Submission *> *GetPendingSubmissions();
 		static Submission *LookupByID(unsigned short id);
@@ -52,7 +52,7 @@ namespace beachjudge
 
 		Team *GetTeam() const;
 		Problem *GetProblem() const;
-		unsigned long GetTimeMS() const;
+		unsigned long long GetTimeMS() const;
 		unsigned short GetID() const;
 		CodeType GetCodeType() const;
 		std::string GetCodeTypeText() const;

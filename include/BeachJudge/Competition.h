@@ -8,7 +8,7 @@ namespace beachjudge
 {
 	class Competition
 	{
-		unsigned long m_startTimeMS, m_endTimeMS, m_duration;
+		unsigned long long m_startTimeMS, m_endTimeMS, m_duration;
 		bool m_isRunning;
 
 		Competition();
@@ -16,16 +16,16 @@ namespace beachjudge
 	public:
 		static Competition *GetCurrent();
 		static Competition *CreateFromFile(std::string file);
-		static Competition *Create(unsigned long duration);
+		static Competition *Create(unsigned long long duration);
 
 		~Competition();
 
 		void Start();
 		void Stop();
 		bool IsRunning() const;
-		unsigned long GetTimeLeft() const;
-		unsigned long GetDuration() const;
-		unsigned long CalculateTimeScore(unsigned long timeMS);
+		unsigned long long GetTimeLeft() const;
+		unsigned long long GetDuration() const;
+		unsigned long long CalculateTimeScore(unsigned long long timeMS);
 		void SetCurrent();
 		void SaveToFile(std::string file);
 		void ClearAll();

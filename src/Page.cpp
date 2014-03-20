@@ -898,10 +898,10 @@ namespace beachjudge
 										SPRINTF(str, "%d", sid);
 										targetVars->operator[]("submissionID") = string(str);
 										memset(str, 0, 16);
-										SPRINTF(str, "%ld", submission->GetTimeMS());
+										SPRINTF(str, "%lld", submission->GetTimeMS());
 										targetVars->operator[]("submissionTime") = string(str);
 										memset(str, 0, 16);
-										SPRINTF(str, "%ld", submission->GetTimeMS());
+										SPRINTF(str, "%lld", submission->GetTimeMS());
 										targetVars->operator[]("submissionProblemName") = problem->GetName();
 										memset(str, 0, 16);
 										SPRINTF(str, "%d", problem->GetID());

@@ -12,7 +12,8 @@ namespace beachjudge
 {
 	class Session
 	{
-		unsigned long m_address, m_expireTimeMS;
+		unsigned long m_address;
+		unsigned long long m_expireTimeMS;
 		unsigned short m_id, m_port;
 		Team *m_team;
 		std::string m_addressString;
@@ -32,7 +33,7 @@ namespace beachjudge
 
 		unsigned short GetID() const;
 		Team *GetTeam() const;
-		unsigned long GetExpireTimeMS() const;
+		unsigned long long GetExpireTimeMS() const;
 		unsigned long GetAddress() const;
 		unsigned short GetVariable(std::string name);
 		void ResetTimeout();

@@ -661,7 +661,7 @@ namespace beachjudge
 									if(postArgMap["code"].length())
 									{
 										CodeType codeType = (CodeType)atoi(postArgMap["codeType"].c_str());
-										unsigned long timeScore = 0;
+										unsigned long long timeScore = 0;
 										if(competition)
 											timeScore = competition->CalculateTimeScore(getRealTimeMS());
 										Submission *submission = Submission::Create(team, problem, codeType, timeScore);
