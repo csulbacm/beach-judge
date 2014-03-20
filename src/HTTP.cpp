@@ -208,6 +208,25 @@ namespace beachjudge
 									e404 = true;
 							}
 						}
+						else if(!fileRequestType.compare("source"))
+						{
+							if(getArgMap.count("s")) //- TODO: Verify security -
+							{
+								unsigned short sid = atoi(getArgMap["s"].c_str());
+								Submission *submission = Submission::LookupByID(sid);
+								if(submission)
+								{
+									file = submission->GetSourceFile();
+									char sidStr[16];
+									memset(sidStr, 0, 16);
+									SPRINTF(sidStr, "%d.", sid);
+									requestFileName.append(sidStr);
+									requestFileName.append(fileExt(file.c_str()));
+								}
+								else
+									e404 = true;
+							}
+						}
 						else
 							e404 = true;
 					}
@@ -566,10 +585,12 @@ namespace beachjudge
 									Team *team = submission->GetTeam();
 									Problem *problem = submission->GetProblem();
 									if(status == SubStatus_Accepted)
+									{
 										team->AddScore(problem, ((float)submission->GetTimeMS()) / 1000.f);
+										problem->AddSolver(team);
+									}
 									else
 										team->AddPenalty(problem);
-									problem->AddSolver(team);
 									Team::SaveScores();
 									Competition *compo = Competition::GetCurrent();
 									if(compo)

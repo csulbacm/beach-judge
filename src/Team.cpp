@@ -308,6 +308,7 @@ namespace beachjudge
 			m_penalties[problem] = 0;
 		m_scores[problem] += m_penalties[problem] * PENALTY;
 		m_totalScore += score;
+		m_totalPenalties += m_penalties[problem];
 
 		sort(g_teamsByScore.begin(), g_teamsByScore.end(), ByScoreComp);
 	}
@@ -323,13 +324,15 @@ namespace beachjudge
 			m_penalties[problem]++;
 		else
 			m_penalties[problem] = 1;
-		m_totalPenalties++;
 	}
 	void Team::Reset()
 	{
 		m_totalPenalties = 0;
 		m_numSolutions = 0;
 		m_totalScore = 0.f;
+
+		m_scores.clear();
+		m_penalties.clear();
 
 		sort(g_teamsByScore.begin(), g_teamsByScore.end(), ByScoreComp);
 	}

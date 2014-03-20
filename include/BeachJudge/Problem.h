@@ -25,6 +25,7 @@ namespace beachjudge
 		static Problem *LookupByID(unsigned short id);
 		static std::map<unsigned short, Problem *> &GetProblemsByID();
 		static void LoadFromFile(const char *file);
+		static void ClearSolvers();
 
 		~Problem();
 

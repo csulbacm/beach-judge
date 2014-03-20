@@ -66,6 +66,11 @@ namespace beachjudge
 			Create(id, name.substr(1));
 		}
 	}
+	void Problem::ClearSolvers()
+	{
+		for(map<unsigned short, Problem *>::iterator it = g_problemsByID.begin(); it != g_problemsByID.end(); it++)
+			it->second->m_solvers.clear();
+	}
 
 	Problem::Problem()
 	{

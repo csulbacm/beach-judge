@@ -205,6 +205,7 @@ namespace beachjudge
 			Team *team = it->second;
 			team->Reset();
 		}
+		Problem::ClearSolvers();
 		Question::Cleanup();
 		Submission::Cleanup();
 		fileDelete("compo/compo.txt");
