@@ -80,11 +80,13 @@ void *clientHandlerFunc(void *arg)
 void *webServerFunc(void *arg)
 {
 	srand((unsigned int)time(0));
-	Socket *server = Socket::Create(Socket::IP4, Socket::Stream, Socket::TCP);
 
+	//- Create server socket and listen -
+	Socket *server = Socket::Create(Socket::IP4, Socket::Stream, Socket::TCP);
 	server->Bind(8081);
 	server->Listen(16);
 
+	//- Connection handling process -
 	while(true)
 	{
 		Socket *client = server->Accept(); //- TODO: Fix Non-Blocking Sockets -
@@ -107,8 +109,11 @@ void *webServerFunc(void *arg)
 int main(int argc, char **argv)
 {
 	srand((unsigned int)time(0));
-
 	print("Beach Judge v%s\n", getVersionString().c_str());
+
+	//------------------
+	//- Initial Config -
+	//------------------
 
 	Team::Create("judge", "root", 0, true);
 	Team::Create("dummy", "1234", 1);
@@ -135,11 +140,23 @@ int main(int argc, char **argv)
 
 	Page::RegisterDefaultTemplates();
 
+	//---------------------
+	//- Launch Web Server -
+	//---------------------
+
 	Thread webServerThread(&webServerFunc);
 	webServerThread.Start(0);
 
+	//----------------------------
+	//- Launch Command Interface -
+	//----------------------------
+
 	Thread commandThread(&commandFunc);
 	commandThread.Start(0);
+
+	//-------------------
+	//- Session Timeout -
+	//-------------------
 
 	unsigned long long sessionCleanupMS = getRunTimeMS() + BEACHJUDGE_SESSION_CLEANUPTICKMS;
 	unsigned long long competitionTickMS = getRunTimeMS() + BEACHJUDGE_COMPETITION_TICKMS;
@@ -163,11 +180,16 @@ int main(int argc, char **argv)
 		sleepMS(500);
 	}
 
+	//-----------
+	//- Cleanup -
+	//-----------
+
 	delete competition;
 	commandThread.Join();
 	webServerThread.Join();
 	Question::Cleanup();
 	Session::Cleanup(true);
+
 	Thread::Exit(NULL);
 	return 0;
 }

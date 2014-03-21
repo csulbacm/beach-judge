@@ -25,11 +25,13 @@ namespace beachjudge
 		static Problem *LookupByID(unsigned short id);
 		static std::map<unsigned short, Problem *> &GetProblemsByID();
 		static void LoadFromFile(const char *file);
+		static void SaveToFile(const char *file);
 		static void ClearSolvers();
 
 		~Problem();
 
 		std::string GetName() const;
+		void SetName(std::string name);
 		unsigned short GetID() const;
 		void AddSolver(Team *team);
 		void RemoveSolver(Team *team);

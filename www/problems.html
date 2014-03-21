@@ -11,6 +11,7 @@ $if:isJudge
 					<tr style="font-weight:bold;">
 						<td>No.</td>
 						<td>Name</td>
+						<td>Change Name</td>
 						<td>PDF</td>
 						<td>Sample Tests</td>
 						<!--<td>Questions</td>-->
@@ -21,6 +22,13 @@ $if:isJudge
 					<tr>
 						<td>$get:problemID</td>
 						<td>$get:problemName</td>
+						<td>
+							<form role="form" method="post" action="/problems" enctype="multipart/form-data">
+								<input type="hidden" name="cmd" value="changeProblemName">
+								<input type="hidden" name="problemID" value="$get:problemID">
+								<input type="text" class="form-control" name="newProblemName" id="newProblemName" placeholder="">
+							</form>
+						</td>
 						<td>
 							<a href="/file?f=info&p=$get:problemID" target="_blank">PDF</a>
 							<a href="/upload?cmd=pdf&id=$get:problemID" class="glyphicon glyphicon-upload"></a>

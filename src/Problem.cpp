@@ -66,6 +66,16 @@ namespace beachjudge
 			Create(id, name.substr(1));
 		}
 	}
+	void Problem::SaveToFile(const char *file)
+	{
+		ofstream outFile(file);
+		for(map<unsigned short, Problem *>::iterator it = g_problemsByID.begin(); it != g_problemsByID.end(); it++)
+		{
+			Problem *problem = it->second;
+			outFile << it->first << "\t" << problem->GetName() << endl;
+		}
+		outFile.close();
+	}
 	void Problem::ClearSolvers()
 	{
 		for(map<unsigned short, Problem *>::iterator it = g_problemsByID.begin(); it != g_problemsByID.end(); it++)
@@ -83,6 +93,10 @@ namespace beachjudge
 	string Problem::GetName() const
 	{
 		return m_name;
+	}
+	void Problem::SetName(string name)
+	{
+		m_name = name;
 	}
 	unsigned short Problem::GetID() const
 	{
