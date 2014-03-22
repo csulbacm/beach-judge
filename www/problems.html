@@ -14,6 +14,7 @@ $if:isJudge
 						<td>Change Name</td>
 						<td>PDF</td>
 						<td>Sample Tests</td>
+						<td>Manage Tests</td>
 						<!--<td>Questions</td>-->
 					</tr>
 				</thead>
@@ -36,6 +37,9 @@ $if:isJudge
 						<td>
 							<a href="/file?f=sample&p=$get:problemID" target="_blank" class="glyphicon glyphicon-file"></a>
 							<a href="/upload?cmd=sample&id=$get:problemID" class="glyphicon glyphicon-upload"></a>
+						</td>
+						<td>
+							<a href="/manageTests?p=$get:problemID" target="_blank" class="glyphicon glyphicon-file"></a>
 						</td>
 						<!--<td>
 							
