@@ -170,9 +170,9 @@ namespace beachjudge
 			{
 				if(!uriCopy.compare("/file"))
 				{
-					fileRequest = true;
 					if(getArgMap.count("f"))
 					{
+						fileRequest = true;
 						string fileRequestType = getArgMap["f"];
 						if(!fileRequestType.compare("info"))
 						{
@@ -230,6 +230,8 @@ namespace beachjudge
 						else
 							e404 = true;
 					}
+					else
+						e404 = true;
 				}
 				else
 				{
