@@ -39,6 +39,7 @@ namespace beachjudge
 		bool Listen(unsigned int backlog);
 		bool Connect(const char *address, unsigned int port);
 		bool Shutdown();
+		bool Close();
 		int Read(char *buffer, unsigned int length);
 		int Write(char *buffer, unsigned int length);
 		bool HasRead();

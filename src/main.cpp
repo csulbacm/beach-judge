@@ -67,15 +67,19 @@ void *clientHandlerFunc(void *arg)
 	Socket *client = data->first;
 	print("[%ld] Enter\n", client);
 
+	print("[%ld] -> Handle\n", client);
 	HTTP::HandleClient(client);
+	print("[%ld] Handle ->\n", client);
 
-	client->Shutdown();
+//	client->Shutdown();
+	client->Close();
 	
 	delete data;
-//	delete thread;
 
 	print("[%ld] Exit\n", client);
 
+//	delete client;
+//	delete thread;
 	Thread::Exit(0);
 	return 0;
 }

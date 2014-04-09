@@ -246,6 +246,23 @@ namespace beachjudge
 
 		return true;
 	}
+	bool Socket::Close()
+	{
+		SetBlocking(true);
+
+		#if BEACHJUDGE_USEPOSIXSOCKET
+			if(close(m_socket) == -1)
+		#endif
+		#if BEACHJUDGE_USEWINSOCKET
+			if(closesocket(m_socket) != 0)
+		#endif
+			{
+				error("[Error] Socket::Listen - Unable to close socket.\n");
+				return false;
+			}
+
+		return true;
+	}
 	int Socket::Write(char *buffer, unsigned int length)
 	{
 		return send(m_socket, buffer, length, 0);
@@ -253,11 +270,11 @@ namespace beachjudge
 	bool Socket::HasRead()
 	{
 		fd_set readFlags, writeFlags;
-		struct timeval waitd = {10, 0};
+		struct timeval waitd = {0, 0};
 		FD_ZERO(&readFlags);
 		FD_ZERO(&writeFlags);
 		FD_SET(m_socket, &readFlags);
-		FD_SET(m_socket, &writeFlags);
+//		FD_SET(m_socket, &writeFlags);
 
 		//- TODO: Fix this to match the standard -
 		#ifdef _WIN32
@@ -266,11 +283,11 @@ namespace beachjudge
 		#endif
 	
 		//- TODO: Determine if this is necessary -
-		#ifdef linux
+/*		#ifdef linux
 			FD_SET(STDIN_FILENO, &readFlags);
 			FD_SET(STDIN_FILENO, &writeFlags);
 		#endif
-
+*/
 		int ret = select(m_socket + 1, &readFlags, &writeFlags, (fd_set *)0, &waitd);
 		
 		#ifdef _WIN32

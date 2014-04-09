@@ -261,8 +261,10 @@ namespace beachjudge
 
 		sleepMS(100);
 
+		print("A\n");
 		if(client->HasRead())
 		{
+			unsigned short timeout = 0;
 			char sbuff[257];
 			do
 			{
@@ -270,6 +272,7 @@ namespace beachjudge
 				unsigned short len = client->Read(sbuff, 256);
 				if(len)
 				{
+					timeout = 0;
 					for(unsigned short a = 0; a < len; a++)
 						reqStream.put(sbuff[a]);
 //					string part(sbuff);
@@ -283,12 +286,15 @@ namespace beachjudge
 					else if(reqStream.str().size() > ANON_COMM_LIMIT)
 						return;
 				}
+				else
+					timeout++;
 				//- TODO: Verify upload stability -
 //				cout << reqStream.str().size() << endl;
 				sleepMS(16);
 			}
-			while(client->HasRead());
+			while(client->HasRead() && timeout < 15);
 		}
+		print("B\n");
 
 //		cout << reqStream.str() << endl;
 		map<string, string> postArgMap;
