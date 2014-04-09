@@ -368,7 +368,7 @@ namespace beachjudge
 		Page *page = new Page();
 		page->m_fileSource = file;
 		page->m_html = html;
-//		page->m_isTemp = true; //- TODO: Remove this for caching -
+		page->m_isTemp = true; //- TODO: Remove this for caching -
 		g_pageMap[file] = page;
 		return page;
 	}

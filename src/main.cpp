@@ -65,21 +65,21 @@ void *clientHandlerFunc(void *arg)
 	pair<Socket *, Thread *> *data = (pair<Socket *, Thread *> *)arg;
 	Thread *thread = data->second;
 	Socket *client = data->first;
-	print("[%ld] Enter\n", client);
-
-	print("[%ld] -> Handle\n", client);
-	HTTP::HandleClient(client);
-	print("[%ld] Handle ->\n", client);
-
-//	client->Shutdown();
-	client->Close();
-	
 	delete data;
 
-	print("[%ld] Exit\n", client);
+//	print("[%ld] Enter\n", client);
 
-//	delete client;
-//	delete thread;
+//	print("[%ld] -> Handle\n", client);
+	HTTP::HandleClient(client);
+//	print("[%ld] Handle ->\n", client);
+
+//	client->Shutdown();
+	
+
+//	print("[%ld] Exit\n", client);
+
+	delete client;
+	thread->End();
 	Thread::Exit(0);
 	return 0;
 }
@@ -96,7 +96,7 @@ void *webServerFunc(void *arg)
 	//- Connection handling process -
 	while(true)
 	{
-		print("Waiting for new connection...\n");
+//		print("Waiting for new connection...\n");
 		Socket *client = server->Accept(); //- TODO: Fix Non-Blocking Sockets -
 		Thread *clientThread = new Thread(&clientHandlerFunc);
 
@@ -185,6 +185,7 @@ int main(int argc, char **argv)
 			sessionCleanupMS += BEACHJUDGE_SESSION_CLEANUPTICKMS;
 		}
 
+		Thread::DeleteDead();
 		sleepMS(500);
 	}
 
