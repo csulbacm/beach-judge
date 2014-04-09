@@ -215,11 +215,15 @@ namespace beachjudge
 					string idStr(str);
 					targetVars->operator[](teamNameKey.append(idxStr)) = team->GetName();
 					targetVars->operator[](teamIDKey.append(idxStr)) = idStr;
+					float score = team->GetScore(problem);
 					memset(str, 0, 16);
-					SPRINTF(str, "%0.2f", team->GetScore(problem));
+					SPRINTF(str, "%0.2f", score);
 					targetVars->operator[](scoreKey.append(idxStr)) = string(str);
 					memset(str, 0, 16);
-					SPRINTF(str, "%d", team->GetPenalties(problem));
+					if(score == 0.f)
+						SPRINTF(str, "0");
+					else
+						SPRINTF(str, "%d", team->GetPenalties(problem));
 					targetVars->operator[](penaltyKey.append(idxStr)) = string(str);
 				}
 				memset(str, 0, 16);

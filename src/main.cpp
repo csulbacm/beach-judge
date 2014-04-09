@@ -65,6 +65,7 @@ void *clientHandlerFunc(void *arg)
 	pair<Socket *, Thread *> *data = (pair<Socket *, Thread *> *)arg;
 	Thread *thread = data->second;
 	Socket *client = data->first;
+	print("[%ld] Enter\n", client);
 
 	HTTP::HandleClient(client);
 
@@ -72,6 +73,8 @@ void *clientHandlerFunc(void *arg)
 	
 	delete data;
 //	delete thread;
+
+	print("[%ld] Exit\n", client);
 
 	Thread::Exit(0);
 	return 0;
@@ -89,6 +92,7 @@ void *webServerFunc(void *arg)
 	//- Connection handling process -
 	while(true)
 	{
+		print("Waiting for new connection...\n");
 		Socket *client = server->Accept(); //- TODO: Fix Non-Blocking Sockets -
 		Thread *clientThread = new Thread(&clientHandlerFunc);
 

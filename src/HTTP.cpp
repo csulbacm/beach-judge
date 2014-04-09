@@ -171,65 +171,7 @@ namespace beachjudge
 				if(!uriCopy.compare("/file"))
 				{
 					if(getArgMap.count("f"))
-					{
 						fileRequest = true;
-						string fileRequestType = getArgMap["f"];
-						if(!fileRequestType.compare("info"))
-						{
-							if(getArgMap.count("p")) //- TODO: Verify security -
-							{
-								string testFile = "compo/problems/";
-								testFile.append(getArgMap["p"]);
-								testFile.append(".pdf");
-								if(fileExists(testFile.c_str()))
-								{
-									file = testFile;
-									requestFileName = getArgMap["p"];
-									requestFileName.append(".pdf");
-								}
-								else
-									e404 = true;
-							}
-						}
-						else if(!fileRequestType.compare("sample"))
-						{
-							if(getArgMap.count("p")) //- TODO: Verify security -
-							{
-								string testFile = "compo/problems/";
-								testFile.append(getArgMap["p"]);
-								testFile.append("-sample.zip");
-								if(fileExists(testFile.c_str()))
-								{
-									file = testFile;
-									requestFileName = getArgMap["p"];
-									requestFileName.append("-sample.zip");
-								}
-								else
-									e404 = true;
-							}
-						}
-						else if(!fileRequestType.compare("source"))
-						{
-							if(getArgMap.count("s")) //- TODO: Verify security -
-							{
-								unsigned short sid = atoi(getArgMap["s"].c_str());
-								Submission *submission = Submission::LookupByID(sid);
-								if(submission)
-								{
-									file = submission->GetSourceFile();
-									char sidStr[16];
-									memset(sidStr, 0, 16);
-									SPRINTF(sidStr, "%d.", sid);
-									requestFileName.append(sidStr);
-									requestFileName.append(fileExt(file.c_str()));
-								}
-								else
-									e404 = true;
-							}
-						}
-						else
-							e404 = true;
-					}
 					else
 						e404 = true;
 				}
@@ -446,6 +388,72 @@ namespace beachjudge
 					}
 				}
 			}
+
+		if(fileRequest)
+		{
+			string fileRequestType = getArgMap["f"];
+			if(!fileRequestType.compare("info"))
+			{
+				if(getArgMap.count("p")) //- TODO: Verify security -
+				{
+					string testFile = "compo/problems/";
+					testFile.append(getArgMap["p"]);
+					testFile.append(".pdf");
+					if(fileExists(testFile.c_str()))
+					{
+						file = testFile;
+						requestFileName = getArgMap["p"];
+						requestFileName.append(".pdf");
+					}
+					else
+						e404 = true;
+				}
+			}
+			else if(!fileRequestType.compare("sample"))
+			{
+				if(getArgMap.count("p")) //- TODO: Verify security -
+				{
+					string testFile = "compo/problems/";
+					testFile.append(getArgMap["p"]);
+					testFile.append("-sample.zip");
+					if(fileExists(testFile.c_str()))
+					{
+						file = testFile;
+						requestFileName = getArgMap["p"];
+						requestFileName.append("-sample.zip");
+					}
+					else
+						e404 = true;
+				}
+			}
+			else if(!fileRequestType.compare("source"))
+			{
+				Team *team = session->GetTeam();
+				if(team && getArgMap.count("s")) //- TODO: Verify security -
+				{
+					unsigned short sid = atoi(getArgMap["s"].c_str());
+					Submission *submission = Submission::LookupByID(sid);
+					if(submission)
+					{
+						if(team->IsJudge() || team == submission->GetTeam())
+						{
+							file = submission->GetSourceFile();
+							char sidStr[16];
+							memset(sidStr, 0, 16);
+							SPRINTF(sidStr, "%d.", sid);
+							requestFileName.append(sidStr);
+							requestFileName.append(fileExt(file.c_str()));
+						}
+						else
+							e404 = true;
+					}
+					else
+						e404 = true;
+				}
+			}
+			else
+				e404 = true;
+		}
 
 		if(postArgMap.count("cmd"))
 		{
