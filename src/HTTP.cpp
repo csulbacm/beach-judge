@@ -261,7 +261,6 @@ namespace beachjudge
 
 		sleepMS(100);
 
-		print("A\n");
 		if(client->HasRead())
 		{
 			unsigned short timeout = 0;
@@ -294,7 +293,6 @@ namespace beachjudge
 			}
 			while(client->HasRead() && timeout < 15);
 		}
-		print("B\n");
 
 //		cout << reqStream.str() << endl;
 		map<string, string> postArgMap;
