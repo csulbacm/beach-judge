@@ -835,12 +835,22 @@ namespace beachjudge
 		{
 			LoadImage(webPageStream, file);
 			string response = webPageStream.str();
+
+			#if BEACHJUDGE_USEPOSIXSOCKET
+				pthread_mutex_unlock(&g_pageAccessMutex);
+			#endif
+
 			client->Write((char *)response.c_str(), response.length());
 		}
 		else if(fileRequest && !e404)
 		{
 			LoadBinaryFile(webPageStream, file, requestFileName);
 			string response = webPageStream.str();
+
+			#if BEACHJUDGE_USEPOSIXSOCKET
+				pthread_mutex_unlock(&g_pageAccessMutex);
+			#endif
+
 			client->Write((char *)response.c_str(), response.length()); 
 		}
 		else
