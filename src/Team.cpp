@@ -307,7 +307,7 @@ namespace beachjudge
 		if(!m_penalties.count(problem))
 			m_penalties[problem] = 0;
 		m_scores[problem] += m_penalties[problem] * PENALTY;
-		m_totalScore += score;
+		m_totalScore += m_scores[problem];
 		m_totalPenalties += m_penalties[problem];
 
 		sort(g_teamsByScore.begin(), g_teamsByScore.end(), ByScoreComp);
