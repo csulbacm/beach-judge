@@ -27,6 +27,21 @@ const char *wwwPrefix = "../www";
 	#define SPRINTF	sprintf
 #endif
 
+#if BEACHJUDGE_USEPOSIXSOCKET
+	//- POSIX -
+	#include <sys/types.h>
+	#include <sys/socket.h>
+	#include <netinet/in.h>
+	#include <arpa/inet.h>
+	#include <cstdio>
+	#include <cstdlib>
+	#include <cstring>
+	#include <unistd.h>
+	#include <fcntl.h>
+
+	pthread_mutex_t g_pageAccessMutex;
+#endif
+
 namespace beachjudge
 {
 	void HTTP::OpenHeader_OK(stringstream &stream)
@@ -101,6 +116,18 @@ namespace beachjudge
 	void HTTP::CloseHeader(stringstream &stream)
 	{
 		stream << "\r\n";
+	}
+	void HTTP::Init()
+	{
+		#if BEACHJUDGE_USEPOSIXSOCKET
+			pthread_mutex_init(&g_pageAccessMutex, 0);
+		#endif
+	}
+	void HTTP::Cleanup()
+	{
+		#if BEACHJUDGE_USEPOSIXSOCKET
+			pthread_mutex_destroy(&g_pageAccessMutex);
+		#endif
 	}
 	void HTTP::HandleClient(Socket *client)
 	{
@@ -293,6 +320,10 @@ namespace beachjudge
 			}
 			while(client->HasRead() && timeout < 15);
 		}
+
+		#if BEACHJUDGE_USEPOSIXSOCKET
+			pthread_mutex_lock(&g_pageAccessMutex);
+		#endif
 
 //		cout << reqStream.str() << endl;
 		map<string, string> postArgMap;
@@ -839,6 +870,11 @@ namespace beachjudge
 			Page *index = Page::Create(file);
 			index->AddToStream(webPageStream, client, session, &getArgMap);
 			string webPage = webPageStream.str();
+
+			#if BEACHJUDGE_USEPOSIXSOCKET
+				pthread_mutex_unlock(&g_pageAccessMutex);
+			#endif
+
 			client->Write((char *)webPage.c_str(), webPage.length());
 		}
 

@@ -70,7 +70,9 @@ void *clientHandlerFunc(void *arg)
 //	print("[%ld] Enter\n", client);
 
 //	print("[%ld] -> Handle\n", client);
+
 	HTTP::HandleClient(client);
+
 //	print("[%ld] Handle ->\n", client);
 
 //	client->Shutdown();
@@ -122,6 +124,8 @@ int main(int argc, char **argv)
 	//------------------
 	//- Initial Config -
 	//------------------
+
+	HTTP::Init();
 
 	Team::Create("judge", "root", 0, true);
 	Team::Create("dummy", "1234", 1);
@@ -192,6 +196,8 @@ int main(int argc, char **argv)
 	//-----------
 	//- Cleanup -
 	//-----------
+
+	HTTP::Cleanup();
 
 	delete competition;
 	commandThread.Join();
