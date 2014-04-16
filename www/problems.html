@@ -15,6 +15,7 @@ $if:isJudge
 						<td>PDF</td>
 						<td>Sample Tests</td>
 						<td>Manage Tests</td>
+						<td>Operations</td>
 						<!--<td>Questions</td>-->
 					</tr>
 				</thead>
@@ -41,12 +42,43 @@ $if:isJudge
 						<td>
 							<a href="/manageTests?p=$get:problemID" target="_blank" class="glyphicon glyphicon-file"></a>
 						</td>
+						<td>
+							<form id="pMoveUp" action="/problems" method="post">
+								<input type="hidden" name="cmd" value="pMoveUp">
+								<input type="hidden" name="problemID" value="$get:problemID">
+							</form>
+							<form id="pRemove" action="/problems" method="post">
+								<input type="hidden" name="cmd" value="pRemove">
+								<input type="hidden" name="problemID" value="$get:problemID">
+							</form>
+							<form id="pMoveDown" action="/problems" method="post">
+								<input type="hidden" name="cmd" value="pMoveDown">
+								<input type="hidden" name="problemID" value="$get:problemID">
+							</form>
+							<a href="javascript:;" onclick="document.getElementById('pMoveUp').submit();" class="glyphicon glyphicon-arrow-up"></a>
+							<a href="javascript:;" onclick="document.getElementById('pRemove').submit();" class="glyphicon glyphicon-remove"></a>
+							<a href="javascript:;" onclick="document.getElementById('pMoveDown').submit();" class="glyphicon glyphicon-arrow-down"></a>
+						</td>
 						<!--<td>
 							
 							<a href="#" class="glyphicon glyphicon-envelope"></a>
 						</td>-->
 					</tr>
 					$endLoop:problems
+					<tr>
+						<td></td>
+						<td></td>
+						<td>
+							<form role="form" method="post" action="/problems" enctype="multipart/form-data">
+								<input type="hidden" name="cmd" value="addProblem">
+								<input type="text" class="form-control" name="problemName" id="problemName" placeholder="Add New Problem">
+							</form>
+						</td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>
 				</tbody>
 			</table>
 		</div>
