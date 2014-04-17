@@ -110,6 +110,22 @@ namespace beachjudge
 			}
 		}
 	}
+	void LoadProblem(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
+	{
+		unsigned short id = atoi(arg.c_str());
+		Team *team = 0;
+		if(session)
+			team = session->GetTeam();
+		Problem *problem = Problem::LookupByID(id);
+		if(problem)
+		{
+			char str[8];
+			memset(str, 0, 8);
+			SPRINTF(str, "%d", problem->GetID());
+			targetVars->operator[]("loadedProblemID") = string(str);
+			targetVars->operator[]("loadedProblemName") = problem->GetName();
+		}
+	}
 	void GetCode(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
 	{
 		unsigned short id = atoi(arg.c_str());
@@ -345,6 +361,7 @@ namespace beachjudge
 		RegisterTemplate("loadTeam", &LoadTeam);
 		RegisterTemplate("loadQuestion", &LoadQuestion);
 		RegisterTemplate("loadSubmission", &LoadSubmission);
+		RegisterTemplate("loadProblem", &LoadProblem);
 		RegisterTemplate("loadUnansweredQuestionsForProblem", &LoadUnansweredQuestionsForProblem);
 		RegisterTemplate("loadAnsweredQuestionsForProblem", &LoadAnsweredQuestionsForProblem);
 		RegisterTemplate("loadProblemScores", &LoadProblemScores);

@@ -145,7 +145,7 @@ namespace beachjudge
 		#endif
 
 		ms_count--;
-		print("C: %d\n", ms_count);
+//		print("C: %d\n", ms_count);
 		
 		#if BEACHJUDGE_USEWINSOCKET
 			if(!ms_count)
