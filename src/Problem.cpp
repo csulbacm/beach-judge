@@ -34,15 +34,13 @@ namespace beachjudge
 		return scoreA < scoreB;
 	}
 
-	Problem *Problem::Create(unsigned short id, string name)
+	Problem *Problem::Create(string name)
 	{
-		if(g_problemsByID.count(id))
-			return g_problemsByID[id];
+		unsigned short id = g_problemsByID.size() + 1;
 		Problem *problem = new Problem();
 		g_problemsByID[id] = problem;
 		problem->m_id = id;
 		problem->m_name = name;
-
 		return problem;
 	}
 	Problem *Problem::LookupByID(unsigned short id)
@@ -58,13 +56,9 @@ namespace beachjudge
 	void Problem::LoadFromFile(const char *file)
 	{
 		ifstream inFile(file);
-		unsigned short id;
 		string name;
-		while(inFile >> id)
-		{
-			getline(inFile, name);
-			Create(id, name.substr(1));
-		}
+		while(getline(inFile, name))
+			Create(name);
 	}
 	void Problem::SaveToFile(const char *file)
 	{
@@ -72,7 +66,7 @@ namespace beachjudge
 		for(map<unsigned short, Problem *>::iterator it = g_problemsByID.begin(); it != g_problemsByID.end(); it++)
 		{
 			Problem *problem = it->second;
-			outFile << it->first << "\t" << problem->GetName() << endl;
+			outFile << problem->GetName() << endl;
 		}
 		outFile.close();
 	}
@@ -89,6 +83,9 @@ namespace beachjudge
 	Problem::~Problem()
 	{
 		g_problemsByID.erase(m_id);
+		if(m_id < g_problemsByID.size())
+			for(unsigned short i = m_id; i <= g_problemsByID.size(); i++)
+				g_problemsByID[i + 1]->SetID(i);
 	}
 	string Problem::GetName() const
 	{
@@ -118,5 +115,13 @@ namespace beachjudge
 	vector<Team *> *Problem::GetSolvers()
 	{
 		return &m_solvers;
+	}
+	void Problem::SetID(unsigned short id)
+	{
+		//- Delete files for target ID -
+		g_problemsByID.erase(m_id);
+		m_id = id;
+		g_problemsByID[m_id] = this;
+		//- Rename files for current -
 	}
 }

@@ -139,8 +139,8 @@ int main(int argc, char **argv)
 		Problem::LoadFromFile("compo/problems.txt");
 	else
 	{
-		Problem::Create(1, "The Skyline Problem");
-		Problem::Create(2, "Ugly Numbers");
+		Problem::Create("The Skyline Problem");
+		Problem::Create("Ugly Numbers");
 	}
 
 	Competition *competition = Competition::CreateFromFile("compo/compo.txt");

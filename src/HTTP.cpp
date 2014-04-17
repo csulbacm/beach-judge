@@ -800,6 +800,74 @@ namespace beachjudge
 									}
 								}
 				}
+				else if(!cmd.compare("addProblem"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+							if(postArgMap.count("problemName"))
+							{
+								Problem::Create(postArgMap["problemName"]);
+								Problem::SaveToFile("compo/problems.txt");
+							}
+				}
+				else if(!cmd.compare("pRemove"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+							if(postArgMap.count("problemID"))
+							{
+								Problem *problem = Problem::LookupByID(atoi(postArgMap["problemID"].c_str()));
+								delete problem;
+								//- Delete Files -
+								Problem::SaveToFile("compo/problems.txt");
+							}
+				}
+				else if(!cmd.compare("pMoveUp"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+							if(postArgMap.count("problemID"))
+							{
+								Problem *problem = Problem::LookupByID(atoi(postArgMap["problemID"].c_str()));
+								unsigned short id = problem->GetID();
+								if(id != 1)
+								{
+									Problem *prevProblem = Problem::LookupByID(id - 1);
+									if(prevProblem)
+									{
+										prevProblem->SetID(0);
+										problem->SetID(id - 1);
+										prevProblem->SetID(id);
+										Problem::SaveToFile("compo/problems.txt");
+									}
+								}
+							}
+				}
+				else if(!cmd.compare("pMoveDown"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+							if(postArgMap.count("problemID"))
+							{
+								Problem *problem = Problem::LookupByID(atoi(postArgMap["problemID"].c_str()));
+								unsigned short id = problem->GetID();
+								if(id != Problem::GetProblemsByID().size())
+								{
+									Problem *nextProblem = Problem::LookupByID(id + 1);
+									if(nextProblem)
+									{
+										nextProblem->SetID(0);
+										problem->SetID(id + 1);
+										nextProblem->SetID(id);
+										Problem::SaveToFile("compo/problems.txt");
+									}
+								}
+							}
+				}
 			}
 			else
 			{

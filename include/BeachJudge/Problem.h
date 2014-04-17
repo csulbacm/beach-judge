@@ -21,7 +21,7 @@ namespace beachjudge
 		Problem();
 
 	public:
-		static Problem *Create(unsigned short id, std::string name);
+		static Problem *Create(std::string name);
 		static Problem *LookupByID(unsigned short id);
 		static std::map<unsigned short, Problem *> &GetProblemsByID();
 		static void LoadFromFile(const char *file);
@@ -33,6 +33,7 @@ namespace beachjudge
 		std::string GetName() const;
 		void SetName(std::string name);
 		unsigned short GetID() const;
+		void SetID(unsigned short id);
 		void AddSolver(Team *team);
 		void RemoveSolver(Team *team);
 		std::vector<Team *> *GetSolvers();
