@@ -5,6 +5,12 @@ $include:inc/navi.html
 $if:loggedIn
 <div class="container content">
 	<div class="row">
+		$if:submit
+		<div class="alert alert-success alert-dismissable">
+			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+			Your submission was added to the judging queue.
+		</div>
+		$endif:submit
 		$if:isTeam
 		<div class="col-md-6">
 			$include:inc/modulesubmit.html

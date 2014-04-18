@@ -36,6 +36,8 @@ namespace beachjudge
 		unsigned long long GetExpireTimeMS() const;
 		unsigned long GetAddress() const;
 		unsigned short GetVariable(std::string name);
+		void SetVariable(std::string name, unsigned short val);
+		void ClearVariable(std::string name);
 		void ResetTimeout();
 
 		~Session();

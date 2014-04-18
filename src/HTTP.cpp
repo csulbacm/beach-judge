@@ -687,17 +687,27 @@ namespace beachjudge
 //									submission->AutoTest();
 									
 									SubStatus status = (SubStatus)atoi(postArgMap["grading"].c_str());
-									submission->SetStatus(status);
 									Team *team = submission->GetTeam();
 									Problem *problem = submission->GetProblem();
-									if(status == SubStatus_Accepted)
+
+									if(status == 0)
 									{
-										team->AddScore(problem, ((float)submission->GetTimeMS()) / 1000.f);
-										problem->AddSolver(team);
+										fileDelete(submission->GetSourceFile().c_str());
+										delete submission;
 									}
 									else
-										team->AddPenalty(problem);
-									Team::SaveScores();
+									{
+										submission->SetStatus(status);
+										if(status == SubStatus_Accepted)
+										{
+											team->AddScore(problem, ((float)submission->GetTimeMS()) / 1000.f);
+											problem->AddSolver(team);
+										}
+										else
+											team->AddPenalty(problem);
+										Team::SaveScores();
+									}
+
 									Competition *compo = Competition::GetCurrent();
 									if(compo)
 										compo->SaveToFile("compo/compo.txt");
@@ -797,6 +807,7 @@ namespace beachjudge
 											if(competition)
 												competition->SaveToFile("compo/compo.txt");
 										}
+										session->SetVariable("submit", 1);
 									}
 								}
 							}
@@ -1235,6 +1246,13 @@ namespace beachjudge
 			#endif
 
 			client->Write((char *)webPage.c_str(), webPage.length());
+		}
+
+		if(session)
+		{
+			Team *team = session->GetTeam();
+			if(team)
+				session->ClearVariable("submit");
 		}
 
 		if(loggingOut)

@@ -179,11 +179,19 @@ namespace beachjudge
 	{
 		return m_team;
 	}
-	unsigned short Session::GetVariable(std::string name)
+	unsigned short Session::GetVariable(string name)
 	{
 		if(m_variables.count(name))
 			return m_variables[name];
 		return 0;
+	}
+	void Session::SetVariable(string name, unsigned short val)
+	{
+		m_variables[name] = val;
+	}
+	void Session::ClearVariable(string name)
+	{
+		m_variables.erase(name);
 	}
 	void Session::ResetTimeout()
 	{

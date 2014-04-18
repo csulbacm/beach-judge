@@ -47,10 +47,10 @@ function timer(t)
 		clearInterval(counter);
 		return;
 	}
-	var percent = parseInt(timeLeft * 100 / totalTime) + "%";
+//	var percent = parseInt(timeLeft * 100 / totalTime) + "%";
 	timeText.innerHTML = timeLeft.toString().toHHMMSS();
-	document.getElementById("timeLeft_bar").style.width = percent;
-	document.getElementById("timeLeft_barText").innerHTML = percent;
+//	document.getElementById("timeLeft_bar").style.width = percent;
+//	document.getElementById("timeLeft_barText").innerHTML = percent;
 	timeLeft = timeLeft - 1;
 	if(timeLeft < 0)
 	{
