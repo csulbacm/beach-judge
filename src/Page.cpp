@@ -344,6 +344,41 @@ namespace beachjudge
 			cout << it->first << " - " << it->second << endl;
 		}*/
 	}
+	void LoadTestSets(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
+	{
+		unsigned short id = atoi(arg.c_str());
+		Problem *problem = Problem::LookupByID(id);
+		if(!problem)
+			return;
+
+		map<unsigned short, Problem::TestSet *> *testSets = problem->GetTestSets();
+		if(testSets->size())
+		{
+			unsigned short idx = 0;
+			char str[8];
+			for(map<unsigned short, Problem::TestSet *>::iterator it = testSets->begin(); it != testSets->end(); it++)
+			{
+				Problem::TestSet *testSet = it->second;
+				idx++;
+				memset(str, 0, 8);
+				SPRINTF(str, "%d", idx);
+				string idxStr(str);
+				string testSetNameKey("testSetName");
+				string testSetIDKey("testSetID");
+				unsigned short tid = testSet->GetID();
+				memset(str, 0, 8);
+				SPRINTF(str, "%d", tid);
+				string idStr(str);
+				targetVars->operator[](testSetNameKey.append(idxStr)) = testSet->GetName();
+				targetVars->operator[](testSetIDKey.append(idxStr)) = idStr;
+			}
+			memset(str, 0, 8);
+			SPRINTF(str, "%d", idx);
+			targetVars->operator[]("testSetCount") = string(str);
+		}
+		else
+			targetVars->operator[]("testSetCount") = "0";
+	}
 
 	void Page::RegisterTemplate(string entry, void (*func)(stringstream &, Socket *, Session *, string, map<string, string> *))
 	{
@@ -364,6 +399,7 @@ namespace beachjudge
 		RegisterTemplate("loadProblem", &LoadProblem);
 		RegisterTemplate("loadUnansweredQuestionsForProblem", &LoadUnansweredQuestionsForProblem);
 		RegisterTemplate("loadAnsweredQuestionsForProblem", &LoadAnsweredQuestionsForProblem);
+		RegisterTemplate("loadTestSets", &LoadTestSets);
 		RegisterTemplate("loadProblemScores", &LoadProblemScores);
 	}
 	Page *Page::Create(string file)

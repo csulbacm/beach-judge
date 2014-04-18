@@ -882,6 +882,115 @@ namespace beachjudge
 								}
 							}
 				}
+				else if(!cmd.compare("addTest"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+							if(postArgMap.count("problemID") && postArgMap.count("testName"))
+							{
+								Problem *problem = Problem::LookupByID(atoi(postArgMap["problemID"].c_str()));
+								if(problem)
+								{
+									Problem::TestSet::Create(problem, postArgMap["testName"]);
+								}
+							}
+				}
+				else if(!cmd.compare("changeTestSetName"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+							if(postArgMap.count("problemID") && postArgMap.count("testSetID") && postArgMap.count("newTestSetName"))
+							{
+								Problem *problem = Problem::LookupByID(atoi(postArgMap["problemID"].c_str()));
+								if(problem)
+								{
+									Problem::TestSet *testSet = problem->LookupTestSetByID(atoi(postArgMap["testSetID"].c_str()));
+									if(testSet)
+									{
+										testSet->SetName(postArgMap["newTestSetName"]);
+									}
+								}
+							}
+				}
+				else if(!cmd.compare("tRemove"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+							if(postArgMap.count("problemID") && postArgMap.count("testSetID"))
+							{
+								Problem *problem = Problem::LookupByID(atoi(postArgMap["problemID"].c_str()));
+								if(problem)
+								{
+									Problem::TestSet *testSet = problem->LookupTestSetByID(atoi(postArgMap["testSetID"].c_str()));
+									if(testSet)
+									{
+										//- Delete Files -
+										delete testSet;
+									}
+								}
+							}
+				}
+				else if(!cmd.compare("tMoveUp"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+							if(postArgMap.count("problemID") && postArgMap.count("testSetID"))
+							{
+								Problem *problem = Problem::LookupByID(atoi(postArgMap["problemID"].c_str()));
+								if(problem)
+								{
+									Problem::TestSet *testSet = problem->LookupTestSetByID(atoi(postArgMap["testSetID"].c_str()));
+									if(testSet)
+									{
+										unsigned short id = testSet->GetID();
+										if(id != 1)
+										{
+											Problem::TestSet *prevTestSet = problem->LookupTestSetByID(id - 1);
+											if(prevTestSet)
+											{
+												prevTestSet->SetID(0);
+												testSet->SetID(id - 1);
+												prevTestSet->SetID(id);
+//												Problem::SaveToFile("compo/problems.txt");
+											}
+										}
+									}
+								}
+							}
+				}
+				else if(!cmd.compare("tMoveDown"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+							if(postArgMap.count("problemID") && postArgMap.count("testSetID"))
+							{
+								Problem *problem = Problem::LookupByID(atoi(postArgMap["problemID"].c_str()));
+								if(problem)
+								{
+									Problem::TestSet *testSet = problem->LookupTestSetByID(atoi(postArgMap["testSetID"].c_str()));
+									if(testSet)
+									{
+										unsigned short id = testSet->GetID();
+										if(id != problem->GetTestSets()->size())
+										{
+											Problem::TestSet *nextTestSet = problem->LookupTestSetByID(id + 1);
+											if(nextTestSet)
+											{
+												nextTestSet->SetID(0);
+												testSet->SetID(id + 1);
+												nextTestSet->SetID(id);
+//												Problem::SaveToFile("compo/problems.txt");
+											}
+										}
+									}
+								}
+							}
+				}
 			}
 			else
 			{

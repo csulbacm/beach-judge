@@ -152,4 +152,85 @@ namespace beachjudge
 		fileRename(oldDesc.c_str(), newDesc.c_str());
 		fileRename(oldTest.c_str(), newTest.c_str());
 	}
+	map<unsigned short, Problem::TestSet *> *Problem::GetTestSets()
+	{
+		return &m_testSetMap;
+	}
+	Problem::TestSet *Problem::LookupTestSetByID(unsigned short id)
+	{
+		if(m_testSetMap.count(id))
+			return m_testSetMap[id];
+		return 0;
+	}
+
+
+	Problem::TestSet *Problem::TestSet::Create(Problem *problem, string name, string inFile, string outFile)
+	{
+		unsigned short id = problem->m_testSetMap.size() + 1;
+
+		Problem::TestSet *testSet = new Problem::TestSet();
+		problem->m_testSetMap[id] = testSet;
+		testSet->m_id = id;
+		testSet->m_problem = problem;
+		testSet->m_name = name;
+		return testSet;
+	}
+
+	Problem::TestSet::TestSet()
+	{
+		m_id = 0;
+		m_problem = 0;
+	}
+	Problem::TestSet::~TestSet()
+	{
+		m_problem->m_testSetMap.erase(m_id);
+		if(m_id < m_problem->m_testSetMap.size())
+			for(unsigned short i = m_id; i <= m_problem->m_testSetMap.size(); i++)
+				m_problem->m_testSetMap[i + 1]->SetID(i);
+	}
+	unsigned short Problem::TestSet::GetID() const
+	{
+		return m_id;
+	}
+	void Problem::TestSet::SetID(unsigned short id)
+	{
+/*		
+		char oldBuff[8], newBuff[8];
+		memset(oldBuff, 0, 8);
+		memset(newBuff, 0, 8);
+		SPRINTF(oldBuff, "%d", m_id);
+		SPRINTF(newBuff, "%d", id);
+
+		string base = "compo/problems/";
+		string oldDesc(base), oldTest(base);
+		oldTest.append(oldBuff);
+		oldTest.append("-sample.zip");
+		oldDesc.append(oldBuff);
+		oldDesc.append(".pdf");
+
+		string newDesc(base), newTest(base);
+		newTest.append(newBuff);
+		newTest.append("-sample.zip");
+		newDesc.append(newBuff);
+		newDesc.append(".pdf");
+
+		fileDelete(newTest.c_str());
+		fileDelete(newDesc.c_str());
+
+		fileRename(oldDesc.c_str(), newDesc.c_str());
+		fileRename(oldTest.c_str(), newTest.c_str());
+		*/
+
+		m_problem->m_testSetMap.erase(m_id);
+		m_id = id;
+		m_problem->m_testSetMap[m_id] = this;
+	}
+	string Problem::TestSet::GetName() const
+	{
+		return m_name;
+	}
+	void Problem::TestSet::SetName(string name)
+	{
+		m_name = name;
+	}
 }
