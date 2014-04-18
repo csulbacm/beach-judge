@@ -37,6 +37,8 @@ namespace beachjudge
 			void SetID(unsigned short id);
 			std::string GetName() const;
 			void SetName(std::string name);
+			std::string GetInFile() const;
+			std::string GetOutFile() const;
 		};
 
 		static Problem *Create(std::string name);

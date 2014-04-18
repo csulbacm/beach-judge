@@ -203,6 +203,7 @@ namespace beachjudge
 	}
 	SubStatus Submission::AutoTest() //- TODO: Handle Unknown Code Type -
 	{
+		//- Compilation -
 		string target("../scripts/"), sourceFile("./"), execFile("./"), resultFile("./");
 		sourceFile.append(m_sourceFile);
 		execFile.append(m_base);
@@ -220,6 +221,9 @@ namespace beachjudge
 		case CodeType_Java:
 			target.append("compile_java.sh");
 			break;
+		case CodeType_Unknown:
+			//- TODO: Handle unknown type -
+			break;
 		}
 		target.append(" ");
 		target.append(sourceFile);
@@ -230,9 +234,42 @@ namespace beachjudge
 		system(target.c_str());
 
 		if(fileSize(resultFile.c_str()))
+		{
 			cout << "Compilation Error" << endl;
-	//	fileDelete(resultFile.c_str());
-	//	fileDelete(execFile.c_str());
+			return SubStatus_NotExecutable;
+		}
+
+		//- Run Test Sets -
+		map<unsigned short, Problem::TestSet *> *testSetMap = m_problem->GetTestSets();
+		unsigned short size = testSetMap->size();
+
+		unsigned short errors = 0;
+		for(unsigned short a = 1; a <= size; a++)
+		{
+			Problem::TestSet *testSet = testSetMap->operator[](a);
+
+			char cmdBuff[256];
+			memset(cmdBuff, 0, 256);
+			SPRINTF(cmdBuff, "%s < %s > dummy; diff dummy %s > %s; rm dummy", execFile.c_str(), testSet->GetInFile().c_str(), testSet->GetOutFile().c_str(), resultFile.c_str());
+//			print("%s < %s > dummy; diff dummy %s > %s; rm dummy\n", execFile.c_str(), testSet->GetInFile().c_str(), testSet->GetOutFile().c_str(), resultFile.c_str());
+			system(cmdBuff);
+
+			if(fileSize(resultFile.c_str()))
+			{
+//				cout << "Wrong answer" << endl;
+//				break;
+				errors++;
+			}
+		}
+
+		fileDelete(resultFile.c_str());
+		fileDelete(execFile.c_str());
+
+		if(errors)
+		{
+			cout << "Wrong answer" << endl;
+			return SubStatus_WrongAnswer;
+		}
 
 		return SubStatus_Accepted;
 	}

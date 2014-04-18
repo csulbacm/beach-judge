@@ -405,12 +405,10 @@ namespace beachjudge
 							if(readFile)
 							{
 								stringstream partValueStream(ios::in | ios::out | ios::binary);
-								while(true)
+								while(!partStream.eof())
 								{
 									char c;
 									partStream.get(c);
-									if(partStream.eof())
-										break;
 									partValueStream.put(c);
 								}
 								piece = partValueStream.str().substr(0, partValueStream.str().size() - 3);
@@ -703,6 +701,21 @@ namespace beachjudge
 									Competition *compo = Competition::GetCurrent();
 									if(compo)
 										compo->SaveToFile("compo/compo.txt");
+								}
+							}
+				}
+				else if(!cmd.compare("autoTest"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+							if(postArgMap.count("submissionID"))
+							{
+								Submission *submission = Submission::LookupByID(atoi(postArgMap["submissionID"].c_str()));
+								if(submission)
+								{
+									print("Autotesting: %d\n", submission->GetID());
+									submission->AutoTest();
 								}
 							}
 				}

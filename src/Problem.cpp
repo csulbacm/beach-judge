@@ -214,6 +214,26 @@ namespace beachjudge
 		testSet->m_id = id;
 		testSet->m_problem = problem;
 		testSet->m_name = name;
+
+		char tidBuff[8], pidBuff[8];
+		memset(tidBuff, 0, 8);
+		memset(pidBuff, 0, 8);
+		SPRINTF(tidBuff, "%d", id);
+		SPRINTF(pidBuff, "%d", problem->GetID());
+
+		string base = "compo/problems/";
+		base.append(pidBuff);
+		base.append("-tests/");
+
+		string tBase(base);
+		tBase.append(tidBuff);
+		string tIn(tBase), tOut(tBase);
+		tIn.append(".in");
+		tOut.append(".out");
+
+		testSet->m_inFile = tIn;
+		testSet->m_outFile = tOut;
+
 		return testSet;
 	}
 
@@ -265,6 +285,8 @@ namespace beachjudge
 		m_problem->m_testSetMap.erase(m_id);
 		m_id = id;
 		m_problem->m_testSetMap[m_id] = this;
+		m_inFile = newIn;
+		m_outFile = newOut;
 
 		fileRename(oldIn.c_str(), newIn.c_str());
 		fileRename(oldOut.c_str(), newOut.c_str());
@@ -276,5 +298,13 @@ namespace beachjudge
 	void Problem::TestSet::SetName(string name)
 	{
 		m_name = name;
+	}
+	string Problem::TestSet::GetInFile() const
+	{
+		return m_inFile;
+	}
+	string Problem::TestSet::GetOutFile() const
+	{
+		return m_outFile;
 	}
 }
