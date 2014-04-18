@@ -37,6 +37,32 @@ String.prototype.toHHMMSS = function () {
     return time;
 }
 
+$if:isJudge
+function pollSubmissions()
+{
+	var gradeBtn = document.getElementById("gradeBtn");
+	if(gradeBtn)
+	{
+		var xmlhttp;
+		if(window.XMLHttpRequest) // code for IE7+, Firefox, Chrome, Opera, Safari
+			xmlhttp = new XMLHttpRequest();
+		else // code for IE6, IE5
+			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+
+		xmlhttp.onreadystatechange = function()
+		{
+			if(xmlhttp.readyState == 4 && xmlhttp.status == 200)
+			{
+				var gradeBtn = document.getElementById("gradeBtn");
+				gradeBtn.innerHTML = "Grade (" + xmlhttp.responseText + ")";
+			}
+		}
+		xmlhttp.open("GET", "submissionPoll", true);
+		xmlhttp.send();
+	}
+}
+$endif:isJudge
+
 var timeLeft = $timeLeft, totalTime = $duration;
 var counter = setInterval(timer, 1000);
 function timer(t)
@@ -59,3 +85,8 @@ function timer(t)
 	}
 }
 setTimeout(timer, 0);
+
+$if:isJudge
+setInterval(pollSubmissions, 10000);
+setTimeout(pollSubmissions, 0);
+$endif:isJudge

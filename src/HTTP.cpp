@@ -168,7 +168,7 @@ namespace beachjudge
 
 		string file(wwwPrefix), arguments, type, requestFileName;
 
-		bool e404 = false, loggingOut = false, fileRequest = false;
+		bool e404 = false, loggingOut = false, fileRequest = false, submissionPoll = false;
 
 		map<string, string> getArgMap;
 
@@ -210,6 +210,8 @@ namespace beachjudge
 				{
 					if(!uriCopy.compare("/logout")) //- TODO: Find a better way to do this -
 						loggingOut = true;
+					else if(!uriCopy.compare("/submissionPoll"))
+						submissionPoll = true;
 
 					string testFile = file;
 					testFile.append(uriCopy);
@@ -220,7 +222,7 @@ namespace beachjudge
 						testFile.append(".html");
 						if(fileExists(testFile.c_str()))
 							file = testFile;
-						else
+						else if(!submissionPoll)
 							e404 = true;
 					}
 				}
@@ -1190,7 +1192,18 @@ namespace beachjudge
 			if(!type.compare("jpg") || !type.compare("jpeg") || !type.compare("png") || !type.compare("bmp"))
 				img = true;
 
-		if(img)
+		if(submissionPoll)
+		{
+			#if BEACHJUDGE_USEPOSIXSOCKET
+				pthread_mutex_unlock(&g_pageAccessMutex);
+			#endif
+
+			char subBuff[16];
+			memset(subBuff, 0, 16);
+			SPRINTF(subBuff, "%ld", Submission::GetPendingSubmissions()->size());
+			client->Write(subBuff, strlen(subBuff));
+		}
+		else if(img)
 		{
 			LoadImage(webPageStream, file);
 			string response = webPageStream.str();
