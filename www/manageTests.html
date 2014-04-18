@@ -34,11 +34,11 @@ $loadProblem:{GET_p}
 						</td>
 						<td>
 							<a href="/file?f=testIn&p=$GET:p&t=$get:testSetID{idx}" target="_blank" class="glyphicon glyphicon-file"></a>
-							<a href="/upload?cmd=testIn&id=$GET:p&t=$get:testSetID{idx}" class="glyphicon glyphicon-upload"></a>
+							<a href="/uploadTest?cmd=testIn&id=$GET:p&t=$get:testSetID{idx}" class="glyphicon glyphicon-upload"></a>
 						</td>
 						<td>
 							<a href="/file?f=testOut&p=$GET:p&t=$get:testSetID{idx}" target="_blank" class="glyphicon glyphicon-file"></a>
-							<a href="/upload?cmd=testOut&id=$GET:p&t=$get:testSetID{idx}" class="glyphicon glyphicon-upload"></a>
+							<a href="/uploadTest?cmd=testOut&id=$GET:p&t=$get:testSetID{idx}" class="glyphicon glyphicon-upload"></a>
 						</td>
 						<td>
 							<form id="tMoveUp$get:testSetID{idx}" action="/manageTests?p=$GET:p" method="post">

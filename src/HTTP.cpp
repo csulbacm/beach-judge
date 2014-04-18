@@ -842,6 +842,82 @@ namespace beachjudge
 									}
 								}
 				}
+				else if(!cmd.compare("testIn"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+							if(postArgMap.count("problemID") && postArgMap.count("file") && postArgMap.count("testSetID"))
+							{
+								Problem *problem = Problem::LookupByID(atoi(postArgMap["problemID"].c_str()));
+								if(problem)
+								{
+									Problem::TestSet *testSet = problem->LookupTestSetByID(atoi(postArgMap["testSetID"].c_str()));
+									if(testSet)
+									{
+										string sourceFile = postArgMap["sourceFile"];
+										transform(sourceFile.begin(), sourceFile.end(), sourceFile.begin(), ::tolower);
+										string ext = fileExt(sourceFile.c_str());
+										if(!ext.compare("in"))
+										{
+											string sampleFile = "compo/problems/";
+											createFolder(sampleFile.c_str());
+											char idStr[8];
+											memset(idStr, 0, 8);
+											SPRINTF(idStr, "%d", problem->GetID());
+											sampleFile.append(idStr);
+											sampleFile.append("-tests/");
+											createFolder(sampleFile.c_str());
+											memset(idStr, 0, 8);
+											SPRINTF(idStr, "%d", testSet->GetID());
+											sampleFile.append(idStr);
+											sampleFile.append(".in");
+											ofstream sampleFileOut(sampleFile.c_str(), ios::out | ios::binary);
+											sampleFileOut << postArgMap["file"];
+											sampleFileOut.close();
+										}
+									}
+								}
+							}
+				}
+				else if(!cmd.compare("testOut"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+							if(postArgMap.count("problemID") && postArgMap.count("file") && postArgMap.count("testSetID"))
+							{
+								Problem *problem = Problem::LookupByID(atoi(postArgMap["problemID"].c_str()));
+								if(problem)
+								{
+									Problem::TestSet *testSet = problem->LookupTestSetByID(atoi(postArgMap["testSetID"].c_str()));
+									if(testSet)
+									{
+										string sourceFile = postArgMap["sourceFile"];
+										transform(sourceFile.begin(), sourceFile.end(), sourceFile.begin(), ::tolower);
+										string ext = fileExt(sourceFile.c_str());
+										if(!ext.compare("out"))
+										{
+											string sampleFile = "compo/problems/";
+											createFolder(sampleFile.c_str());
+											char idStr[8];
+											memset(idStr, 0, 8);
+											SPRINTF(idStr, "%d", problem->GetID());
+											sampleFile.append(idStr);
+											sampleFile.append("-tests/");
+											createFolder(sampleFile.c_str());
+											memset(idStr, 0, 8);
+											SPRINTF(idStr, "%d", testSet->GetID());
+											sampleFile.append(idStr);
+											sampleFile.append(".out");
+											ofstream sampleFileOut(sampleFile.c_str(), ios::out | ios::binary);
+											sampleFileOut << postArgMap["file"];
+											sampleFileOut.close();
+										}
+									}
+								}
+							}
+				}
 				else if(!cmd.compare("addProblem"))
 				{
 					Team *team = session->GetTeam();
