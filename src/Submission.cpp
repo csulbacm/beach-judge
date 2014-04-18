@@ -106,6 +106,25 @@ namespace beachjudge
 		while(g_submissionsByID.size())
 			delete g_submissionsByID.rbegin()->second;
 	}
+	string Submission::GetStatusText(SubStatus status)
+	{
+		switch(status)
+		{
+		case SubStatus_Accepted:
+			return "Accepted";
+		case SubStatus_NotExecutable:
+			return "Not Executable";
+		case SubStatus_Pending:
+			return "Pending";
+		case SubStatus_PresentationError:
+			return "Presentation Error";
+		case SubStatus_TimeLimitExceeded:
+			return "Time Limit Exceeded";
+		case SubStatus_WrongAnswer:
+			return "Wrong Answer";
+		}
+		return "";
+	}
 
 	Submission::Submission()
 	{
@@ -115,6 +134,7 @@ namespace beachjudge
 		m_problem = 0;
 		m_codeType = CodeType_Unknown;
 		m_subStatus = SubStatus_Pending;
+		m_autoTestStatus = SubStatus_Pending;
 	}
 	Submission::~Submission()
 	{
@@ -178,31 +198,14 @@ namespace beachjudge
 			g_pendingSubmissions.erase(find(g_pendingSubmissions.begin(), g_pendingSubmissions.end(), this));
 		m_subStatus = status;
 	}
-	string Submission::GetStatusText() const
-	{
-		switch(m_subStatus)
-		{
-		case SubStatus_Accepted:
-			return "Accepted";
-		case SubStatus_NotExecutable:
-			return "Not Executable";
-		case SubStatus_Pending:
-			return "Pending";
-		case SubStatus_PresentationError:
-			return "Presentation Error";
-		case SubStatus_TimeLimitExceeded:
-			return "Time Limit Exceeded";
-		case SubStatus_WrongAnswer:
-			return "Wrong Answer";
-		}
-		return "";
-	}
 	string Submission::GetBase() const
 	{
 		return m_base;
 	}
 	SubStatus Submission::AutoTest() //- TODO: Handle Unknown Code Type -
 	{
+		m_autoTestVerdicts.clear();
+
 		//- Compilation -
 		string target("../scripts/"), sourceFile("./"), execFile("./"), resultFile("./");
 		sourceFile.append(m_sourceFile);
@@ -235,8 +238,10 @@ namespace beachjudge
 
 		if(fileSize(resultFile.c_str()))
 		{
-			cout << "Compilation Error" << endl;
-			return SubStatus_NotExecutable;
+//			cout << "Compilation Error" << endl;
+			m_autoTestStatus = SubStatus_NotExecutable;
+			fileDelete(resultFile.c_str());
+			return m_autoTestStatus;
 		}
 
 		//- Run Test Sets -
@@ -259,7 +264,10 @@ namespace beachjudge
 //				cout << "Wrong answer" << endl;
 //				break;
 				errors++;
+				m_autoTestVerdicts[a] = false;
 			}
+			else
+				m_autoTestVerdicts[a] = true;
 		}
 
 		fileDelete(resultFile.c_str());
@@ -267,10 +275,20 @@ namespace beachjudge
 
 		if(errors)
 		{
-			cout << "Wrong answer" << endl;
-			return SubStatus_WrongAnswer;
+//			cout << "Wrong answer" << endl;
+			m_autoTestStatus = SubStatus_WrongAnswer;
+			return m_autoTestStatus;
 		}
 
-		return SubStatus_Accepted;
+		m_autoTestStatus = SubStatus_Accepted;
+		return m_autoTestStatus;
+	}
+	SubStatus Submission::GetAutoTestStatus() const
+	{
+		return m_autoTestStatus;
+	}
+	std::map<unsigned short, bool> *Submission::GetAutoTestVerdicts()
+	{
+		return &m_autoTestVerdicts;
 	}
 }

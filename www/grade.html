@@ -75,6 +75,35 @@ $if:isJudge
 			</form>
 			<div style="clear: both"></div>
 			<p><a href="/file?f=source&s=$get:loadedSubmissionID" target="_blank">Download Source</a></p>
+			$if:autotest
+			$loadAutoTestData:{loadedSubmissionID}
+			<br/>
+			<h2>Auto Testing</h2>
+			<p>
+				<strong>Status:</strong>
+				<span>
+					 $get:testStatus
+				</span>
+			</p>
+			<table class="table">
+				<thead>
+					<tr style="font-weight:bold;">
+						<td>No.</td>
+						<td>Name</td>
+						<td>Status</td>
+					</tr>
+				</thead>
+				<tbody>
+					$startLoop:x{testSetCount}
+					<tr>
+						<td>$get:testSetID{idx}</td>
+						<td>$get:testSetName{idx}</td>
+						<td>$get:testSetVerdict{idx}</td>
+					</tr>
+					$endLoop:x{testSetCount}
+				</tbody>
+			</table>
+			$endif:autotest
 		</div>
 
 		$endifd:{loadedSubmissionID}

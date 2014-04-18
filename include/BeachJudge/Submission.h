@@ -32,12 +32,13 @@ namespace beachjudge
 	class Submission
 	{
 		CodeType m_codeType;
-		SubStatus m_subStatus;
+		SubStatus m_subStatus, m_autoTestStatus;
 		unsigned short m_id;
 		Team *m_team;
 		Problem *m_problem;
 		unsigned long long m_timeMS;
 		std::string m_sourceFile, m_base;
+		std::map<unsigned short, bool> m_autoTestVerdicts;
 
 		Submission();
 
@@ -47,6 +48,7 @@ namespace beachjudge
 		static std::vector<Submission *> *GetPendingSubmissions();
 		static Submission *LookupByID(unsigned short id);
 		static void Cleanup();
+		static std::string GetStatusText(SubStatus status);
 
 		~Submission();
 
@@ -60,8 +62,9 @@ namespace beachjudge
 		std::string GetBase() const;
 		SubStatus GetStatus() const;
 		void SetStatus(SubStatus status);
-		std::string GetStatusText() const;
 		SubStatus AutoTest();
+		SubStatus GetAutoTestStatus() const;
+		std::map<unsigned short, bool> *GetAutoTestVerdicts();
 	};
 }
 

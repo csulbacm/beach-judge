@@ -684,8 +684,6 @@ namespace beachjudge
 								Submission *submission = Submission::LookupByID(atoi(postArgMap["submissionID"].c_str()));
 								if(submission)
 								{
-//									submission->AutoTest();
-									
 									SubStatus status = (SubStatus)atoi(postArgMap["grading"].c_str());
 									Team *team = submission->GetTeam();
 									Problem *problem = submission->GetProblem();
@@ -724,8 +722,9 @@ namespace beachjudge
 								Submission *submission = Submission::LookupByID(atoi(postArgMap["submissionID"].c_str()));
 								if(submission)
 								{
-									print("Autotesting: %d\n", submission->GetID());
+//									print("Autotesting: %d\n", submission->GetID());
 									submission->AutoTest();
+									session->SetVariable("autotest", 1);
 								}
 							}
 				}
@@ -1252,7 +1251,10 @@ namespace beachjudge
 		{
 			Team *team = session->GetTeam();
 			if(team)
+			{
 				session->ClearVariable("submit");
+				session->ClearVariable("autotest");
+			}
 		}
 
 		if(loggingOut)

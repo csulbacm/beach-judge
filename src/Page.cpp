@@ -105,7 +105,7 @@ namespace beachjudge
 				SPRINTF(str, "%d", submission->GetTeam()->GetID());
 				targetVars->operator[]("loadedSubmissionTeamID") = string(str);
 				targetVars->operator[]("loadedSubmissionTeamName") = submission->GetTeam()->GetName();
-				targetVars->operator[]("loadedSubmissionStatus") = submission->GetStatusText();
+				targetVars->operator[]("loadedSubmissionStatus") = Submission::GetStatusText(submission->GetStatus());
 				targetVars->operator[]("loadedSubmissionCodeType") = submission->GetCodeTypeText();
 			}
 		}
@@ -379,6 +379,51 @@ namespace beachjudge
 		else
 			targetVars->operator[]("testSetCount") = "0";
 	}
+	void LoadAutoTestData(stringstream &stream, Socket *socket, Session *session, string arg, map<string, string> *targetVars)
+	{
+		unsigned short id = atoi(arg.c_str());
+		Submission *submission = Submission::LookupByID(id);
+		if(!submission)
+			return;
+		targetVars->operator[]("testStatus") = Submission::GetStatusText(submission->GetAutoTestStatus());
+
+		Problem *problem = submission->GetProblem();
+		map<unsigned short, bool> *verdicts = submission->GetAutoTestVerdicts();
+		map<unsigned short, Problem::TestSet *> *testSets = problem->GetTestSets();
+		if(testSets->size())
+		{
+			unsigned short idx = 0;
+			char str[8];
+			for(map<unsigned short, Problem::TestSet *>::iterator it = testSets->begin(); it != testSets->end(); it++)
+			{
+				Problem::TestSet *testSet = it->second;
+				idx++;
+				memset(str, 0, 8);
+				SPRINTF(str, "%d", idx);
+				string idxStr(str);
+				string testSetNameKey("testSetName");
+				string testSetIDKey("testSetID");
+				string testSetVerdictKey("testSetVerdict");
+				unsigned short tid = testSet->GetID();
+				memset(str, 0, 8);
+				SPRINTF(str, "%d", tid);
+				string idStr(str);
+				targetVars->operator[](testSetNameKey.append(idxStr)) = testSet->GetName();
+				targetVars->operator[](testSetIDKey.append(idxStr)) = idStr;
+				if(!verdicts->count(tid))
+					targetVars->operator[](testSetVerdictKey.append(idxStr)) = "-";
+				else if(verdicts->operator[](tid))
+					targetVars->operator[](testSetVerdictKey.append(idxStr)) = "Success";
+				else
+					targetVars->operator[](testSetVerdictKey.append(idxStr)) = "Wrong Answer";
+			}
+			memset(str, 0, 8);
+			SPRINTF(str, "%d", idx);
+			targetVars->operator[]("testSetCount") = string(str);
+		}
+		else
+			targetVars->operator[]("testSetCount") = "0";
+	}
 
 	void Page::RegisterTemplate(string entry, void (*func)(stringstream &, Socket *, Session *, string, map<string, string> *))
 	{
@@ -400,6 +445,7 @@ namespace beachjudge
 		RegisterTemplate("loadUnansweredQuestionsForProblem", &LoadUnansweredQuestionsForProblem);
 		RegisterTemplate("loadAnsweredQuestionsForProblem", &LoadAnsweredQuestionsForProblem);
 		RegisterTemplate("loadTestSets", &LoadTestSets);
+		RegisterTemplate("loadAutoTestData", &LoadAutoTestData);
 		RegisterTemplate("loadProblemScores", &LoadProblemScores);
 	}
 	Page *Page::Create(string file)
@@ -967,7 +1013,7 @@ namespace beachjudge
 										memset(str, 0, 16);
 										SPRINTF(str, "%d", subTeam->GetID());
 										targetVars->operator[]("submissionTeamID") = string(str);
-										targetVars->operator[]("submissionStatus") = submission->GetStatusText();
+										targetVars->operator[]("submissionStatus") = Submission::GetStatusText(submission->GetStatus());
 										targetVars->operator[]("submissionCodeType") = submission->GetCodeTypeText();
 										submissionIt++;
 										if(submissionIt == submissions->end())
