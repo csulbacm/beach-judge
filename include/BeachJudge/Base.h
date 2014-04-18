@@ -18,6 +18,7 @@ namespace beachjudge
 	//- File IO -
 	bool fileExists(const char *file);
 	bool fileDelete(const char *file);
+	bool fileRename(const char *file, const char *target);
 	std::string fileExt(const char *file);
 	std::string filePath(const char *file);
 	std::string fileCompressPath(const char *file);

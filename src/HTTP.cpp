@@ -819,6 +819,20 @@ namespace beachjudge
 							if(postArgMap.count("problemID"))
 							{
 								Problem *problem = Problem::LookupByID(atoi(postArgMap["problemID"].c_str()));
+
+								char idBuff[8];
+								memset(idBuff, 0, 8);
+								SPRINTF(idBuff, "%d", problem->GetID());
+
+								string base = "compo/problems/";
+								string desc(base), test(base);
+								test.append(idBuff);
+								test.append("-sample.zip");
+								desc.append(idBuff);
+								desc.append(".pdf");
+
+								fileDelete(test.c_str());
+								fileDelete(desc.c_str());
 								delete problem;
 								//- Delete Files -
 								Problem::SaveToFile("compo/problems.txt");

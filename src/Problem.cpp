@@ -12,6 +12,12 @@
 #include <BeachJudge/Problem.h>
 #include <BeachJudge/Team.h>
 
+#ifdef _WIN32
+	#define SPRINTF sprintf_s
+#else
+	#define SPRINTF	sprintf
+#endif
+
 using namespace std;
 
 namespace beachjudge
@@ -118,10 +124,32 @@ namespace beachjudge
 	}
 	void Problem::SetID(unsigned short id)
 	{
-		//- Delete files for target ID -
+		char oldBuff[8], newBuff[8];
+		memset(oldBuff, 0, 8);
+		memset(newBuff, 0, 8);
+		SPRINTF(oldBuff, "%d", m_id);
+		SPRINTF(newBuff, "%d", id);
+
+		string base = "compo/problems/";
+		string oldDesc(base), oldTest(base);
+		oldTest.append(oldBuff);
+		oldTest.append("-sample.zip");
+		oldDesc.append(oldBuff);
+		oldDesc.append(".pdf");
+
+		string newDesc(base), newTest(base);
+		newTest.append(newBuff);
+		newTest.append("-sample.zip");
+		newDesc.append(newBuff);
+		newDesc.append(".pdf");
+
+		fileDelete(newTest.c_str());
+		fileDelete(newDesc.c_str());
 		g_problemsByID.erase(m_id);
 		m_id = id;
 		g_problemsByID[m_id] = this;
-		//- Rename files for current -
+
+		fileRename(oldDesc.c_str(), newDesc.c_str());
+		fileRename(oldTest.c_str(), newTest.c_str());
 	}
 }
