@@ -151,6 +151,10 @@ namespace beachjudge
 		if(reqStream.str().size() <= 1)
 			return;
 
+		#if BEACHJUDGE_USEPOSIXSOCKET
+			pthread_mutex_lock(&g_pageAccessMutex);
+		#endif
+
 		unsigned short port = 0;
 		unsigned long addr = 0;
 		client->GetPeerIP4Info(&addr, &port);
@@ -292,7 +296,8 @@ namespace beachjudge
 		}
 		while(line.size() > 1);
 
-		sleepMS(100);
+//		sleepMS(100);
+		sleepMS(16);
 
 		if(client->HasRead())
 		{
@@ -327,9 +332,9 @@ namespace beachjudge
 			while(client->HasRead() && timeout < 15);
 		}
 
-		#if BEACHJUDGE_USEPOSIXSOCKET
-			pthread_mutex_lock(&g_pageAccessMutex);
-		#endif
+//		#if BEACHJUDGE_USEPOSIXSOCKET
+//			pthread_mutex_lock(&g_pageAccessMutex);
+//		#endif
 
 //		cout << reqStream.str() << endl;
 		map<string, string> postArgMap;
