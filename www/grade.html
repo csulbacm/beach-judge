@@ -53,7 +53,7 @@ $if:isJudge
 			<pre><code>$getCode:{loadedSubmissionID}</code></pre>
 
 		<div>
-			<form style="float: left" role="form" method="post" action="/grade">
+			<form style="float: left" role="form" method="post" action="/grade" onsubmit="return confirm('Are you sure you want to submit this grade?')">
 				<input type="hidden" name="cmd" value="grade">
 				<input type="hidden" name="submissionID" value="$get:loadedSubmissionID">
 				<div style="float: left" class="form-group">
@@ -68,7 +68,7 @@ $if:isJudge
 				</div>
 				<button type="submit" style="float: left" class="btn btn-default">Grade</button>
 			</form>
-			<form role="form" method="post" style="float: left" action="/grade?s=$get:loadedSubmissionID">
+			<form role="form" method="post" style="float: left" action="/grade?s=$get:loadedSubmissionID" onsubmit="return confirm('Are you sure you want to start the auto test?')">
 				<input type="hidden" name="cmd" value="autoTest">
 				<input type="hidden" name="submissionID" value="$get:loadedSubmissionID">
 				<button type="submit" class="btn btn-default">Test</button>

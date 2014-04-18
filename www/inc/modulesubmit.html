@@ -1,7 +1,7 @@
 <div class="panel panel-default">
 		<h2>Submit File</h2>
 	<div class="panel-body">
-		<form role="form" method="post" action="/" enctype="multipart/form-data">
+		<form role="form" method="post" action="/" enctype="multipart/form-data" onsubmit="return confirm('Are you sure you want to submit your code?')">
 			<input type="hidden" name="cmd" value="submit">
 			<div class="form-group">
 				<label for="problemID">Problem</label>

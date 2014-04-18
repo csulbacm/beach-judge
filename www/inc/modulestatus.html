@@ -22,15 +22,15 @@
 
       $if:isJudge
       <div>
-        <form role="form" method="post" style="float: left" action="/">
+        <form role="form" method="post" style="float: left" action="/" onsubmit="return confirm('Are you sure you want to start the competition?')">
           <input type="hidden" name="cmd" value="startCompo">
           <button type="submit" class="btn btn-default">Start</button>
         </form>
-        <form role="form" method="post" style="float: left" action="/">
+        <form role="form" method="post" style="float: left" action="/" onsubmit="return confirm('Are you sure you want to stop the competition?')">
           <input type="hidden" name="cmd" value="stopCompo">
           <button type="submit" class="btn btn-default">Stop</button>
         </form>
-        <form role="form" method="post" style="float: left" action="/">
+        <form role="form" method="post" style="float: left" action="/" onsubmit="return confirm('Are you sure you want to clear the competition data (scores, submissions, questions)?')">
           <input type="hidden" name="cmd" value="clearData">
           <button type="submit" class="btn btn-default">Clear Data</button>
         </form>
