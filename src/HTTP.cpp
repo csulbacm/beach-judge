@@ -461,6 +461,48 @@ namespace beachjudge
 						e404 = true;
 				}
 			}
+			else if(!fileRequestType.compare("testIn"))
+			{
+				if(getArgMap.count("p") && getArgMap.count("t")) //- TODO: Verify security -
+				{
+					string testFile = "compo/problems/";
+					testFile.append(getArgMap["p"]);
+					testFile.append("-tests/");
+					testFile.append(getArgMap["t"]);
+					testFile.append(".in");
+					if(fileExists(testFile.c_str()))
+					{
+						file = testFile;
+						requestFileName = getArgMap["p"];
+						requestFileName.append("-");
+						requestFileName.append(getArgMap["t"]);
+						requestFileName.append(".in");
+					}
+					else
+						e404 = true;
+				}
+			}
+			else if(!fileRequestType.compare("testOut"))
+			{
+				if(getArgMap.count("p") && getArgMap.count("t")) //- TODO: Verify security -
+				{
+					string testFile = "compo/problems/";
+					testFile.append(getArgMap["p"]);
+					testFile.append("-tests/");
+					testFile.append(getArgMap["t"]);
+					testFile.append(".out");
+					if(fileExists(testFile.c_str()))
+					{
+						file = testFile;
+						requestFileName = getArgMap["p"];
+						requestFileName.append("-");
+						requestFileName.append(getArgMap["t"]);
+						requestFileName.append(".out");
+					}
+					else
+						e404 = true;
+				}
+			}
 			else if(!fileRequestType.compare("source"))
 			{
 				Team *team = session->GetTeam();

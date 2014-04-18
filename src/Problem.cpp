@@ -131,17 +131,21 @@ namespace beachjudge
 		SPRINTF(newBuff, "%d", id);
 
 		string base = "compo/problems/";
-		string oldDesc(base), oldTest(base);
+		string oldDesc(base), oldTest(base), oldTestSets(base);
 		oldTest.append(oldBuff);
 		oldTest.append("-sample.zip");
 		oldDesc.append(oldBuff);
 		oldDesc.append(".pdf");
+		oldTestSets.append(oldBuff);
+		oldTestSets.append("-tests");
 
-		string newDesc(base), newTest(base);
+		string newDesc(base), newTest(base), newTestSets(base);
 		newTest.append(newBuff);
 		newTest.append("-sample.zip");
 		newDesc.append(newBuff);
 		newDesc.append(".pdf");
+		newTestSets.append(newBuff);
+		newTestSets.append("-tests");
 
 		fileDelete(newTest.c_str());
 		fileDelete(newDesc.c_str());
@@ -151,6 +155,7 @@ namespace beachjudge
 
 		fileRename(oldDesc.c_str(), newDesc.c_str());
 		fileRename(oldTest.c_str(), newTest.c_str());
+		fileRename(oldTestSets.c_str(), newTestSets.c_str());
 	}
 	map<unsigned short, Problem::TestSet *> *Problem::GetTestSets()
 	{

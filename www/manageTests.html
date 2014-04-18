@@ -33,12 +33,12 @@ $loadProblem:{GET_p}
 							</form>
 						</td>
 						<td>
-							<a href="/file?f=sample&p=$get:problemID" target="_blank" class="glyphicon glyphicon-file"></a>
-							<a href="/upload?cmd=pdf&id=$get:problemID" class="glyphicon glyphicon-upload"></a>
+							<a href="/file?f=testIn&p=$GET:p&t=$get:testSetID{idx}" target="_blank" class="glyphicon glyphicon-file"></a>
+							<a href="/upload?cmd=testIn&id=$GET:p&t=$get:testSetID{idx}" class="glyphicon glyphicon-upload"></a>
 						</td>
 						<td>
-							<a href="/file?f=sample&p=$get:problemID" target="_blank" class="glyphicon glyphicon-file"></a>
-							<a href="/upload?cmd=sample&id=$get:problemID" class="glyphicon glyphicon-upload"></a>
+							<a href="/file?f=testOut&p=$GET:p&t=$get:testSetID{idx}" target="_blank" class="glyphicon glyphicon-file"></a>
+							<a href="/upload?cmd=testOut&id=$GET:p&t=$get:testSetID{idx}" class="glyphicon glyphicon-upload"></a>
 						</td>
 						<td>
 							<form id="tMoveUp$get:testSetID{idx}" action="/manageTests?p=$GET:p" method="post">
