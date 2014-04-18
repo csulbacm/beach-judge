@@ -47,6 +47,7 @@ namespace beachjudge
 		g_problemsByID[id] = problem;
 		problem->m_id = id;
 		problem->m_name = name;
+		problem->LoadTestSets();
 		return problem;
 	}
 	Problem *Problem::LookupByID(unsigned short id)
@@ -131,24 +132,27 @@ namespace beachjudge
 		SPRINTF(newBuff, "%d", id);
 
 		string base = "compo/problems/";
-		string oldDesc(base), oldTest(base), oldTestSets(base);
-		oldTest.append(oldBuff);
-		oldTest.append("-sample.zip");
-		oldDesc.append(oldBuff);
-		oldDesc.append(".pdf");
-		oldTestSets.append(oldBuff);
-		oldTestSets.append("-tests");
 
-		string newDesc(base), newTest(base), newTestSets(base);
-		newTest.append(newBuff);
+		string oldBase(base);
+		oldBase.append(oldBuff);
+		string oldDesc(oldBase), oldTest(oldBase), oldTestSets(oldBase), oldTests(oldBase);
+		oldTest.append("-sample.zip");
+		oldDesc.append(".pdf");
+		oldTestSets.append("-tests");
+		oldTests.append("-tests.txt");
+
+		string newBase(base);
+		newBase.append(newBuff);
+		string newDesc(newBase), newTest(newBase), newTestSets(newBase), newTests(newBase);
 		newTest.append("-sample.zip");
-		newDesc.append(newBuff);
 		newDesc.append(".pdf");
-		newTestSets.append(newBuff);
 		newTestSets.append("-tests");
+		newTests.append("-tests.txt");
 
 		fileDelete(newTest.c_str());
 		fileDelete(newDesc.c_str());
+		fileDelete(newTests.c_str());
+		//- TODO: Delete test sets? -
 		g_problemsByID.erase(m_id);
 		m_id = id;
 		g_problemsByID[m_id] = this;
@@ -156,6 +160,7 @@ namespace beachjudge
 		fileRename(oldDesc.c_str(), newDesc.c_str());
 		fileRename(oldTest.c_str(), newTest.c_str());
 		fileRename(oldTestSets.c_str(), newTestSets.c_str());
+		fileRename(oldTests.c_str(), newTests.c_str());
 	}
 	map<unsigned short, Problem::TestSet *> *Problem::GetTestSets()
 	{
@@ -167,8 +172,39 @@ namespace beachjudge
 			return m_testSetMap[id];
 		return 0;
 	}
+	void Problem::SaveTestSets()
+	{
+		char idBuff[8];
+		memset(idBuff, 0, 8);
+		SPRINTF(idBuff, "%d", m_id);
 
+		string file("compo/problems/");
+		file.append(idBuff);
+		file.append("-tests.txt");
 
+		ofstream outFile(file.c_str());
+		for(map<unsigned short, Problem::TestSet *>::iterator it = m_testSetMap.begin(); it != m_testSetMap.end(); it++)
+		{
+			Problem::TestSet *testSet = it->second;
+			outFile << testSet->GetName() << endl;
+		}
+		outFile.close();
+	}
+	void Problem::LoadTestSets()
+	{
+		char idBuff[8];
+		memset(idBuff, 0, 8);
+		SPRINTF(idBuff, "%d", m_id);
+
+		string file("compo/problems/");
+		file.append(idBuff);
+		file.append("-tests.txt");
+
+		ifstream inFile(file.c_str());
+		string name;
+		while(getline(inFile, name))
+			TestSet::Create(this, name);
+	}
 	Problem::TestSet *Problem::TestSet::Create(Problem *problem, string name, string inFile, string outFile)
 	{
 		unsigned short id = problem->m_testSetMap.size() + 1;
@@ -199,36 +235,39 @@ namespace beachjudge
 	}
 	void Problem::TestSet::SetID(unsigned short id)
 	{
-/*		
-		char oldBuff[8], newBuff[8];
+		char oldBuff[8], newBuff[8], pidBuff[8];
 		memset(oldBuff, 0, 8);
 		memset(newBuff, 0, 8);
+		memset(pidBuff, 0, 8);
 		SPRINTF(oldBuff, "%d", m_id);
 		SPRINTF(newBuff, "%d", id);
+		SPRINTF(pidBuff, "%d", m_problem->GetID());
 
 		string base = "compo/problems/";
-		string oldDesc(base), oldTest(base);
-		oldTest.append(oldBuff);
-		oldTest.append("-sample.zip");
-		oldDesc.append(oldBuff);
-		oldDesc.append(".pdf");
+		base.append(pidBuff);
+		base.append("-tests/");
 
-		string newDesc(base), newTest(base);
-		newTest.append(newBuff);
-		newTest.append("-sample.zip");
-		newDesc.append(newBuff);
-		newDesc.append(".pdf");
+		string oldBase(base);
+		oldBase.append(oldBuff);
+		string oldIn(oldBase), oldOut(oldBase);
+		oldIn.append(".in");
+		oldOut.append(".out");
 
-		fileDelete(newTest.c_str());
-		fileDelete(newDesc.c_str());
+		string newBase(base);
+		newBase.append(newBuff);
+		string newIn(newBase), newOut(newBase);
+		newIn.append(".in");
+		newOut.append(".out");
 
-		fileRename(oldDesc.c_str(), newDesc.c_str());
-		fileRename(oldTest.c_str(), newTest.c_str());
-		*/
+		fileDelete(newIn.c_str());
+		fileDelete(newOut.c_str());
 
 		m_problem->m_testSetMap.erase(m_id);
 		m_id = id;
 		m_problem->m_testSetMap[m_id] = this;
+
+		fileRename(oldIn.c_str(), newIn.c_str());
+		fileRename(oldOut.c_str(), newOut.c_str());
 	}
 	string Problem::TestSet::GetName() const
 	{

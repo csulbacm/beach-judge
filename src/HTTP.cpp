@@ -1011,6 +1011,7 @@ namespace beachjudge
 								if(problem)
 								{
 									Problem::TestSet::Create(problem, postArgMap["testName"]);
+									problem->SaveTestSets();
 								}
 							}
 				}
@@ -1028,6 +1029,7 @@ namespace beachjudge
 									if(testSet)
 									{
 										testSet->SetName(postArgMap["newTestSetName"]);
+										problem->SaveTestSets();
 									}
 								}
 							}
@@ -1046,7 +1048,26 @@ namespace beachjudge
 									if(testSet)
 									{
 										//- Delete Files -
+										char tidBuff[8], pidBuff[8];
+										memset(tidBuff, 0, 8);
+										memset(pidBuff, 0, 8);
+										SPRINTF(tidBuff, "%d", testSet->GetID());
+										SPRINTF(pidBuff, "%d", problem->GetID());
+
+										string base = "compo/problems/";
+										base.append(pidBuff);
+										base.append("-tests/");
+
+										string tBase(base);
+										tBase.append(tidBuff);
+										string tIn(tBase), tOut(tBase);
+										tIn.append(".in");
+										tOut.append(".out");
+										fileDelete(tIn.c_str());
+										fileDelete(tOut.c_str());
+
 										delete testSet;
+										problem->SaveTestSets();
 									}
 								}
 							}
@@ -1073,7 +1094,7 @@ namespace beachjudge
 												prevTestSet->SetID(0);
 												testSet->SetID(id - 1);
 												prevTestSet->SetID(id);
-//												Problem::SaveToFile("compo/problems.txt");
+												problem->SaveTestSets();
 											}
 										}
 									}
@@ -1102,7 +1123,7 @@ namespace beachjudge
 												nextTestSet->SetID(0);
 												testSet->SetID(id + 1);
 												nextTestSet->SetID(id);
-//												Problem::SaveToFile("compo/problems.txt");
+												problem->SaveTestSets();
 											}
 										}
 									}

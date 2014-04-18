@@ -57,6 +57,8 @@ namespace beachjudge
 		std::vector<Team *> *GetSolvers();
 		std::map<unsigned short, Problem::TestSet *> *GetTestSets();
 		Problem::TestSet *LookupTestSetByID(unsigned short id);
+		void SaveTestSets();
+		void LoadTestSets();
 
 	private:
 		std::map<unsigned short, Problem::TestSet *> m_testSetMap;
