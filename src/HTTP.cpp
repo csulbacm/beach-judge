@@ -72,10 +72,12 @@ namespace beachjudge
 
 		string img;
 
-		while(!inFile.eof())
+		while(true)
 		{
 			char c;
 			inFile.get(c);
+			if(inFile.eof())
+				break;
 			img.push_back(c);
 		}
 
@@ -98,10 +100,12 @@ namespace beachjudge
 
 		string img;
 
-		while(!inFile.eof())
+		while(true)
 		{
 			char c;
 			inFile.get(c);
+			if(inFile.eof())
+				break;
 			img.push_back(c);
 		}
 
@@ -401,10 +405,12 @@ namespace beachjudge
 							if(readFile)
 							{
 								stringstream partValueStream(ios::in | ios::out | ios::binary);
-								while(!partStream.eof())
+								while(true)
 								{
 									char c;
 									partStream.get(c);
+									if(partStream.eof())
+										break;
 									partValueStream.put(c);
 								}
 								piece = partValueStream.str().substr(0, partValueStream.str().size() - 3);
