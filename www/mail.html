@@ -14,6 +14,7 @@ $if:isJudge
 						$loadUnansweredQuestionsForProblem:{problemID}
 						$startLoop:x{questionCount}
 						<li><a href="/mail?q=$get:questionID{idx}">
+							<strong>[$get:problemID{idx}] $get:problemName{idx}</strong> &mdash;
 							<strong>$get:asker{idx}</strong> &mdash;
 							$get:question{idx}
 						</a></li>
@@ -41,6 +42,12 @@ $if:isJudge
 				 $get:asker
 			</span>
 		</p>
+		<p>
+			<strong>Problem:</strong>
+			<span>
+				 [$get:questionProblemID] $get:questionProblemName
+			</span>
+		</p>		
 		<p>
 			$get:question
 		</p>

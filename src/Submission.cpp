@@ -298,7 +298,7 @@ namespace beachjudge
 			testThread->Start(testStruct);
 
 			unsigned long long startTime = getRunTimeMS();
-			while((getRunTimeMS() - startTime) < 3000) //- TODO: Verify if there should be mutexes -
+			while((getRunTimeMS() - startTime) < 60000) //- TODO: Verify if there should be mutexes - // Was 3000
 			{
 				if(!testThread->IsRunning())
 					break;

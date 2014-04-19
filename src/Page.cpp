@@ -315,6 +315,7 @@ namespace beachjudge
 					Question *question = *it;
 					if(!question->IsAnswered())
 					{
+						Problem *problem = question->GetProblem();
 						idx++;
 						memset(str, 0, 8);
 						SPRINTF(str, "%d", idx);
@@ -322,6 +323,8 @@ namespace beachjudge
 						string questionKey("question");
 						string questionIDKey("questionID");
 						string askerKey("asker");
+						string problemKey("problemName");
+						string problemIDKey("problemID");
 						unsigned short qid = question->GetID();
 						memset(str, 0, 8);
 						SPRINTF(str, "%d", qid);
@@ -329,6 +332,10 @@ namespace beachjudge
 						targetVars->operator[](questionKey.append(idxStr)) = question->GetText();
 						targetVars->operator[](questionIDKey.append(idxStr)) = idStr;
 						targetVars->operator[](askerKey.append(idxStr)) = question->GetTeam()->GetName();
+						targetVars->operator[](problemKey.append(idxStr)) = problem->GetName();
+						memset(str, 0, 8);
+						SPRINTF(str, "%d", problem->GetID());
+						targetVars->operator[](problemIDKey.append(idxStr)) = string(str);
 					}
 				}
 				memset(str, 0, 8);

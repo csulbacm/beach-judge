@@ -145,7 +145,7 @@ int main(int argc, char **argv)
 
 	Competition *competition = Competition::CreateFromFile("compo/compo.txt");
 	if(!competition)
-		competition = Competition::Create(7200000);
+		competition = Competition::Create(10800000); //7200000
 	competition->SetCurrent();
 
 	Team::LoadScores();
