@@ -198,7 +198,8 @@ namespace beachjudge
 						{
 							team->m_scores[problem] = score;
 							team->m_penalties[problem] = penalties;
-							problem->AddSolver(team);
+							if(score != 0.f)
+								problem->AddSolver(team);
 						}
 					}
 			}
