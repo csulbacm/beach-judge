@@ -298,7 +298,12 @@ namespace beachjudge
 	}
 	void Team::AddScore(Problem *problem, float score)
 	{
+		bool scored = false;
 		if(m_scores.count(problem))
+			if(m_scores[problem] != 0.f)
+				score = true;
+
+		if(scored)
 			m_scores[problem] += score;
 		else
 		{
