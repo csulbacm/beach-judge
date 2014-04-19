@@ -31,6 +31,7 @@ namespace beachjudge
 		void Join(void **ret = 0);
 		bool IsRunning() const;
 		void End();
+		void Cancel();
 	};
 }
 

@@ -102,4 +102,12 @@ namespace beachjudge
 	{
 		g_deadThreads.push_back(this);
 	}
+	void Thread::Cancel()
+	{
+		End();
+
+		#if BEACHJUDGE_USEPOSIXTHREAD
+			pthread_cancel(m_pThread);
+		#endif
+	}
 }

@@ -11,6 +11,7 @@
 #include <BeachJudge/Base.h>
 #include <BeachJudge/Submission.h>
 #include <BeachJudge/Team.h>
+#include <BeachJudge/Thread.h>
 
 #ifdef _WIN32
 	#define SPRINTF sprintf_s
@@ -202,6 +203,32 @@ namespace beachjudge
 	{
 		return m_base;
 	}
+
+	typedef struct TestStruct
+	{
+		Problem::TestSet *testSet;
+		string cmd, resultFile, execFile;
+		Thread *thread;
+	} TestStruct;
+	void *testThreadFunc(void *arg)
+	{
+		#if BEACHJUDGE_USEPOSIXTHREAD
+			pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, 0);
+			pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0);
+		#endif
+
+		TestStruct *data = (TestStruct *)arg;
+
+		system(data->cmd.c_str());
+
+		fileDelete(data->resultFile.c_str());
+		fileDelete(data->execFile.c_str());
+
+		data->thread->End();
+		delete data;
+		Thread::Exit();
+		return 0;
+	}
 	SubStatus Submission::AutoTest() //- TODO: Handle Unknown Code Type -
 	{
 		m_autoTestVerdicts.clear();
@@ -249,6 +276,7 @@ namespace beachjudge
 		unsigned short size = testSetMap->size();
 
 		unsigned short errors = 0;
+		bool timeLimitExceeded = false;
 		for(unsigned short a = 1; a <= size; a++)
 		{
 			Problem::TestSet *testSet = testSetMap->operator[](a);
@@ -257,9 +285,37 @@ namespace beachjudge
 			memset(cmdBuff, 0, 256);
 			SPRINTF(cmdBuff, "%s < %s > dummy; diff dummy %s > %s; rm dummy", execFile.c_str(), testSet->GetInFile().c_str(), testSet->GetOutFile().c_str(), resultFile.c_str());
 //			print("%s < %s > dummy; diff dummy %s > %s; rm dummy\n", execFile.c_str(), testSet->GetInFile().c_str(), testSet->GetOutFile().c_str(), resultFile.c_str());
-			system(cmdBuff);
 
-			if(fileSize(resultFile.c_str()))
+			TestStruct *testStruct = new TestStruct;
+			testStruct->testSet = testSet;
+			testStruct->cmd = string(cmdBuff);
+			testStruct->resultFile = resultFile;
+			testStruct->execFile = execFile;
+
+			Thread *testThread = new Thread(&testThreadFunc);
+			testStruct->thread = testThread;
+			
+			testThread->Start(testStruct);
+
+			unsigned long long startTime = getRunTimeMS();
+			while((getRunTimeMS() - startTime) < 3000) //- TODO: Verify if there should be mutexes -
+			{
+				if(!testThread->IsRunning())
+					break;
+				sleepMS(10);
+			}
+
+			if(testThread->IsRunning())
+			{
+				testThread->Cancel();
+				fileDelete(resultFile.c_str());
+				fileDelete(execFile.c_str());
+				timeLimitExceeded = true;
+			}
+
+//			system(cmdBuff);
+
+			if(timeLimitExceeded || fileSize(resultFile.c_str()))
 			{
 //				cout << "Wrong answer" << endl;
 //				break;
@@ -270,13 +326,13 @@ namespace beachjudge
 				m_autoTestVerdicts[a] = true;
 		}
 
-		fileDelete(resultFile.c_str());
-		fileDelete(execFile.c_str());
-
 		if(errors)
 		{
+			if(timeLimitExceeded)
+				m_autoTestStatus = SubStatus_TimeLimitExceeded;
+			else
+				m_autoTestStatus = SubStatus_WrongAnswer;
 //			cout << "Wrong answer" << endl;
-			m_autoTestStatus = SubStatus_WrongAnswer;
 			return m_autoTestStatus;
 		}
 
