@@ -1,5 +1,5 @@
-#ifndef _CE_BASE_H_
-#define _CE_BASE_H_
+#ifndef _BEACHJUDGE_BASE_H_
+#define _BEACHJUDGE_BASE_H_
 
 //- Standard Library -
 #include <string>
