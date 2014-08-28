@@ -212,7 +212,7 @@ namespace beachjudge
 				}
 				else
 				{
-					if(!uriCopy.compare("/logout")) //- TODO: Find a better way to do this -
+					if(!uriCopy.compare("/logout")) //TODO: Find a better way to do this
 						loggingOut = true;
 					else if(!uriCopy.compare("/submissionPoll"))
 						submissionPoll = true;
@@ -325,7 +325,7 @@ namespace beachjudge
 				}
 				else
 					timeout++;
-				//- TODO: Verify upload stability -
+				//TODO: Verify upload stability
 //				cout << reqStream.str().size() << endl;
 				sleepMS(16);
 			}
@@ -440,7 +440,7 @@ namespace beachjudge
 			string fileRequestType = getArgMap["f"];
 			if(!fileRequestType.compare("info"))
 			{
-				if(getArgMap.count("p")) //- TODO: Verify security -
+				if(getArgMap.count("p")) //TODO: Verify security
 				{
 					string testFile = "compo/problems/";
 					testFile.append(getArgMap["p"]);
@@ -457,7 +457,7 @@ namespace beachjudge
 			}
 			else if(!fileRequestType.compare("sample"))
 			{
-				if(getArgMap.count("p")) //- TODO: Verify security -
+				if(getArgMap.count("p")) //TODO: Verify security
 				{
 					string testFile = "compo/problems/";
 					testFile.append(getArgMap["p"]);
@@ -474,7 +474,7 @@ namespace beachjudge
 			}
 			else if(!fileRequestType.compare("testIn"))
 			{
-				if(getArgMap.count("p") && getArgMap.count("t")) //- TODO: Verify security -
+				if(getArgMap.count("p") && getArgMap.count("t")) //TODO: Verify security
 				{
 					string testFile = "compo/problems/";
 					testFile.append(getArgMap["p"]);
@@ -495,7 +495,7 @@ namespace beachjudge
 			}
 			else if(!fileRequestType.compare("testOut"))
 			{
-				if(getArgMap.count("p") && getArgMap.count("t")) //- TODO: Verify security -
+				if(getArgMap.count("p") && getArgMap.count("t")) //TODO: Verify security
 				{
 					string testFile = "compo/problems/";
 					testFile.append(getArgMap["p"]);
@@ -517,7 +517,7 @@ namespace beachjudge
 			else if(!fileRequestType.compare("source"))
 			{
 				Team *team = session->GetTeam();
-				if(team && getArgMap.count("s")) //- TODO: Verify security -
+				if(team && getArgMap.count("s")) //TODO: Verify security
 				{
 					unsigned short sid = atoi(getArgMap["s"].c_str());
 					Submission *submission = Submission::LookupByID(sid);
@@ -1186,7 +1186,7 @@ namespace beachjudge
 
 		stringstream webPageStream(ios::in | ios::out | ios::binary);
 
-		if(e404) //- TODO: Determine if this is truly redundant and fix it -
+		if(e404) //TODO: Determine if this is truly redundant and fix it
 		{
 			file = wwwPrefix;
 			file.append("/404.html");

@@ -16,8 +16,8 @@
 #include <BeachJudge/Question.h>
 #include <BeachJudge/Team.h>
 
-#define BEACHJUDGE_SESSION_CLEANUPTICKMS 15 * 60 * 1000 //- TODO: Externalize to Config -
-#define BEACHJUDGE_COMPETITION_TICKMS 1000 //- TODO: Externalize to Config -
+#define BEACHJUDGE_SESSION_CLEANUPTICKMS 15 * 60 * 1000 //TODO: Externalize to Config
+#define BEACHJUDGE_COMPETITION_TICKMS 1000 //TODO: Externalize to Config
 
 using namespace std;
 using namespace beachjudge;
@@ -99,13 +99,13 @@ void *webServerFunc(void *arg)
 	while(true)
 	{
 //		print("Waiting for new connection...\n");
-		Socket *client = server->Accept(); //- TODO: Fix Non-Blocking Sockets -
+		Socket *client = server->Accept(); //TODO: Fix Non-Blocking Sockets
 		Thread *clientThread = new Thread(&clientHandlerFunc);
 
 		pair<Socket *, Thread *> *data = new pair<Socket *, Thread *>();
 		data->first = client;
 		data->second = clientThread;
-		clientThread->Start(data); //- TODO: Confirm that this cleans up properly -
+		clientThread->Start(data); //TODO: Confirm that this cleans up properly
 
 		sleepMS(1);
 	}
@@ -185,7 +185,7 @@ int main(int argc, char **argv)
 
 		if(currTimeMS >= sessionCleanupMS)
 		{
-			Session::Cleanup(); //- TODO: Investigate stability -
+			Session::Cleanup(); //TODO: Investigate stability
 			sessionCleanupMS += BEACHJUDGE_SESSION_CLEANUPTICKMS;
 		}
 

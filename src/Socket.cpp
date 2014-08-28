@@ -277,13 +277,13 @@ namespace beachjudge
 		FD_SET(m_socket, &readFlags);
 //		FD_SET(m_socket, &writeFlags);
 
-		//- TODO: Fix this to match the standard -
+		//TODO: Fix this to match the standard
 		#ifdef _WIN32
 			FD_SET(0, &readFlags);
 			FD_SET(0, &writeFlags);
 		#endif
 	
-		//- TODO: Determine if this is necessary -
+		//TODO: Determine if this is necessary
 /*		#ifdef linux
 			FD_SET(STDIN_FILENO, &readFlags);
 			FD_SET(STDIN_FILENO, &writeFlags);

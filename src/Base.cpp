@@ -145,7 +145,7 @@ namespace beachjudge
 		#endif
 	}
 
-	unsigned long long g_startTimeMS = getRunTimeMS(); //- TODO: Verify if we can get away with doing this -
+	unsigned long long g_startTimeMS = getRunTimeMS();
 	unsigned long long getStartTimeMS()
 	{
 		return g_startTimeMS;

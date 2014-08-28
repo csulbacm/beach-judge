@@ -49,7 +49,7 @@ namespace beachjudge
 			while(g_submissionsByID.count(submission->m_id));
 		}
 		else
-			submission->m_id = id; //- TODO: Clean this up -
+			submission->m_id = id; //TODO: Clean this up
 		g_submissionsByID[submission->m_id] = submission;
 
 		submission->m_codeType = codeType;
@@ -229,7 +229,7 @@ namespace beachjudge
 		Thread::Exit();
 		return 0;
 	}
-	SubStatus Submission::AutoTest() //- TODO: Handle Unknown Code Type -
+	SubStatus Submission::AutoTest() //TODO: Handle Unknown Code Type
 	{
 		m_autoTestVerdicts.clear();
 
@@ -252,7 +252,7 @@ namespace beachjudge
 			target.append("compile_java.sh");
 			break;
 		case CodeType_Unknown:
-			//- TODO: Handle unknown type -
+			//TODO: Handle unknown type
 			break;
 		}
 		target.append(" ");
@@ -298,7 +298,7 @@ namespace beachjudge
 			testThread->Start(testStruct);
 
 			unsigned long long startTime = getRunTimeMS();
-			while((getRunTimeMS() - startTime) < 60000) //- TODO: Verify if there should be mutexes - // Was 3000
+			while((getRunTimeMS() - startTime) < 60000) //TODO: Verify if there should be mutexes // Was 3000
 			{
 				if(!testThread->IsRunning())
 					break;

@@ -47,7 +47,7 @@ namespace beachjudge
 			{
 				getline(inFile, in);
 				competition->m_endTimeMS = atoll(in.c_str());
-				competition->m_startTimeMS = competition->m_endTimeMS - competition->m_duration; //- TODO: Clean this up -
+				competition->m_startTimeMS = competition->m_endTimeMS - competition->m_duration; //TODO: Clean this up
 			}
 			else if(!in.compare("questions"))
 			{

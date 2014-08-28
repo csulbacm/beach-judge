@@ -152,7 +152,7 @@ namespace beachjudge
 		fileDelete(newTest.c_str());
 		fileDelete(newDesc.c_str());
 		fileDelete(newTests.c_str());
-		//- TODO: Delete test sets? -
+		//TODO: Delete test sets?
 		g_problemsByID.erase(m_id);
 		m_id = id;
 		g_problemsByID[m_id] = this;

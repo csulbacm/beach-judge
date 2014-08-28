@@ -20,7 +20,7 @@
 
 using namespace std;
 
-#define BEACHJUDGE_SESSION_EXPIREMS 30 * 60 * 1000 //- TODO: Externalize to Config -
+#define BEACHJUDGE_SESSION_EXPIREMS 30 * 60 * 1000 //TODO: Externalize to Config
 
 namespace beachjudge
 {
@@ -54,7 +54,7 @@ namespace beachjudge
 			}
 			session->m_addressString = addrStr;
 
-			//- TODO: Make sure this is safe -
+			//TODO: Make sure this is safe
 			if(id)
 				session->m_id = id;
 			else
@@ -73,7 +73,7 @@ namespace beachjudge
 		session->m_variables["isTeam"] = team->IsJudge() ? 0 : 1;
 		session->m_port = port;
 		session->m_team = team;
-		if(id == 0) //- TODO: This should be cleaner, but this occurs if the session was loaded from the file -
+		if(id == 0) //TODO: This should be cleaner, but this occurs if the session was loaded from the file
 			session->ResetTimeout();
 		return session;
 	}
@@ -103,7 +103,7 @@ namespace beachjudge
 		if(!deleteAll)
 			Session::SaveAll();
 	}
-	void Session::SaveAll() //- TODO: Don't save all sessions in one file -
+	void Session::SaveAll() //TODO: Don't save all sessions in one file
 	{
 		createFolder("compo");
 		ofstream outFile("compo/sessions.txt");
