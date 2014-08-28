@@ -8,6 +8,7 @@
 
 //- Beach Judge -
 #include <BeachJudge/Thread.h>
+#include <BeachJudge/Mutex.h>
 
 #if BEACHJUDGE_USEPOSIXTHREAD
 	//- POSIX -
@@ -19,12 +20,15 @@ using namespace std;
 namespace beachjudge
 {
 	vector<Thread *> g_deadThreads;
+	Mutex g_deleteMutex(true);
 
 	void Thread::DeleteDead()
 	{
+		g_deleteMutex.Lock();
 		for(vector<Thread *>::iterator it = g_deadThreads.begin(); it != g_deadThreads.end(); it++)
 			delete *it;
 		g_deadThreads.clear();
+		g_deleteMutex.Unlock();
 	}
 	Thread::Thread(void *(*process)(void *))
 	{
@@ -100,7 +104,9 @@ namespace beachjudge
 	}
 	void Thread::End()
 	{
+		g_deleteMutex.Lock();
 		g_deadThreads.push_back(this);
+		g_deleteMutex.Unlock();
 	}
 	void Thread::Cancel()
 	{

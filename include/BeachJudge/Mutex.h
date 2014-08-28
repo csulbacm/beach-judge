@@ -17,7 +17,7 @@ namespace beachjudge
 		#endif
 
 	public:
-		Mutex();
+		Mutex(bool initialize = false);
 		~Mutex();
 
 		void Init();

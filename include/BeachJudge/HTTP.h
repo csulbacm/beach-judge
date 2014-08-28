@@ -23,8 +23,6 @@ namespace beachjudge
 		static void LoadBinaryFile(std::stringstream &stream, std::string file, std::string name, bool isAttachment = false);
 
 		static void HandleClient(Socket *client);
-		static void Init();
-		static void Cleanup();
 	};
 }
 

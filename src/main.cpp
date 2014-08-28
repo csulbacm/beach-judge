@@ -125,8 +125,6 @@ int main(int argc, char **argv)
 	//- Initial Config -
 	//------------------
 
-	HTTP::Init();
-
 	Team::Create("judge", "root", 0, true);
 	Team::Create("dummy", "1234", 1);
 
@@ -196,8 +194,6 @@ int main(int argc, char **argv)
 	//-----------
 	//- Cleanup -
 	//-----------
-
-	HTTP::Cleanup();
 
 	delete competition;
 	commandThread.Join();

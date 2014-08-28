@@ -13,6 +13,7 @@
 #include <BeachJudge/Session.h>
 #include <BeachJudge/HTTP.h>
 #include <BeachJudge/Team.h>
+#include <BeachJudge/Mutex.h>
 
 using namespace std;
 
@@ -27,23 +28,9 @@ const char *wwwPrefix = "../www";
 	#define SPRINTF	sprintf
 #endif
 
-#if BEACHJUDGE_USEPOSIXSOCKET
-	//- POSIX -
-	#include <sys/types.h>
-	#include <sys/socket.h>
-	#include <netinet/in.h>
-	#include <arpa/inet.h>
-	#include <cstdio>
-	#include <cstdlib>
-	#include <cstring>
-	#include <unistd.h>
-	#include <fcntl.h>
-
-	pthread_mutex_t g_pageAccessMutex;
-#endif
-
 namespace beachjudge
 {
+	Mutex g_pageAccessMutex(true), g_actionMutex(true);
 	void HTTP::OpenHeader_OK(stringstream &stream)
 	{
 		stream << "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-type: text/html\r\n";
@@ -121,18 +108,6 @@ namespace beachjudge
 	{
 		stream << "\r\n";
 	}
-	void HTTP::Init()
-	{
-		#if BEACHJUDGE_USEPOSIXSOCKET
-			pthread_mutex_init(&g_pageAccessMutex, 0);
-		#endif
-	}
-	void HTTP::Cleanup()
-	{
-		#if BEACHJUDGE_USEPOSIXSOCKET
-			pthread_mutex_destroy(&g_pageAccessMutex);
-		#endif
-	}
 	void HTTP::HandleClient(Socket *client)
 	{
 		stringstream reqStream(ios::in | ios::out | ios::binary);
@@ -150,10 +125,6 @@ namespace beachjudge
 
 		if(reqStream.str().size() <= 1)
 			return;
-
-		#if BEACHJUDGE_USEPOSIXSOCKET
-			pthread_mutex_lock(&g_pageAccessMutex);
-		#endif
 
 		unsigned short port = 0;
 		unsigned long addr = 0;
@@ -331,10 +302,6 @@ namespace beachjudge
 			}
 			while(client->HasRead() && timeout < 15);
 		}
-
-//		#if BEACHJUDGE_USEPOSIXSOCKET
-//			pthread_mutex_lock(&g_pageAccessMutex);
-//		#endif
 
 //		cout << reqStream.str() << endl;
 		map<string, string> postArgMap;
@@ -543,6 +510,7 @@ namespace beachjudge
 				e404 = true;
 		}
 
+		g_actionMutex.Lock();
 		if(postArgMap.count("cmd"))
 		{
 			if(session)
@@ -1183,6 +1151,7 @@ namespace beachjudge
 						}
 			}
 		}
+		g_actionMutex.Unlock();
 
 		stringstream webPageStream(ios::in | ios::out | ios::binary);
 
@@ -1197,38 +1166,24 @@ namespace beachjudge
 			if(!type.compare("jpg") || !type.compare("jpeg") || !type.compare("png") || !type.compare("bmp"))
 				img = true;
 
+		string response;
+		g_pageAccessMutex.Lock();
 		if(submissionPoll)
 		{
-			#if BEACHJUDGE_USEPOSIXSOCKET
-				pthread_mutex_unlock(&g_pageAccessMutex);
-			#endif
-
 			char subBuff[16];
 			memset(subBuff, 0, 16);
 			SPRINTF(subBuff, "%ld", Submission::GetPendingSubmissions()->size());
-			client->Write(subBuff, strlen(subBuff));
+			response = string(subBuff);
 		}
 		else if(img)
 		{
 			LoadImage(webPageStream, file);
-			string response = webPageStream.str();
-
-			#if BEACHJUDGE_USEPOSIXSOCKET
-				pthread_mutex_unlock(&g_pageAccessMutex);
-			#endif
-
-			client->Write((char *)response.c_str(), response.length());
+			response = webPageStream.str();
 		}
 		else if(fileRequest && !e404)
 		{
 			LoadBinaryFile(webPageStream, file, requestFileName);
-			string response = webPageStream.str();
-
-			#if BEACHJUDGE_USEPOSIXSOCKET
-				pthread_mutex_unlock(&g_pageAccessMutex);
-			#endif
-
-			client->Write((char *)response.c_str(), response.length()); 
+			response = webPageStream.str();
 		}
 		else
 		{
@@ -1256,14 +1211,11 @@ namespace beachjudge
 
 			Page *index = Page::Create(file);
 			index->AddToStream(webPageStream, client, session, &getArgMap);
-			string webPage = webPageStream.str();
-
-			#if BEACHJUDGE_USEPOSIXSOCKET
-				pthread_mutex_unlock(&g_pageAccessMutex);
-			#endif
-
-			client->Write((char *)webPage.c_str(), webPage.length());
+			response = webPageStream.str();
 		}
+		g_pageAccessMutex.Unlock();
+
+		client->Write((char *)response.c_str(), response.length());
 
 		if(session)
 		{

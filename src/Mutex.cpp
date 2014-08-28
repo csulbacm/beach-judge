@@ -13,7 +13,7 @@
 
 namespace beachjudge
 {
-	Mutex::Mutex()
+	Mutex::Mutex(bool initialize)
 	{
 		#if BEACHJUDGE_USEPOSIXTHREAD
 			m_pMutex = 0;
@@ -23,6 +23,9 @@ namespace beachjudge
 			m_mutexHandle = 0;
 		#endif
 		m_isAlive = false;
+
+		if(initialize)
+			Init();
 	}
 	Mutex::~Mutex()
 	{

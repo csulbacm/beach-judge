@@ -343,7 +343,7 @@ namespace beachjudge
 	{
 		return m_autoTestStatus;
 	}
-	std::map<unsigned short, bool> *Submission::GetAutoTestVerdicts()
+	map<unsigned short, bool> *Submission::GetAutoTestVerdicts()
 	{
 		return &m_autoTestVerdicts;
 	}
