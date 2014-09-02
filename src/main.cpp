@@ -28,30 +28,40 @@ void *commandFunc(void *arg)
 	while(getline(cin, cmd))
 	{
 		if(!cmd.compare("sessions"))
-			Session::ListCurrent();
-		if(!cmd.compare("start"))
 		{
+			HTTP::LockActionMutex();
+			Session::ListCurrent();
+			HTTP::UnlockActionMutex();
+		}
+		else if(!cmd.compare("start"))
+		{
+			HTTP::LockActionMutex();
 			Competition *competition = Competition::GetCurrent();
 			if(competition)
 			{
 				competition->Start();
 				competition->SaveToFile("compo/compo.txt");
 			}
+			HTTP::UnlockActionMutex();
 		}
 		else if(!cmd.compare("stop"))
 		{
+			HTTP::LockActionMutex();
 			Competition *competition = Competition::GetCurrent();
 			if(competition)
 			{
 				competition->Stop();
 				competition->SaveToFile("compo/compo.txt");
 			}
+			HTTP::UnlockActionMutex();
 		}
 		else if(!cmd.compare("clearAll"))
 		{
+			HTTP::LockActionMutex();
 			Competition *competition = Competition::GetCurrent();
 			if(competition)
 				competition->ClearAll();
+			HTTP::UnlockActionMutex();
 		}
 	}
 
@@ -196,11 +206,11 @@ int main(int argc, char **argv)
 	//- Cleanup -
 	//-----------
 
-	delete competition;
 	commandThread.Join();
 	webServerThread.Join();
 	Question::Cleanup();
 	Session::Cleanup(true);
+	delete competition;
 
 	Thread::Exit(NULL);
 	return 0;

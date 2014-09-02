@@ -31,6 +31,14 @@ const char *wwwPrefix = "../www";
 namespace beachjudge
 {
 	Mutex g_pageAccessMutex(true), g_actionMutex(true);
+	void HTTP::LockActionMutex()
+	{
+		g_actionMutex.Lock();
+	}
+	void HTTP::UnlockActionMutex()
+	{
+		g_actionMutex.Unlock();
+	}
 	void HTTP::OpenHeader_OK(stringstream &stream)
 	{
 		stream << "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-type: text/html\r\n";
@@ -1172,7 +1180,7 @@ namespace beachjudge
 		{
 			char subBuff[16];
 			memset(subBuff, 0, 16);
-			SPRINTF(subBuff, "%ld", Submission::GetPendingSubmissions()->size());
+			SPRINTF(subBuff, "%d", (unsigned int)Submission::GetPendingSubmissions()->size());
 			response = string(subBuff);
 		}
 		else if(img)
