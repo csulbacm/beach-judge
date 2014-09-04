@@ -27,7 +27,15 @@ void *commandFunc(void *arg)
 	string cmd;
 	while(getline(cin, cmd))
 	{
-		if(!cmd.compare("sessions"))
+		if(!cmd.compare("help"))
+		{
+			print("Commands:\n");
+			print("  sessions - displays active sessions\n");
+			print("  start - starts the competition\n");
+			print("  stop - stops the competition\n");
+			print("  clear - clears all competition data\n");
+		}
+		else if(!cmd.compare("sessions"))
 		{
 			HTTP::LockActionMutex();
 			Session::ListCurrent();
@@ -55,7 +63,7 @@ void *commandFunc(void *arg)
 			}
 			HTTP::UnlockActionMutex();
 		}
-		else if(!cmd.compare("clearAll"))
+		else if(!cmd.compare("clear"))
 		{
 			HTTP::LockActionMutex();
 			Competition *competition = Competition::GetCurrent();
@@ -77,18 +85,7 @@ void *clientHandlerFunc(void *arg)
 	Socket *client = data->first;
 	delete data;
 
-//	print("[%ld] Enter\n", client);
-
-//	print("[%ld] -> Handle\n", client);
-
 	HTTP::HandleClient(client);
-
-//	print("[%ld] Handle ->\n", client);
-
-//	client->Shutdown();
-	
-
-//	print("[%ld] Exit\n", client);
 
 	delete client;
 	thread->End();
@@ -108,8 +105,7 @@ void *webServerFunc(void *arg)
 	//- Connection handling process -
 	while(true)
 	{
-//		print("Waiting for new connection...\n");
-		Socket *client = server->Accept(); //TODO: Fix Non-Blocking Sockets
+		Socket *client = server->Accept();
 		Thread *clientThread = new Thread(&clientHandlerFunc);
 
 		pair<Socket *, Thread *> *data = new pair<Socket *, Thread *>();
@@ -136,7 +132,7 @@ int main(int argc, char **argv)
 	//------------------
 
 	Team::Create("judge", "root", 0, true);
-	Team::Create("dummy", "1234", 1);
+//	Team::Create("dummy", "1234", 1);
 
 	Team::SetDatabase("compo/teams.txt");
 	Team::LoadFromDatabase();
@@ -187,8 +183,10 @@ int main(int argc, char **argv)
 
 		if(currTimeMS >= competitionTickMS)
 		{
+			HTTP::LockActionMutex();
 			if(competition->GetTimeLeft() == 0)
 				competition->Stop();
+			HTTP::UnlockActionMutex();
 			competitionTickMS += BEACHJUDGE_COMPETITION_TICKMS;
 		}
 
