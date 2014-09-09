@@ -518,9 +518,9 @@ namespace beachjudge
 				e404 = true;
 		}
 
-		g_actionMutex.Lock();
 		if(postArgMap.count("cmd"))
 		{
+			g_actionMutex.Lock();
 			if(session)
 			{
 				string &cmd = postArgMap["cmd"];
@@ -692,22 +692,6 @@ namespace beachjudge
 									Competition *compo = Competition::GetCurrent();
 									if(compo)
 										compo->SaveToFile("compo/compo.txt");
-								}
-							}
-				}
-				else if(!cmd.compare("autoTest"))
-				{
-					Team *team = session->GetTeam();
-					if(team)
-						if(team->IsJudge())
-							if(postArgMap.count("submissionID"))
-							{
-								Submission *submission = Submission::LookupByID(atoi(postArgMap["submissionID"].c_str()));
-								if(submission)
-								{
-//									print("Autotesting: %d\n", submission->GetID());
-									submission->AutoTest();
-									session->SetVariable("autotest", 1);
 								}
 							}
 				}
@@ -1142,6 +1126,24 @@ namespace beachjudge
 								}
 							}
 				}
+				g_actionMutex.Unlock();
+
+				if(!cmd.compare("autoTest"))
+				{
+					Team *team = session->GetTeam();
+					if(team)
+						if(team->IsJudge())
+							if(postArgMap.count("submissionID"))
+							{
+								Submission *submission = Submission::LookupByID(atoi(postArgMap["submissionID"].c_str()));
+								if(submission)
+								{
+//									print("Autotesting: %d\n", submission->GetID());
+									submission->AutoTest();
+									session->SetVariable("autotest", 1);
+								}
+							}
+				}
 			}
 			else
 			{
@@ -1157,9 +1159,9 @@ namespace beachjudge
 									Session::SaveAll();
 								}
 						}
+				g_actionMutex.Unlock();
 			}
 		}
-		g_actionMutex.Unlock();
 
 		stringstream webPageStream(ios::in | ios::out | ios::binary);
 

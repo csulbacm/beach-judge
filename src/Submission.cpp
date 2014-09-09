@@ -221,8 +221,8 @@ namespace beachjudge
 
 		system(data->cmd.c_str());
 
-		fileDelete(data->resultFile.c_str());
-		fileDelete(data->execFile.c_str());
+//		fileDelete(data->resultFile.c_str());
+//		fileDelete(data->execFile.c_str());
 
 		data->thread->End();
 		delete data;
@@ -267,7 +267,7 @@ namespace beachjudge
 		{
 //			cout << "Compilation Error" << endl;
 			m_autoTestStatus = SubStatus_NotExecutable;
-			fileDelete(resultFile.c_str());
+//			fileDelete(resultFile.c_str());
 			return m_autoTestStatus;
 		}
 
@@ -283,7 +283,7 @@ namespace beachjudge
 
 			char cmdBuff[256];
 			memset(cmdBuff, 0, 256);
-			SPRINTF(cmdBuff, "%s < %s > dummy; diff dummy %s > %s; rm dummy", execFile.c_str(), testSet->GetInFile().c_str(), testSet->GetOutFile().c_str(), resultFile.c_str());
+			SPRINTF(cmdBuff, "%s < %s > dummy; diff --strip-trailing-cr dummy %s > %s; rm dummy", execFile.c_str(), testSet->GetInFile().c_str(), testSet->GetOutFile().c_str(), resultFile.c_str());
 //			print("%s < %s > dummy; diff dummy %s > %s; rm dummy\n", execFile.c_str(), testSet->GetInFile().c_str(), testSet->GetOutFile().c_str(), resultFile.c_str());
 
 			TestStruct *testStruct = new TestStruct;
@@ -308,8 +308,6 @@ namespace beachjudge
 			if(testThread->IsRunning())
 			{
 				testThread->Cancel();
-				fileDelete(resultFile.c_str());
-				fileDelete(execFile.c_str());
 				timeLimitExceeded = true;
 			}
 
@@ -324,7 +322,11 @@ namespace beachjudge
 			}
 			else
 				m_autoTestVerdicts[a] = true;
+
 		}
+
+		fileDelete(resultFile.c_str());
+		fileDelete(execFile.c_str());
 
 		if(errors)
 		{
