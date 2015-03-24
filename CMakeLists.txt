@@ -1,57 +1,19 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(NAME "beach-judge")
+set(PROJECT "beach-judge")
 
 set(BEACHJUDGE_VERSION_MAJOR 0)
-set(BEACHJUDGE_VERSION_MINOR 01)
+set(BEACHJUDGE_VERSION_MINOR 02)
 
-# Linux Preferences
-set(BEACHJUDGE_PREF_USEPOSIXTHREAD 1)
-set(BEACHJUDGE_PREF_USEPOSIXSOCKET 1)
-
-# Windows Preferences
-set(BEACHJUDGE_PREF_USEWINTHREAD 1)
-set(BEACHJUDGE_PREF_USEWINSOCKET 1)
-
-project(${NAME})
+project(${PROJECT})
 
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
-set(EXT_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/src)
-set(EXT_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/include)
 
 set(INC
-	${INC_DIR}/BeachJudge/Base.h
-	${INC_DIR}/BeachJudge/Competition.h
-	${INC_DIR}/BeachJudge/Config.h
-	${INC_DIR}/BeachJudge/Page.h
-	${INC_DIR}/BeachJudge/Problem.h
-	${INC_DIR}/BeachJudge/HTTP.h
-	${INC_DIR}/BeachJudge/Mutex.h
-	${INC_DIR}/BeachJudge/Question.h
-	${INC_DIR}/BeachJudge/Session.h
-	${INC_DIR}/BeachJudge/Socket.h
-	${INC_DIR}/BeachJudge/Submission.h
-	${INC_DIR}/BeachJudge/Team.h
-	${INC_DIR}/BeachJudge/Thread.h
-	${EXT_INC_DIR}/sha1.h
 )
 
 set(SRC
-	${SRC_DIR}/Base.cpp
-	${SRC_DIR}/Competition.cpp
-	${SRC_DIR}/HTTP.cpp
-	${SRC_DIR}/Mutex.cpp
-	${SRC_DIR}/Page.cpp
-	${SRC_DIR}/Problem.cpp
-	${SRC_DIR}/Question.cpp
-	${SRC_DIR}/Session.cpp
-	${SRC_DIR}/Socket.cpp
-	${SRC_DIR}/Submission.cpp
-	${SRC_DIR}/Team.cpp
-	${SRC_DIR}/Thread.cpp
-	${SRC_DIR}/main.cpp
-	${EXT_SRC_DIR}/sha1.cpp
 )
 
 set(INCLUDE
@@ -61,34 +23,10 @@ set(INCLUDE
 
 set(LIB "")
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	set(BEACHJUDGE_USEPOSIXTHREAD ${BEACHJUDGE_PREF_USEPOSIXTHREAD})
-	set(BEACHJUDGE_USEPOSIXSOCKET ${BEACHJUDGE_PREF_USEPOSIXSOCKET})
-	if(${BEACHJUDGE_USEPOSIXTHREAD})
-		set(LIB ${LIB} pthread)
-	endif(${BEACHJUDGE_USEPOSIXTHREAD})
-else(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	set(BEACHJUDGE_USEPOSIXTHREAD 0)
-	set(BEACHJUDGE_USEPOSIXSOCKET 0)
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	set(BEACHJUDGE_USEWINTHREAD ${BEACHJUDGE_PREF_USEWINTHREAD})
-	set(BEACHJUDGE_USEWINSOCKET ${BEACHJUDGE_PREF_USEWINSOCKET})
-	if(${BEACHJUDGE_USEWINSOCKET})
-		set(LIB ${LIB} ws2_32)
-	endif(${BEACHJUDGE_USEWINSOCKET})
-else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	set(BEACHJUDGE_USEWINTHREAD "0")
-	set(BEACHJUDGE_USEWINSOCKET "0")
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-
-configure_file(${INC_DIR}/BeachJudge/Config.h.in ${INC_DIR}/BeachJudge/Config.h)
-
 include_directories(${INCLUDE})
 
-add_executable(${NAME} ${SRC} ${INC})
-set_target_properties(${NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-set_target_properties(${NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/bin)
-set_target_properties(${NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/bin)
-target_link_libraries(${NAME} ${LIB})
+add_executable(${PROJECT} ${SRC} ${INC})
+set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/bin)
+set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/bin)
+target_link_libraries(${PROJECT} ${LIB})
