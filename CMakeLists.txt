@@ -7,13 +7,6 @@ set(PROJECT "beach-judge")
 project(${PROJECT})
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
-
-# libwebsockets
-include("${CMAKE_MODULE_PATH}/FetchLibWebSockets.cmake")
-bj_fetch_libwebsockets()
-list(APPEND LIB ${LWS_LIBRARIES})
-list(APPEND INCLUDE ${LWS_INCLUDE_DIRS})
-
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -26,10 +19,17 @@ set(SRC
 
 set(INCLUDE
 	${INC_DIR}
-	${EXT_INC_DIR}
 )
 
 set(LIB "")
+
+
+# libwebsockets
+include("${CMAKE_MODULE_PATH}/FetchLibWebSockets.cmake")
+fetch_libwebsockets()
+list(APPEND LIB ${LIBWEBSOCKETS_LIBRARIES} ssl crypto z)
+list(APPEND INCLUDE ${LIBWEBSOCKETS_INCLUDE_DIR})
+
 
 include_directories(${INCLUDE})
 

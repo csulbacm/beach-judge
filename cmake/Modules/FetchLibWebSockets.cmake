@@ -1,4 +1,4 @@
-macro(bj_fetch_libwebsockets)
+macro(fetch_libwebsockets)
 	if(NOT LIBWEBSOCKETS_FOUND)
 		find_package(LibWebSockets)
 		if(NOT LIBWEBSOCKETS_FOUND)
@@ -8,7 +8,6 @@ macro(bj_fetch_libwebsockets)
 			#TODO: Windows fetch
 
 			if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-
 				if(NOT EXISTS ${T_LWS_PATH}/README.md)
 					set(T_LWS_DOWNLOAD_FILE "${PROJECT_BINARY_DIR}/external/libwebsockets.tar.gz")
 					if(NOT EXISTS ${T_LWS_DOWNLOAD_FILE})
