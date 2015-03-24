@@ -38,8 +38,13 @@ Win32
 ipch
 *.dir
 
+# Vim
+*.swp
+*.swo
+
 # Compiled files
 bin
+build
 
 # Generated Files
 include/BeachJudge/Config.h
