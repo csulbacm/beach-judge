@@ -5,47 +5,24 @@
 
 #include <libwebsockets.h>
 
+#define USE_STATIC_ASSETS 0
+
 using namespace std;
 
 static struct libwebsocket_context *context;
 static volatile int force_exit = 0;
 
-/*
- * This demo server shows how to use libwebsockets for one or more
- * websocket protocols in the same server
- *
- * It defines the following websocket protocols:
- *
- *  dumb-increment-protocol:  once the socket is opened, an incrementing
- *				ascii string is sent down it every 50ms.
- *				If you send "reset\n" on the websocket, then
- *				the incrementing number is reset to 0.
- *
- *  lws-mirror-protocol: copies any received packet to every connection also
- *				using this protocol, including the sender
- */
-
-enum demo_protocols {
+enum lws_protocols {
 	/* always first */
 	PROTOCOL_HTTP = 0,
 
-	PROTOCOL_DUMB_INCREMENT,
 	PROTOCOL_LWS_MIRROR,
 
 	/* always last */
-	DEMO_PROTOCOL_COUNT
+	LWS_PROTOCOL_COUNT
 };
 
-const char *resource_path = "../html";
-
-/*
- * We take a strict whitelist approach to stop ../ attacks
- */
-
-struct serveable {
-	const char *urlpath;
-	const char *mimetype;
-}; 
+const char *resource_path = "../assets";
 
 struct per_session_data__http {
 	int fd;
@@ -67,6 +44,9 @@ const char * get_mimetype(const char *file)
 	if (!strcmp(&file[n - 5], ".html"))
 		return "text/html";
 
+	if (!strcmp(&file[n - 4], ".css"))
+		return "text/css";
+
 	return NULL;
 }
 
@@ -83,7 +63,7 @@ static int callback_http(struct libwebsocket_context *context,
 	struct timeval tv;
 	int n, m;
 	unsigned char *p;
-	char *other_headers;
+	char *other_headers = 0;
 	static unsigned char buffer[4096];
 	struct stat stat_buf;
 	struct per_session_data__http *pss =
@@ -93,15 +73,13 @@ static int callback_http(struct libwebsocket_context *context,
 	switch (reason) {
 	case LWS_CALLBACK_HTTP:
 
-//		dump_handshake_info(wsi);
-
 		if (len < 1) {
 			libwebsockets_return_http_status(context, wsi,
 						HTTP_STATUS_BAD_REQUEST, NULL);
 			goto try_to_reuse;
 		}
 
-		/* this example server has no concept of directories */
+		/* this server has no concept of directories */
 		if (strchr((const char *)in + 1, '/')) {
 			libwebsockets_return_http_status(context, wsi,
 						HTTP_STATUS_FORBIDDEN, NULL);
@@ -112,84 +90,8 @@ static int callback_http(struct libwebsocket_context *context,
 		if (lws_hdr_total_length(wsi, WSI_TOKEN_POST_URI))
 			return 0;
 
-		/* check for the "send a big file by hand" example case */
-
-		if (!strcmp((const char *)in, "/leaf.jpg")) {
-			if (strlen(resource_path) > sizeof(leaf_path) - 10)
-				return -1;
-			sprintf(leaf_path, "%s/leaf.jpg", resource_path);
-
-			/* well, let's demonstrate how to send the hard way */
-
-			p = buffer + LWS_SEND_BUFFER_PRE_PADDING;
-			end = p + sizeof(buffer) - LWS_SEND_BUFFER_PRE_PADDING;
-#ifdef WIN32
-			pss->fd = open(leaf_path, O_RDONLY | _O_BINARY);
+#if USE_STATIC_ASSETS
 #else
-			pss->fd = open(leaf_path, O_RDONLY);
-#endif
-
-			if (pss->fd < 0)
-				return -1;
-
-			if (fstat(pss->fd, &stat_buf) < 0)
-				return -1;
-
-			/*
-			 * we will send a big jpeg file, but it could be
-			 * anything.  Set the Content-Type: appropriately
-			 * so the browser knows what to do with it.
-			 * 
-			 * Notice we use the APIs to build the header, which
-			 * will do the right thing for HTTP 1/1.1 and HTTP2
-			 * depending on what connection it happens to be working
-			 * on
-			 */
-			if (lws_add_http_header_status(context, wsi, 200, &p, end))
-				return 1;
-			if (lws_add_http_header_by_token(context, wsi,
-					WSI_TOKEN_HTTP_SERVER,
-				    	(unsigned char *)"libwebsockets",
-					13, &p, end))
-				return 1;
-			if (lws_add_http_header_by_token(context, wsi,
-					WSI_TOKEN_HTTP_CONTENT_TYPE,
-				    	(unsigned char *)"image/jpeg",
-					10, &p, end))
-				return 1;
-			if (lws_add_http_header_content_length(context, wsi,
-						stat_buf.st_size, &p, end))
-				return 1;
-			if (lws_finalize_http_header(context, wsi, &p, end))
-				return 1;
-
-			/*
-			 * send the http headers...
-			 * this won't block since it's the first payload sent
-			 * on the connection since it was established
-			 * (too small for partial)
-			 * 
-			 * Notice they are sent using LWS_WRITE_HTTP_HEADERS
-			 * which also means you can't send body too in one step,
-			 * this is mandated by changes in HTTP2
-			 */
-
-			n = libwebsocket_write(wsi,
-					buffer + LWS_SEND_BUFFER_PRE_PADDING,
-					p - (buffer + LWS_SEND_BUFFER_PRE_PADDING),
-					LWS_WRITE_HTTP_HEADERS);
-
-			if (n < 0) {
-				close(pss->fd);
-				return -1;
-			}
-			/*
-			 * book us a LWS_CALLBACK_HTTP_WRITEABLE callback
-			 */
-			libwebsocket_callback_on_writable(context, wsi);
-			break;
-		}
-
 		/* if not, send a file the easy way */
 		strcpy(buf, resource_path);
 		if (strcmp((const char *)in, "/")) {
@@ -209,33 +111,11 @@ static int callback_http(struct libwebsocket_context *context,
 			return -1;
 		}
 
-		/* demostrates how to set a cookie on / */
-
-		other_headers = NULL;
-		n = 0;
-		if (!strcmp((const char *)in, "/") &&
-			   !lws_hdr_total_length(wsi, WSI_TOKEN_HTTP_COOKIE)) {
-			/* this isn't very unguessable but it'll do for us */
-			gettimeofday(&tv, NULL);
-			n = sprintf(b64, "test=LWS_%u_%u_COOKIE;Max-Age=360000",
-				(unsigned int)tv.tv_sec,
-				(unsigned int)tv.tv_usec);
-
-			p = (unsigned char *)leaf_path;
-
-			if (lws_add_http_header_by_name(context, wsi, 
-				(unsigned char *)"set-cookie:", 
-				(unsigned char *)b64, n, &p,
-				(unsigned char *)leaf_path + sizeof(leaf_path)))
-				return 1;
-			n = (char *)p - leaf_path;
-			other_headers = leaf_path;
-		}
-
 		n = libwebsockets_serve_http_file(context, wsi, buf,
 						mimetype, other_headers, n);
 		if (n < 0 || ((n > 0) && lws_http_transaction_completed(wsi)))
 			return -1; /* error or can't reuse connection: close the socket */
+#endif
 
 		/*
 		 * notice that the sending of the file completes asynchronously,

@@ -45,6 +45,8 @@ ipch
 # Compiled files
 bin
 build
+assets/site.min.css
+assets/index.html
 
 # Generated Files
 include/BeachJudge/Config.h
