@@ -2,12 +2,20 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #include <libwebsockets.h>
 
 #define USE_STATIC_ASSETS 0
 
 using namespace std;
+
+inline unsigned long long getMicroseconds()
+{
+	struct timeval currTime;
+	gettimeofday(&currTime, 0);
+	return currTime.tv_sec * 1000000 + currTime.tv_usec;
+}
 
 static struct libwebsocket_context *context;
 static volatile int force_exit = 0;
@@ -26,6 +34,7 @@ const char *resource_path = "../assets";
 
 struct per_session_data__http {
 	int fd;
+//	unsigned long long t;
 };
 
 const char * get_mimetype(const char *file)
@@ -71,7 +80,14 @@ static int callback_http(struct libwebsocket_context *context,
 	const char *mimetype;
 	unsigned char *end;
 	switch (reason) {
-	case LWS_CALLBACK_HTTP:
+/*	case LWS_CALLBACK_CLOSED_HTTP:
+		{
+			unsigned long long t = getMicroseconds();
+			printf("HTTP: %lld\n", t - pss->t);
+		}
+		break;
+*/	case LWS_CALLBACK_HTTP:
+//		pss->t = getMicroseconds();
 
 		if (len < 1) {
 			libwebsockets_return_http_status(context, wsi,
@@ -113,6 +129,7 @@ static int callback_http(struct libwebsocket_context *context,
 
 		n = libwebsockets_serve_http_file(context, wsi, buf,
 						mimetype, other_headers, n);
+
 		if (n < 0 || ((n > 0) && lws_http_transaction_completed(wsi)))
 			return -1; /* error or can't reuse connection: close the socket */
 #endif
