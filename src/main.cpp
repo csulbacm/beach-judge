@@ -171,16 +171,29 @@ static int callback_http(struct libwebsocket_context *context,
 		break;
 
 	case LWS_CALLBACK_HTTP_BODY:
-		char username[65];
-		char password[65];
-		username[64] = 0;
-		password[64] = 0;
+		char nameBuff[65];
+		char pwBuff[65];
+		nameBuff[64] = 0;
+		pwBuff[64] = 0;
 		
-		sscanf((char *)in, "username=%64[a-zA-Z0-9]&password=%64[a-zA-Z0-9]", username, password);
+		sscanf((char *)in, "username=%64[a-zA-Z0-9]&password=%64[a-zA-Z0-9]", nameBuff, pwBuff);
 		
-		if (strlen(username) != 0 && strlen(password) != 0) {
+		if (strlen(nameBuff) != 0 && strlen(pwBuff) != 0) {
 			//- Login Attempt -
-			printf("Login: %s %s\n", username, password);
+			printf("Login: %s %s\n", nameBuff, pwBuff);
+			string name(nameBuff);
+			if (User::s_usersByName.count(name) != 0) {
+				User *user = User::s_usersByName[name];
+				if (user->TestPassword(pwBuff)) {
+					printf("Login Success\n");
+				} else {
+					//TODO: Handle invalid pw error
+					printf("Login Failure\n");
+				}
+			} else {
+				//TODO: Handle user does not exist
+				printf("No User with Name\n");
+			}
 		}
 
 		break;
