@@ -18,6 +18,9 @@ html
 				var expires = "expires="+d.toUTCString();
 				document.cookie = cname + "=" + cvalue + ";" + expires;
 			}
+			function deleteCookie(cname) {
+				document.cookie = cname + "=; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+			}
 		//script(src="/js/lib/jquery/jquery-1.10.2.min.js")
 		//script(src="/js/lib/markdown.js")
 	body: .beach-judge
@@ -25,7 +28,24 @@ html
 			ul
 				li: a(href="") beachJudge
 				li: a(href="") Scoreboard
-				li.login: a(href="/login") Login
+				li.login: a(href="javascript:judgeLogout()") Logout
+			script.
+				function judgeLogout() {
+					$.ajax({
+						type: "POST",
+						url: "/logout",
+						data: "",
+						success: function(result) {
+							if(result === "ERR") {
+								console.log("Logout error");
+							} else {
+								sessionStorage.removeItem("JUDGESESSID");
+								deleteCookie("JUDGESESSID");
+								window.location = window.location.origin;
+							}
+						}
+					});
+				}
 		block content
 		footer: .container
 			p &copy; 2014-2015 CSULB ACM

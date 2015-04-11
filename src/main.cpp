@@ -126,7 +126,7 @@ static int callback_http(struct libwebsocket_context *context,
 	}
 	case LWS_CALLBACK_CLOSED_HTTP:
 		break;
-	case LWS_CALLBACK_HTTP:
+	case LWS_CALLBACK_HTTP: {
 		pss->t = getTimeMS();
 
 		if (len < 1) {
@@ -145,6 +145,28 @@ static int callback_http(struct libwebsocket_context *context,
 		/* if a legal POST URL, let it continue and accept data */
 		if (lws_hdr_total_length(wsi, WSI_TOKEN_POST_URI)) {
 			printf("%lx: POST %s\n", (unsigned long)pss, (char *)in);
+
+			if (pss->user != 0) {
+				if (memcmp(in, "/logout", 7) == 0) {
+					printf("  %lx: Logout\n", (unsigned long)pss);
+					g_sessionMap.erase(string(pss->sessionID));
+
+					//TODO: Handle invalid pw error
+					char response[128];
+					sprintf(response, "HTTP/1.0 200 OK\r\n"
+						"Connection: close\r\n"
+						"Content-Type: text/html; charset=UTF-8\r\n"
+						"Content-Length: %d\r\n\r\n"
+						"%s\r\n",
+						2, "OK");
+					libwebsocket_write(wsi,
+						(unsigned char *)response,
+						strlen(response), LWS_WRITE_HTTP);
+
+					goto try_to_reuse;
+				}
+			}
+
 			return 0;
 		}
 
@@ -166,8 +188,13 @@ static int callback_http(struct libwebsocket_context *context,
 			if (*((const char *)in) != '/')
 				strcat(buf, "/");
 			strncat(buf, (const char *)in, sizeof(buf) - strlen(resource_path));
-		} else /* default file to serve */
-			strcat(buf, "/index");
+		} else /* default file to serve */ {
+			//TODO: Patch login access on logged in
+			if (pss->user == 0)
+				strcat(buf, "/login");
+			else
+				strcat(buf, "/index");
+		}
 
 		if (strstr((char *)in, ".") == NULL)
 			strcat(buf, ".html");
@@ -211,7 +238,7 @@ static int callback_http(struct libwebsocket_context *context,
 		 */
 
 		break;
-
+	}
 	case LWS_CALLBACK_HTTP_BODY:
 		char nameBuff[65];
 		char pwBuff[65];
@@ -422,6 +449,193 @@ try_to_reuse:
 	return 0;
 }
 
+#define MAX_MESSAGE_QUEUE 32
+#define MAX_RESPONSE 2047
+
+struct per_session_data__judge {
+	struct libwebsocket *wsi;
+	int								 ringbuffer_tail;
+	struct Service			*service;
+	int		 pty;
+	int			 width;
+	int		 height;
+	long long		 lastSendMS;
+	char		buffer[MAX_RESPONSE + LWS_SEND_BUFFER_PRE_PADDING + LWS_SEND_BUFFER_POST_PADDING];
+	char			*msg;
+};
+
+struct a_message {
+	void *payload;
+	size_t len;
+};
+
+static struct a_message ringbuffer[MAX_MESSAGE_QUEUE];
+static int ringbuffer_head;
+
+static int
+callback_judge(struct libwebsocket_context *context,
+			struct libwebsocket *wsi,
+			enum libwebsocket_callback_reasons reason,
+								 void *user, void *in, size_t len)
+{
+	int n;
+	struct per_session_data__judge *pss = (struct per_session_data__judge *)user;
+
+	switch (reason) {
+
+	case LWS_CALLBACK_ESTABLISHED:
+		lwsl_info("callback_judge: LWS_CALLBACK_ESTABLISHED\n");
+		pss->ringbuffer_tail = ringbuffer_head;
+		pss->wsi = wsi;
+
+		//- Initialize Session -
+//		pss->pty = -1;
+		pss->width = 0;
+		pss->height = 0;
+		pss->lastSendMS = 0;
+		pss->msg = pss->buffer + LWS_SEND_BUFFER_PRE_PADDING;
+//		printf("%lx: Connected\n", (unsigned long)pss);
+		break;
+
+	case LWS_CALLBACK_CLOSED:
+//		if (pss->pty >= 0)
+//			NOINTR(close(pss->pty));
+//		printf("%lx: Disconnected\n", (unsigned long)pss);
+		break;
+
+	case LWS_CALLBACK_PROTOCOL_DESTROY:
+		lwsl_notice("mirror protocol cleaning up\n");
+		for (n = 0; n < sizeof ringbuffer / sizeof ringbuffer[0]; n++)
+			if (ringbuffer[n].payload)
+				free(ringbuffer[n].payload);
+		break;
+
+	case LWS_CALLBACK_SERVER_WRITEABLE:
+		while (pss->ringbuffer_tail != ringbuffer_head) {
+
+			printf("JUDGE: %s\n", (char *)ringbuffer[pss->ringbuffer_tail].payload + LWS_SEND_BUFFER_PRE_PADDING);
+
+/*
+			int ret = dataHandler(context, wsi, pss,
+				(char *)ringbuffer[pss->ringbuffer_tail].payload + LWS_SEND_BUFFER_PRE_PADDING,
+				ringbuffer[pss->ringbuffer_tail].len);
+			if (ret) {
+				//TODO: Handle error
+			}
+		*/
+
+			if (pss->ringbuffer_tail == (MAX_MESSAGE_QUEUE - 1))
+				pss->ringbuffer_tail = 0;
+			else
+				pss->ringbuffer_tail++;
+
+			if (((ringbuffer_head - pss->ringbuffer_tail) &
+					(MAX_MESSAGE_QUEUE - 1)) == (MAX_MESSAGE_QUEUE - 15))
+				libwebsocket_rx_flow_allow_all_protocol(
+								 libwebsockets_get_protocol(wsi));
+
+			// lwsl_debug("tx fifo %d\n", (ringbuffer_head - pss->ringbuffer_tail) & (MAX_MESSAGE_QUEUE - 1));
+
+			if (lws_partial_buffered(wsi) || lws_send_pipe_choked(wsi)) {
+				libwebsocket_callback_on_writable(context, wsi);
+				break;
+			}
+			/*
+			 * for tests with chrome on same machine as client and
+			 * server, this is needed to stop chrome choking
+			 */
+#ifdef _WIN32
+			Sleep(1);
+#else
+			usleep(1);
+#endif
+		}
+		/*
+
+		// Read socket
+		if (pss->pty != -1 ) {
+			unsigned long long timeMS = getTimeMS();
+		if ((timeMS - pss->lastSendMS) < 16) {
+				libwebsocket_callback_on_writable(context, wsi);
+#ifdef _WIN32
+				Sleep(1);
+#else
+				usleep(1);
+#endif
+				return 0;
+		}
+			pss->lastSendMS = timeMS;
+
+			int bytes = NOINTR(read(pss->pty, pss->msg, MAX_RESPONSE));
+			if (bytes > 0)
+				libwebsocket_write(wsi, (unsigned char *)pss->msg, bytes, LWS_WRITE_TEXT);
+			else if(errno == EIO)
+				return -1;
+		}
+		libwebsocket_callback_on_writable(context, wsi);
+
+#ifdef _WIN32
+		Sleep(1);
+#else
+		usleep(1);
+#endif
+		*/
+
+		break;
+
+	case LWS_CALLBACK_RECEIVE:
+		if (((ringbuffer_head - pss->ringbuffer_tail) &
+					(MAX_MESSAGE_QUEUE - 1)) == (MAX_MESSAGE_QUEUE - 1)) {
+			lwsl_err("dropping!\n");
+			goto choke;
+		}
+
+		if (ringbuffer[ringbuffer_head].payload)
+			free(ringbuffer[ringbuffer_head].payload);
+
+		ringbuffer[ringbuffer_head].payload =
+				malloc(LWS_SEND_BUFFER_PRE_PADDING + len +
+							LWS_SEND_BUFFER_POST_PADDING);
+		ringbuffer[ringbuffer_head].len = len;
+		memcpy((char *)ringbuffer[ringbuffer_head].payload +
+						LWS_SEND_BUFFER_PRE_PADDING, in, len);
+		if (ringbuffer_head == (MAX_MESSAGE_QUEUE - 1))
+			ringbuffer_head = 0;
+		else
+			ringbuffer_head++;
+
+		if (((ringbuffer_head - pss->ringbuffer_tail) &
+					(MAX_MESSAGE_QUEUE - 1)) != (MAX_MESSAGE_QUEUE - 2))
+			goto done;
+
+choke:
+		lwsl_debug("LWS_CALLBACK_RECEIVE: throttling %p\n", wsi);
+		libwebsocket_rx_flow_control(wsi, 0);
+
+//		lwsl_debug("rx fifo %d\n", (ringbuffer_head - pss->ringbuffer_tail) & (MAX_MESSAGE_QUEUE - 1));
+done:
+		libwebsocket_callback_on_writable_all_protocol(
+								 libwebsockets_get_protocol(wsi));
+		break;
+
+	/*
+	 * this just demonstrates how to use the protocol filter. If you won't
+	 * study and reject connections based on header content, you don't need
+	 * to handle this callback
+	 */
+
+	case LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION:
+//		dump_handshake_info(wsi);
+		/* you could return non-zero here and kill the connection */
+		break;
+
+	default:
+		break;
+	}
+
+	return 0;
+}
+
 /* list of supported protocols and callbacks */
 
 static struct libwebsocket_protocols protocols[] = {
@@ -432,6 +646,12 @@ static struct libwebsocket_protocols protocols[] = {
 		callback_http,		/* callback */
 		sizeof (struct per_session_data__http),	/* per_session_data_size */
 		0,			/* max frame size / rx buffer */
+	},
+	{
+		"judge-protocol",
+		callback_judge,
+		sizeof(struct per_session_data__judge),
+		128,
 	},
 	{ NULL, NULL, 0, 0 } /* terminator */
 };
