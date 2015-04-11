@@ -43,7 +43,7 @@ struct per_session_data__http {
 	int fd;
 	unsigned long long t;
 	User *user;
-	string sessionID;
+	char sessionID[65];
 };
 
 const char *get_mimetype(const char *file)
@@ -91,6 +91,39 @@ static int callback_http(struct libwebsocket_context *context,
 	const char *mimetype;
 	unsigned char *end;
 	switch (reason) {
+	case LWS_CALLBACK_FILTER_HTTP_CONNECTION: {
+		int n = 0;
+		char buf[256];
+		const unsigned char *c;
+		do {
+			c = lws_token_to_string((lws_token_indexes)n);
+			if (!c) {
+				n++;
+				continue;
+			}
+	
+			if (!lws_hdr_total_length(wsi, (lws_token_indexes)n)) {
+				n++;
+				continue;
+			}
+	
+			lws_hdr_copy(wsi, buf, sizeof buf, (lws_token_indexes)n);
+			if (memcmp(c, "cookie:", 7) == 0) {
+				char sessID[65];
+				sessID[64] = 0;
+				if (sscanf(buf, "JUDGESESSID=%[0-9a-zA-Z]", sessID) == 1) {
+					string sessionID = string(sessID);
+					if (g_sessionMap.count(sessionID) != 0) {
+						pss->user = g_sessionMap[sessionID];
+						memcpy(pss->sessionID, sessID, 65);
+					}
+				}
+			}
+
+			n++;
+		} while (c);
+		break;
+	}
 	case LWS_CALLBACK_CLOSED_HTTP:
 		break;
 	case LWS_CALLBACK_HTTP:
@@ -114,6 +147,8 @@ static int callback_http(struct libwebsocket_context *context,
 			printf("%lx: POST %s\n", (unsigned long)pss, (char *)in);
 			return 0;
 		}
+
+		printf("U: %lx\n", (unsigned long)pss->user);
 
 #if USE_STATIC_ASSETS
 #else
@@ -178,57 +213,72 @@ static int callback_http(struct libwebsocket_context *context,
 		break;
 
 	case LWS_CALLBACK_HTTP_BODY:
-	printf("BODY: %s\n", (char *)in);
 		char nameBuff[65];
 		char pwBuff[65];
 		nameBuff[64] = 0;
 		pwBuff[64] = 0;
-		
-		sscanf((char *)in, "username=%64[a-zA-Z0-9]&password=%64[a-zA-Z0-9]", nameBuff, pwBuff);
-		
-		if (strlen(nameBuff) != 0 && strlen(pwBuff) != 0) {
-			char response[128];
 
-			//- Login Attempt -
-			printf("Login: %s %s\n", nameBuff, pwBuff);
-			string name(nameBuff);
-			if (User::s_usersByName.count(name) != 0) {
-				User *user = User::s_usersByName[name];
-				if (user->TestPassword(pwBuff)) {
-					//- Generate Session Key -
-					unsigned int l = SHA256_DIGEST_LENGTH * 2;
-					char sessionKey[l + 1];
-					do
-					{
+		{
+			char body[len + 1];
+			body[len] = 0;
+			memcpy(body, in, len);
+			body[len] = 0;
+			if (sscanf(body, "username=%64[a-zA-Z0-9]&password=%64[a-zA-Z0-9]", nameBuff, pwBuff) == 2) {
+				char response[128];
+	
+				//- Login Attempt -
+				printf("  %lx: Login: %s %s\n", (unsigned long)pss, nameBuff, pwBuff);
+				string name(nameBuff);
+				if (User::s_usersByName.count(name) != 0) {
+					User *user = User::s_usersByName[name];
+					if (user->TestPassword(pwBuff)) {
+						//- Generate Session Key -
+						unsigned int l = SHA256_DIGEST_LENGTH * 2;
+						char sessionKey[l + 1];
 						char randKey[21];
-						randKey[20] = 0;
-						sprintf(randKey, "%010d%010d", rand(), rand());
-						unsigned char hash[SHA256_DIGEST_LENGTH];
-						SHA256_CTX sha256;
-						SHA256_Init(&sha256);
-						SHA256_Update(&sha256, randKey, strlen(randKey));
-						SHA256_Final(hash, &sha256);
-						for (int a = 0; a < SHA256_DIGEST_LENGTH; ++a)
-							sprintf(sessionKey + (a << 1), "%02x", hash[a]);
 						sessionKey[l] = 0;
-						pss->sessionID = string(sessionKey);
-					} while(g_sessionMap.count(pss->sessionID));
-
-					//- Update Session Map -
-					g_sessionMap[pss->sessionID] = user;
-
-					//- Send Key to Client -
-					sprintf(response, "HTTP/1.0 200 OK\r\n"
-						"Connection: close\r\n"
-						"Content-Type: text/html; charset=UTF-8\r\n"
-						"Content-Length: %ld\r\n\r\n"
-						"%s\r\n",
-						strlen(sessionKey), sessionKey);
-					libwebsocket_write(wsi,
-						(unsigned char *)response,
-						strlen(response), LWS_WRITE_HTTP);
+						randKey[20] = 0;
+						string sessID;
+						do
+						{
+							sprintf(randKey, "%010d%010d", rand(), rand());
+							unsigned char hash[SHA256_DIGEST_LENGTH];
+							SHA256_CTX sha256;
+							SHA256_Init(&sha256);
+							SHA256_Update(&sha256, randKey, strlen(randKey));
+							SHA256_Final(hash, &sha256);
+							for (int a = 0; a < SHA256_DIGEST_LENGTH; ++a)
+								sprintf(sessionKey + (a << 1), "%02x", hash[a]);
+							sessID = string(sessionKey);
+						} while (g_sessionMap.count(sessID));
+	
+						//- Update Session Map -
+						g_sessionMap[sessID] = user;
+	
+						//- Send Key to Client -
+						sprintf(response, "HTTP/1.0 200 OK\r\n"
+							"Connection: close\r\n"
+							"Content-Type: text/html; charset=UTF-8\r\n"
+							"Content-Length: %ld\r\n\r\n"
+							"%s\r\n",
+							strlen(sessionKey), sessionKey);
+						libwebsocket_write(wsi,
+							(unsigned char *)response,
+							strlen(response), LWS_WRITE_HTTP);
+					} else {
+						//TODO: Handle invalid pw error
+						sprintf(response, "HTTP/1.0 200 OK\r\n"
+							"Connection: close\r\n"
+							"Content-Type: text/html; charset=UTF-8\r\n"
+							"Content-Length: %d\r\n\r\n"
+							"%s\r\n",
+							3, "ERR");
+						libwebsocket_write(wsi,
+							(unsigned char *)response,
+							strlen(response), LWS_WRITE_HTTP);
+					}
 				} else {
-					//TODO: Handle invalid pw error
+					//TODO: Handle user does not exist
 					sprintf(response, "HTTP/1.0 200 OK\r\n"
 						"Connection: close\r\n"
 						"Content-Type: text/html; charset=UTF-8\r\n"
@@ -239,17 +289,6 @@ static int callback_http(struct libwebsocket_context *context,
 						(unsigned char *)response,
 						strlen(response), LWS_WRITE_HTTP);
 				}
-			} else {
-				//TODO: Handle user does not exist
-				sprintf(response, "HTTP/1.0 200 OK\r\n"
-					"Connection: close\r\n"
-					"Content-Type: text/html; charset=UTF-8\r\n"
-					"Content-Length: %d\r\n\r\n"
-					"%s\r\n",
-					3, "ERR");
-				libwebsocket_write(wsi,
-					(unsigned char *)response,
-					strlen(response), LWS_WRITE_HTTP);
 			}
 		}
 

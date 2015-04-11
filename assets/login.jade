@@ -7,8 +7,6 @@ block content
 			.judge-form-actions
 				input.form-button(value="Login", type="submit")
 				input.form-button(value="Cancel", type="button", onclick="window.history.back()")
-		p.judge-notification
-			a#notification(href="")
 		script.
 			function judgeLogin() {
 				$.ajax({
@@ -20,14 +18,8 @@ block content
 							console.log("Login error");
 						} else {
 							sessionStorage.setItem("JUDGESESSID", result);
-							console.log(sessionStorage);
-							/*
-							var baseURL = window.location.protocol + "#{baseURL}/register/";
-							var link = document.getElementById('invitation');
-							link.innerHTML = baseURL + result;
-							link.href = baseURL + result;
-							link.parentNode.style.display = "block";
-							*/
+							setCookie("JUDGESESSID", result, 1);
+							window.location = window.location.origin;
 						}
 					}
 				});
