@@ -26,9 +26,8 @@ html
 	body: .beach-judge
 		header: .container
 			ul
-				li: a(href="") beachJudge
-				li: a.user(href="") User
-				li: a(href="") Scoreboard
+				li: a(href="javascript:nav('/')") beachJudge
+				li.last: a(href="javascript:nav('/scoreboard')") Scoreboard
 				li.login: a(href="javascript:judgeLogout()") Logout
 			script.
 				function judgeLogout() {

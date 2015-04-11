@@ -78,3 +78,24 @@ function judgePopulate() {
 }
 
 judgeConnect();
+
+//- Navigation -
+function onNavigate(stateObj) {
+	console.log("Nav:" + JSON.stringify(stateObj));
+}
+window.onpopstate = function(evt) {
+	onNavigate(evt.state);
+};
+function nav(target) {
+	var stateObj = { nav: target };
+	history.pushState(stateObj, "beachJudge", stateObj.nav);
+	onNavigate(stateObj);
+}
+
+//- Initialization -
+(function ()
+{
+	var stateObj = { nav: document.location.pathname };
+	history.replaceState(stateObj, "beachJudge", stateObj.nav);
+	onNavigate(stateObj);
+})();

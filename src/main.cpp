@@ -72,7 +72,7 @@ void loadJudgeData()
 		if (file.is_open()) {
 			string sessID, name;
 			unsigned long long expireTimeMS;
-			while (file >> sessID >> name) {
+			while (file >> sessID >> name >> expireTimeMS) {
 				if (User::s_usersByName.count(name) == 0)
 					continue;
 				g_sessionMap[sessID] = Session(User::s_usersByName[name], expireTimeMS);
@@ -263,23 +263,22 @@ static int callback_http(struct libwebsocket_context *context,
 
 		/* if not, send a file the easy way */
 		strcpy(buf, resource_path);
-		if (strcmp((const char *)in, "/")) {
-			if (*((const char *)in) != '/')
-				strcat(buf, "/");
-			strncat(buf, (const char *)in, sizeof(buf) - strlen(resource_path));
-		} else /* default file to serve */ {
-			//TODO: Patch login access on logged in
-			//TODO: Restrict content loading to respective user groups
+
+		//TODO: Patch login access on logged in
+		//TODO: Restrict content loading to respective user groups
+		if (strstr((char *)in, ".") == NULL) {
 			if (pss->user == 0)
 				strcat(buf, "/login");
 			else if(pss->user->isJudge)
 				strcat(buf, "/judge");
 			else
 				strcat(buf, "/index");
-		}
-
-		if (strstr((char *)in, ".") == NULL)
 			strcat(buf, ".html");
+		} else if (strcmp((const char *)in, "/")) {
+			if (*((const char *)in) != '/')
+				strcat(buf, "/");
+			strncat(buf, (const char *)in, sizeof(buf) - strlen(resource_path));
+		}
 
 		buf[sizeof(buf) - 1] = '\0';
 
