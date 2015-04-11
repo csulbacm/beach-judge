@@ -68,6 +68,7 @@ include_directories(${INCLUDE})
 # Resourece Compilation
 set(BUILD_RES mkdir -p ${RES_DIR})
 message("Compiling resources...")
+#TODO: Compile on file changed
 
 # Less
 list(APPEND BUILD_RES COMMAND lessc ${STYLES_DIR}/site.less -x > ${RES_DIR}/site.min.css)

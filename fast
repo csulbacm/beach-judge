@@ -1,5 +1,0 @@
-cd build
-make
-read -p "Press a key to run..."
-cd ../bin
-./beachJudge
