@@ -33,7 +33,7 @@ function get_appropriate_ws_url()
 function wsOnOpen(evt) {
 	if (judgeDebug )
 		console.log('judge: Connected');
-	judgePopulate();
+	judgeQueue();
 }
 function wsOnClose(evt) {
 	if (judgeDebug )
@@ -45,6 +45,12 @@ function wsOnMessage(evt) {
 	var data = JSON.parse('{' + evt.data + '}');
 	if (data.msg === 'POP') {
 		$('.user').html(data.name);
+	} else if (data.msg === 'TL') {
+		var h = '';
+		//TODO: Use team ID
+		for (var a = 0; a < data.teams.length; ++a)
+			h += '<li><a href="javascript:selectTeam(' + data.teams[a] + ');">' + data.teams[a] + '</a></li>';
+		$('#teamlist').html(h);
 	}
 }
 function wsOnError(evt) {
@@ -54,7 +60,7 @@ function wsOnError(evt) {
 
 
 var judge = [];
-var judgeDebug = true;
+var judgeDebug = false;
 
 function judgeConnect() {
 	var wsUrl = get_appropriate_ws_url();
@@ -71,10 +77,29 @@ function judgeConnect() {
 	judge.ws.onclose = wsOnClose;
 	judge.ws.onmessage = wsOnMessage;
 	judge.ws.onerror = wsOnError;
+	judge.sendQueue = [];
+}
+function judgeQueue(str) {
+	if (judge.ws.readyState != WebSocket.OPEN)
+		judge.sendQueue.push(str);
+	else if (judge.sendQueue.length != 0) {
+		judge.sendQueue.push(str);
+		judgeProcessQueue();
+	} else
+		judge.ws.send(str);
+}
+function judgeProcessQueue() {
+	if (judge.ws.readyState != WebSocket.OPEN)
+		return;
+	//TODO: Investigate undefined value in array
+	for (var a = 0; a < judge.sendQueue.length; ++a)
+		if (judge.sendQueue[a])
+			judge.ws.send(judge.sendQueue[a]);
+	judge.sendQueue = [];
 }
 
 function judgePopulate() {
-	judge.ws.send('POP');
+	judgeQueue('POP');
 }
 
 judgeConnect();
@@ -97,21 +122,26 @@ function onNavigate(stateObj) {
 		$('#root').show();
 	judgeLastState = stateObj;
 	if (judgeDebug )
-		console.log("Nav:" + JSON.stringify(stateObj));
+		console.log('Nav:' + JSON.stringify(stateObj));
+
+	if (stateObj.nav === '/teams') {
+		judgeQueue('TL');
+	}
 }
 window.onpopstate = function(evt) {
 	onNavigate(evt.state);
 };
 function nav(target) {
 	var stateObj = { nav: target };
-	history.pushState(stateObj, "beachJudge", stateObj.nav);
+	history.pushState(stateObj, 'beachJudge', stateObj.nav);
 	onNavigate(stateObj);
 }
 
 //- Initialization -
 (function ()
 {
+	judgePopulate();
 	var stateObj = { nav: document.location.pathname };
-	history.replaceState(stateObj, "beachJudge", stateObj.nav);
+	history.replaceState(stateObj, 'beachJudge', stateObj.nav);
 	onNavigate(stateObj);
 })();

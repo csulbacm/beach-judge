@@ -8,6 +8,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <fstream>
+#include <sstream>
 
 #include <libwebsockets.h>
 
@@ -637,25 +638,34 @@ callback_judge(struct libwebsocket_context *context,
 			//TODO: Handle buffer len
 			char *msgIn = (char *)ringbuffer[pss->ringbuffer_tail].payload + LWS_SEND_BUFFER_PRE_PADDING;
 			char *msgOut = response + LWS_SEND_BUFFER_PRE_PADDING;
-			if (memcmp(msgIn, "POP", 2) == 0) {
+			if (memcmp(msgIn, "POP", 3) == 0) {
 				//- Populate User Session Data -
 				sprintf(msgOut, ""
 					"\"msg\": \"POP\","
 					"\"name\": \"%s\"",
 					pss->user->username.c_str());
+			} else if (memcmp(msgIn, "TL", 2) == 0) {
+				//- Populate Team Data -
+				stringstream users;
+				map<string, User *>::iterator it = User::s_usersByName.begin();
+				map<string, User *>::iterator end = User::s_usersByName.end();
+				while (it != end) {
+					users << it->second->username.c_str();
+					++it;
+					if (it != end)
+						users << ", ";
+				}
+				sprintf(msgOut, ""
+					"\"msg\": \"TL\","
+					"\"teams\": [ \"%s\" ]",
+					users.str().c_str());
+			} else {
+				sprintf(msgOut, ""
+					"\"msg\": \"ERR\"");
 			}
 			libwebsocket_write(wsi,
 				(unsigned char *)msgOut,
 				strlen(msgOut), LWS_WRITE_TEXT);
-
-/*
-			int ret = dataHandler(context, wsi, pss,
-				(char *)ringbuffer[pss->ringbuffer_tail].payload + LWS_SEND_BUFFER_PRE_PADDING,
-				ringbuffer[pss->ringbuffer_tail].len);
-			if (ret) {
-				//TODO: Handle error
-			}
-		*/
 
 			if (pss->ringbuffer_tail == (MAX_MESSAGE_QUEUE - 1))
 				pss->ringbuffer_tail = 0;

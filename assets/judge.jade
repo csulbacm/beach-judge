@@ -6,9 +6,14 @@ block content
 		#scoreboard
 			p Scoreboard
 		#teams
-			p Teams
+			.list
+				p.header Teams
+				ul#teamlist
+			.actions
+				.createTeam
+					p.header Create Team
 	script(src="user.js")
 	script.
-		$(function() {
+		(function() {
 			$(".logout").before("<li><a href=\"javascript:nav('/teams')\">Teams</a></li>");
-		}).jquery();
+		})();
