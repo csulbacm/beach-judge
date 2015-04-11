@@ -64,8 +64,11 @@ set(RES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res)
 add_custom_target(assets mkdir -p ${RES_DIR}
 	COMMAND lessc ${ASSETS_DIR}/site.less -x > ${RES_DIR}/site.min.css
 	COMMAND jade -p ${ASSETS_DIR}/layout < ${ASSETS_DIR}/index.jade > ${RES_DIR}/index.html
+	COMMAND jade -p ${ASSETS_DIR}/layout < ${ASSETS_DIR}/judge.jade > ${RES_DIR}/judge.html
 	COMMAND jade -p ${ASSETS_DIR}/layout < ${ASSETS_DIR}/login.jade > ${RES_DIR}/login.html
+	COMMAND cp ${ASSETS_DIR}/*.js ${RES_DIR}
 )
+#TODO: JS minify
 
 add_executable(${PROJECT} ${SRC} ${INC})
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)

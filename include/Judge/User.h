@@ -27,8 +27,9 @@ namespace judge {
 		{
 		}
 
-		User(const char *name, const char *pw) :
-			username(name)
+		User(const char *name, const char *pw, bool judge) :
+			username(name),
+			isJudge(judge)
 		{
 			SetPassword(pw);
 
@@ -42,6 +43,7 @@ namespace judge {
 				s_usersByName[username] = 0;
 		}
 
+		bool isJudge;
 
 
 		//----------------------------------------------

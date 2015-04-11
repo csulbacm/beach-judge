@@ -27,6 +27,80 @@ inline unsigned long long getTimeMS()
   return g_timespec.tv_sec * 1000 + g_timespec.tv_nsec / 1000000;
 }
 
+static unsigned long long sessionExpireTimeMS = 1000 * 60 * 60 * 1;
+typedef struct Session {
+	User *user;
+	unsigned long long expireTimeMS;
+
+	Session() :
+		user(0),
+		expireTimeMS(0)
+	{
+	}
+
+	Session(User *user) :
+		user(user)
+	{
+		Reset();
+	}
+
+	Session(User *user, unsigned long long timeMS) :
+		user(user),
+		expireTimeMS(timeMS)
+	{
+	}
+
+	void Reset()
+	{
+		expireTimeMS = getTimeMS() + sessionExpireTimeMS;
+	}
+} Session;
+
+static map<string, Session> g_sessionMap = map<string, Session>();
+
+void loadJudgeData()
+{
+	//- Create default judge account -
+	if (User::s_usersByName.count("judge") == 0) {
+		printf("Creating judge account...\n");
+		new User("judge", "test", true);
+	}
+
+	printf("Loading user sessions...\n");
+	{
+		ifstream file(".sessions");
+		if (file.is_open()) {
+			string sessID, name;
+			unsigned long long expireTimeMS;
+			while (file >> sessID >> name) {
+				if (User::s_usersByName.count(name) == 0)
+					continue;
+				g_sessionMap[sessID] = Session(User::s_usersByName[name], expireTimeMS);
+			}
+			file.close();
+		}
+	}
+}
+void saveJudgeData()
+{
+	printf("Saving user sessions...\n");
+	{
+		ofstream file;
+		file.open(".sessions");
+		std::map<std::string, Session>::iterator it = g_sessionMap.begin();
+		std::map<std::string, Session>::iterator end = g_sessionMap.end();
+		while (it != end) {
+			file << it->first
+				<< ' ' << it->second.user->username.c_str() 
+				<< ' ' << it->second.expireTimeMS
+				<< '\n';
+			++it;
+		}
+		file.close();
+	}
+}
+
+
 static struct libwebsocket_context *context;
 static volatile int force_exit = 0;
 
@@ -46,6 +120,7 @@ struct per_session_data__http {
 	int fd;
 	unsigned long long t;
 	User *user;
+	Session *session;
 	char sessionID[65];
 };
 
@@ -68,49 +143,13 @@ const char *get_mimetype(const char *file)
 	if (!strcmp(&file[n - 4], ".css"))
 		return "text/css";
 
+	if (!strcmp(&file[n - 3], ".js"))
+		return "text/javascript";
+
 	return NULL;
 }
 
 /* this protocol server (always the first one) just knows how to do HTTP */
-
-static map<string, User *> g_sessionMap = map<string, User *>();
-void loadJudgeData()
-{
-	//- Create default judge account -
-	if (User::s_usersByName.count("judge") == 0) {
-		printf("Creating judge account...\n");
-		new User("judge", "test");
-	}
-
-	printf("Loading user sessions...\n");
-	{
-		ifstream file(".sessions");
-		if (file.is_open()) {
-			string sessID, name;
-			while (file >> sessID >> name) {
-				if (User::s_usersByName.count(name) == 0)
-					continue;
-				g_sessionMap[sessID] = User::s_usersByName[name];
-			}
-			file.close();
-		}
-	}
-}
-void saveJudgeData()
-{
-	printf("Saving user sessions...\n");
-	{
-		ofstream file;
-		file.open(".sessions");
-		std::map<std::string, User *>::iterator it = g_sessionMap.begin();
-		std::map<std::string, User *>::iterator end = g_sessionMap.end();
-		while (it != end) {
-			file << it->first << ' ' << it->second->username.c_str() << '\n';
-			++it;
-		}
-		file.close();
-	}
-}
 
 static int callback_http(struct libwebsocket_context *context,
 		struct libwebsocket *wsi,
@@ -154,7 +193,9 @@ static int callback_http(struct libwebsocket_context *context,
 				if (sscanf(buf, "JUDGESESSID=%[0-9a-zA-Z]", sessID) == 1) {
 					string sessionID = string(sessID);
 					if (g_sessionMap.count(sessionID) != 0) {
-						pss->user = g_sessionMap[sessionID];
+						pss->session = &g_sessionMap[sessionID];
+						pss->session->Reset();
+						pss->user = pss->session->user;
 						memcpy(pss->sessionID, sessID, 65);
 					}
 				}
@@ -228,8 +269,11 @@ static int callback_http(struct libwebsocket_context *context,
 			strncat(buf, (const char *)in, sizeof(buf) - strlen(resource_path));
 		} else /* default file to serve */ {
 			//TODO: Patch login access on logged in
+			//TODO: Restrict content loading to respective user groups
 			if (pss->user == 0)
 				strcat(buf, "/login");
+			else if(pss->user->isJudge)
+				strcat(buf, "/judge");
 			else
 				strcat(buf, "/index");
 		}
@@ -243,7 +287,7 @@ static int callback_http(struct libwebsocket_context *context,
 		{
 			struct stat fileExist;
 			if (stat(buf, &fileExist) != 0) {
-				printf("%lx: %s %d\n", (unsigned long)pss, (char *)in, HTTP_STATUS_NOT_FOUND);
+				printf("%lx: GET %s %d\n", (unsigned long)pss, (char *)in, HTTP_STATUS_NOT_FOUND);
 				libwebsockets_return_http_status(context, wsi,
 					      HTTP_STATUS_NOT_FOUND, NULL);
 				return -1;
@@ -318,7 +362,7 @@ static int callback_http(struct libwebsocket_context *context,
 						} while (g_sessionMap.count(sessID));
 	
 						//- Update Session Map -
-						g_sessionMap[sessID] = user;
+						g_sessionMap[sessID] = Session(user);
 	
 						//- Send Key to Client -
 						sprintf(response, "HTTP/1.0 200 OK\r\n"
@@ -500,6 +544,8 @@ struct per_session_data__judge {
 	long long		 lastSendMS;
 	char		buffer[MAX_RESPONSE + LWS_SEND_BUFFER_PRE_PADDING + LWS_SEND_BUFFER_POST_PADDING];
 	char			*msg;
+	Session *session;
+	User *user;
 };
 
 struct a_message {
@@ -520,6 +566,41 @@ callback_judge(struct libwebsocket_context *context,
 	struct per_session_data__judge *pss = (struct per_session_data__judge *)user;
 
 	switch (reason) {
+
+	case LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION: {
+		int n = 0;
+		char buf[256];
+		const unsigned char *c;
+		do {
+			c = lws_token_to_string((lws_token_indexes)n);
+			if (!c) {
+				n++;
+				continue;
+			}
+	
+			if (!lws_hdr_total_length(wsi, (lws_token_indexes)n)) {
+				n++;
+				continue;
+			}
+	
+			lws_hdr_copy(wsi, buf, sizeof buf, (lws_token_indexes)n);
+			if (memcmp(c, "cookie:", 7) == 0) {
+				char sessID[65];
+				sessID[64] = 0;
+				if (sscanf(buf, "JUDGESESSID=%[0-9a-zA-Z]", sessID) == 1) {
+					string sessionID = string(sessID);
+					if (g_sessionMap.count(sessionID) != 0) {
+						pss->session = &g_sessionMap[sessionID];
+						pss->session->Reset();
+						pss->user = pss->session->user;
+					}
+				}
+			}
+
+			n++;
+		} while (c);
+		break;
+	}
 
 	case LWS_CALLBACK_ESTABLISHED:
 		lwsl_info("callback_judge: LWS_CALLBACK_ESTABLISHED\n");
@@ -551,7 +632,22 @@ callback_judge(struct libwebsocket_context *context,
 	case LWS_CALLBACK_SERVER_WRITEABLE:
 		while (pss->ringbuffer_tail != ringbuffer_head) {
 
-			printf("JUDGE: %s\n", (char *)ringbuffer[pss->ringbuffer_tail].payload + LWS_SEND_BUFFER_PRE_PADDING);
+			//- Input Processing -
+			char response[1024];
+			memset(response, 0, 1024);
+			//TODO: Handle buffer len
+			char *msgIn = (char *)ringbuffer[pss->ringbuffer_tail].payload + LWS_SEND_BUFFER_PRE_PADDING;
+			char *msgOut = response + LWS_SEND_BUFFER_PRE_PADDING;
+			if (memcmp(msgIn, "POP", 2) == 0) {
+				//- Populate User Session Data -
+				sprintf(msgOut, ""
+					"\"msg\": \"POP\","
+					"\"name\": \"%s\"",
+					pss->user->username.c_str());
+			}
+			libwebsocket_write(wsi,
+				(unsigned char *)msgOut,
+				strlen(msgOut), LWS_WRITE_TEXT);
 
 /*
 			int ret = dataHandler(context, wsi, pss,
@@ -588,36 +684,6 @@ callback_judge(struct libwebsocket_context *context,
 			usleep(1);
 #endif
 		}
-		/*
-
-		// Read socket
-		if (pss->pty != -1 ) {
-			unsigned long long timeMS = getTimeMS();
-		if ((timeMS - pss->lastSendMS) < 16) {
-				libwebsocket_callback_on_writable(context, wsi);
-#ifdef _WIN32
-				Sleep(1);
-#else
-				usleep(1);
-#endif
-				return 0;
-		}
-			pss->lastSendMS = timeMS;
-
-			int bytes = NOINTR(read(pss->pty, pss->msg, MAX_RESPONSE));
-			if (bytes > 0)
-				libwebsocket_write(wsi, (unsigned char *)pss->msg, bytes, LWS_WRITE_TEXT);
-			else if(errno == EIO)
-				return -1;
-		}
-		libwebsocket_callback_on_writable(context, wsi);
-
-#ifdef _WIN32
-		Sleep(1);
-#else
-		usleep(1);
-#endif
-		*/
 
 		break;
 
@@ -654,17 +720,6 @@ choke:
 done:
 		libwebsocket_callback_on_writable_all_protocol(
 								 libwebsockets_get_protocol(wsi));
-		break;
-
-	/*
-	 * this just demonstrates how to use the protocol filter. If you won't
-	 * study and reject connections based on header content, you don't need
-	 * to handle this callback
-	 */
-
-	case LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION:
-//		dump_handshake_info(wsi);
-		/* you could return non-zero here and kill the connection */
 		break;
 
 	default:
