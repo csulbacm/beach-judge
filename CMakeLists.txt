@@ -12,10 +12,12 @@ set(INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(INC
 	${INC_DIR}/Judge/Config.h
+	${INC_DIR}/Judge/User.h
 )
 
 set(SRC
 	${SRC_DIR}/main.cpp
+	${SRC_DIR}/User.cpp
 )
 
 set(INCLUDE
@@ -31,11 +33,11 @@ fetch_libwebsockets()
 list(APPEND LIB ${LIBWEBSOCKETS_LIBRARIES} ssl crypto z)
 list(APPEND INCLUDE ${LIBWEBSOCKETS_INCLUDE_DIR})
 
-# SSL
-message("Searching for OpenSSL executable and dlls")
-find_package(OpenSSL)
+# SSL Cert/Key Generation
+#  Generation from libwebsockets
 find_package(OpenSSLbins)
 if(OPENSSL_EXECUTABLE)
+	message("Generating SSL certificate and key...")
 	set(JUDGE_SSL_KEY "${PROJECT_BINARY_DIR}/beachJudge.key.pem")
 	set(JUDGE_SSL_CERT "${PROJECT_BINARY_DIR}/beachJudge.pem")
 
@@ -59,7 +61,7 @@ include_directories(${INCLUDE})
 
 set(ASSETS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets)
 set(RES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res)
-add_custom_target(assets mkdir ${RES_DIR}
+add_custom_target(assets mkdir -p ${RES_DIR}
 	COMMAND less ${ASSETS_DIR}/site.less -x > ${RES_DIR}/site.min.css
 	COMMAND jade < ${ASSETS_DIR}/index.jade > ${RES_DIR}/index.html
 )

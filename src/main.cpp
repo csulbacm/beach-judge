@@ -8,11 +8,12 @@
 #include <libwebsockets.h>
 
 //- beachJudge -
-#include <Judge/Config.h>
+#include <Judge/Judge.h>
 
 #define USE_STATIC_ASSETS 0
 #define USE_SSL 1
 
+using namespace judge;
 using namespace std;
 
 struct timespec g_timespec;
@@ -347,6 +348,10 @@ int main(int argc, char *argv[])
 		lwsl_err("libwebsocket init failed\n");
 		return -1;
 	}
+
+	//- Load user data -
+	User admin("test");
+
 	n = 0;
 	while (n >= 0 && !force_exit) {
 		/*
