@@ -13,6 +13,16 @@ namespace judge {
 	{
 		static std::map<std::string, User *> s_usersByName;
 
+		static inline void Cleanup()
+		{
+			std::map<std::string, User *>::iterator it = s_usersByName.begin();
+			std::map<std::string, User *>::iterator end = s_usersByName.end();
+			while (it != end) {
+				delete it->second;
+				++it;
+			}
+		}
+
 		User()
 		{
 		}

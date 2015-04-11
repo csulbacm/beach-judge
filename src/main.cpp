@@ -1,3 +1,5 @@
+#include <setjmp.h>
+#include <signal.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -5,6 +7,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <stdlib.h>
+#include <fstream>
 
 #include <libwebsockets.h>
 
@@ -71,6 +74,43 @@ const char *get_mimetype(const char *file)
 /* this protocol server (always the first one) just knows how to do HTTP */
 
 static map<string, User *> g_sessionMap = map<string, User *>();
+void loadJudgeData()
+{
+	//- Create default judge account -
+	if (User::s_usersByName.count("judge") == 0) {
+		printf("Creating judge account...\n");
+		new User("judge", "test");
+	}
+
+	printf("Loading user sessions...\n");
+	{
+		ifstream file(".sessions");
+		if (file.is_open()) {
+			string sessID, name;
+			while (file >> sessID >> name) {
+				if (User::s_usersByName.count(name) == 0)
+					continue;
+				g_sessionMap[sessID] = User::s_usersByName[name];
+			}
+			file.close();
+		}
+	}
+}
+void saveJudgeData()
+{
+	printf("Saving user sessions...\n");
+	{
+		ofstream file;
+		file.open(".sessions");
+		std::map<std::string, User *>::iterator it = g_sessionMap.begin();
+		std::map<std::string, User *>::iterator end = g_sessionMap.end();
+		while (it != end) {
+			file << it->first << ' ' << it->second->username.c_str() << '\n';
+			++it;
+		}
+		file.close();
+	}
+}
 
 static int callback_http(struct libwebsocket_context *context,
 		struct libwebsocket *wsi,
@@ -148,7 +188,7 @@ static int callback_http(struct libwebsocket_context *context,
 
 			if (pss->user != 0) {
 				if (memcmp(in, "/logout", 7) == 0) {
-					printf("  %lx: Logout\n", (unsigned long)pss);
+					printf("  %lx: Logout %s\n", (unsigned long)pss, pss->user->username.c_str());
 					g_sessionMap.erase(string(pss->sessionID));
 
 					//TODO: Handle invalid pw error
@@ -169,8 +209,6 @@ static int callback_http(struct libwebsocket_context *context,
 
 			return 0;
 		}
-
-		printf("U: %lx\n", (unsigned long)pss->user);
 
 #if USE_STATIC_ASSETS
 #else
@@ -254,7 +292,7 @@ static int callback_http(struct libwebsocket_context *context,
 				char response[128];
 	
 				//- Login Attempt -
-				printf("  %lx: Login: %s %s\n", (unsigned long)pss, nameBuff, pwBuff);
+				printf("  %lx: Login %s\n", (unsigned long)pss, nameBuff);
 				string name(nameBuff);
 				if (User::s_usersByName.count(name) != 0) {
 					User *user = User::s_usersByName[name];
@@ -656,6 +694,15 @@ static struct libwebsocket_protocols protocols[] = {
 	{ NULL, NULL, 0, 0 } /* terminator */
 };
 
+static volatile int   exiting;
+static sigjmp_buf     jmpenv;
+static void sigHandler(int signo, siginfo_t *info, void *context) {
+	if (exiting++) {
+		_exit(1);
+	}
+	siglongjmp(jmpenv, 1);
+}
+
 int main(int argc, char *argv[])
 {
 	int n = 0;
@@ -686,26 +733,36 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	//- Load user data -
-	User admin("judge", "test");
+	//- Load beachJudge Data  -
+	printf("Loading beachJudge data...\n");
+	loadJudgeData();
 
-	n = 0;
-	while (n >= 0 && !force_exit) {
-		/*
-		 * If libwebsockets sockets are all we care about,
-		 * you can use this api which takes care of the poll()
-		 * and looping through finding who needed service.
-		 *
-		 * If no socket needs service, it'll return anyway after
-		 * the number of ms in the second argument.
-		 */
+	//- Start Server -
+	if (!sigsetjmp(jmpenv, 1)) {
+		// Clean up upon orderly shut down. Do _not_ cleanup if we die
+		// unexpectedly, as we cannot guarantee if we are still in a valid
+		// static. This means, we should never catch SIGABRT.
+		static const int signals[] = { SIGHUP, SIGINT, SIGQUIT, SIGTERM };
+		struct sigaction sa;
+		memset(&sa, 0, sizeof(sa));
+		sa.sa_sigaction = sigHandler;
+		sa.sa_flags	 = SA_SIGINFO | SA_RESETHAND;
+		for (int i = 0; i < sizeof(signals)/sizeof(*signals); ++i) {
+			sigaction(signals[i], &sa, NULL);
+		}
 
-		n = libwebsocket_service(context, 50);
+		n = 0;
+		while (n >= 0 && !force_exit) {
+			n = libwebsocket_service(context, 50);
+		}
 	}
 
 	libwebsocket_context_destroy(context);
-
 	lwsl_notice("libwebsockets-test-server exited cleanly\n");
+
+	printf("Saving beachJudge data...\n");
+	saveJudgeData();
+	User::Cleanup();
 
 	return 0;
 }
