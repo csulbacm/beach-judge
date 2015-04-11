@@ -57,8 +57,16 @@ endif()
 configure_file(${INC_DIR}/Judge/Config.h.in ${INC_DIR}/Judge/Config.h)
 include_directories(${INCLUDE})
 
+set(ASSETS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets)
+set(RES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res)
+add_custom_target(assets mkdir ${RES_DIR}
+	COMMAND less ${ASSETS_DIR}/site.less -x > ${RES_DIR}/site.min.css
+	COMMAND jade < ${ASSETS_DIR}/index.jade > ${RES_DIR}/index.html
+)
+
 add_executable(${PROJECT} ${SRC} ${INC})
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/bin)
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/bin)
 target_link_libraries(${PROJECT} ${LIB})
+add_dependencies(${PROJECT} assets)

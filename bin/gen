@@ -1,2 +1,0 @@
-lessc ../assets/site.less -x > ../assets/site.min.css
-jade < ../assets/index.jade > ../assets/index.html

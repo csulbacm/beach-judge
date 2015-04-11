@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <time.h>
 
 #include <libwebsockets.h>
 
@@ -14,11 +15,11 @@
 
 using namespace std;
 
-inline unsigned long long getMicroseconds()
+struct timespec g_timespec;
+inline unsigned long long getTimeMS()
 {
-	struct timeval currTime;
-	gettimeofday(&currTime, 0);
-	return currTime.tv_sec * 1000000 + currTime.tv_usec;
+  clock_gettime(CLOCK_REALTIME, &g_timespec);
+  return g_timespec.tv_sec * 1000 + g_timespec.tv_nsec / 1000000;
 }
 
 static struct libwebsocket_context *context;
@@ -34,11 +35,11 @@ enum lws_protocols {
 	LWS_PROTOCOL_COUNT
 };
 
-const char *resource_path = "../assets";
+const char *resource_path = "../res";
 
 struct per_session_data__http {
 	int fd;
-//	unsigned long long t;
+	unsigned long long t;
 };
 
 const char *get_mimetype(const char *file)
@@ -84,14 +85,10 @@ static int callback_http(struct libwebsocket_context *context,
 	const char *mimetype;
 	unsigned char *end;
 	switch (reason) {
-/*	case LWS_CALLBACK_CLOSED_HTTP:
-		{
-			unsigned long long t = getMicroseconds();
-			printf("HTTP: %lld\n", t - pss->t);
-		}
+	case LWS_CALLBACK_CLOSED_HTTP:
 		break;
-*/	case LWS_CALLBACK_HTTP:
-//		pss->t = getMicroseconds();
+	case LWS_CALLBACK_HTTP:
+		pss->t = getTimeMS();
 
 		if (len < 1) {
 			libwebsockets_return_http_status(context, wsi,
@@ -112,6 +109,14 @@ static int callback_http(struct libwebsocket_context *context,
 
 #if USE_STATIC_ASSETS
 #else
+		//TODO: Make favicon
+		if (strcmp((const char *)in, "/favicon.ico") == 0) {
+			printf("%lx: %s %d\n", (unsigned long)pss, (char *)in, HTTP_STATUS_NO_CONTENT);
+			libwebsockets_return_http_status(context, wsi,
+				      HTTP_STATUS_NO_CONTENT, NULL);
+			return -1;
+		}
+
 		/* if not, send a file the easy way */
 		strcpy(buf, resource_path);
 		if (strcmp((const char *)in, "/")) {
@@ -120,12 +125,25 @@ static int callback_http(struct libwebsocket_context *context,
 			strncat(buf, (const char *)in, sizeof(buf) - strlen(resource_path));
 		} else /* default file to serve */
 			strcat(buf, "/index.html");
+
 		buf[sizeof(buf) - 1] = '\0';
+
+		//- Handle file not found -
+		{
+			struct stat fileExist;
+			if (stat(buf, &fileExist) != 0) {
+				printf("%lx: %s %d\n", (unsigned long)pss, (char *)in, HTTP_STATUS_NOT_FOUND);
+				libwebsockets_return_http_status(context, wsi,
+					      HTTP_STATUS_NOT_FOUND, NULL);
+				return -1;
+			}
+		}
 
 		/* refuse to serve files we don't understand */
 		mimetype = get_mimetype(buf);
 		if (!mimetype) {
 			lwsl_err("Unknown mimetype for %s\n", buf);
+			printf("%lx: %s %d\n", (unsigned long)pss, (char *)in, HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE);
 			libwebsockets_return_http_status(context, wsi,
 				      HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE, NULL);
 			return -1;
@@ -133,6 +151,8 @@ static int callback_http(struct libwebsocket_context *context,
 
 		n = libwebsockets_serve_http_file(context, wsi, buf,
 						mimetype, other_headers, n);
+
+		printf("%lx: %s 200 - %lld ms\n", (unsigned long)pss, (char *)in, getTimeMS() - pss->t);
 
 		if (n < 0 || ((n > 0) && lws_http_transaction_completed(wsi)))
 			return -1; /* error or can't reuse connection: close the socket */
