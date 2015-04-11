@@ -1,4 +1,4 @@
-extends layout
+extends layouts/default
 block content
 	.container.hideall
 		#root
@@ -12,7 +12,7 @@ block content
 			.actions
 				.createTeam
 					p.header Create Team
-	script(src="user.js")
+	script(src="site.min.js")
 	script.
 		(function() {
 			$(".logout").before("<li><a href=\"javascript:nav('/teams')\">Teams</a></li>");

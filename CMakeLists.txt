@@ -10,6 +10,11 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+set(JS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/js)
+set(STYLES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/styles)
+set(TEMPLATES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/templates)
+set(RES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res)
+
 set(INC
 	${INC_DIR}/Judge/Config.h
 	${INC_DIR}/Judge/User.h
@@ -35,13 +40,14 @@ list(APPEND INCLUDE ${LIBWEBSOCKETS_INCLUDE_DIR})
 
 # SSL Cert/Key Generation
 #  Generation from libwebsockets
+find_package(OpenSSL)
 find_package(OpenSSLbins)
 if(OPENSSL_EXECUTABLE)
-	message("Generating SSL certificate and key...")
 	set(JUDGE_SSL_KEY "${PROJECT_BINARY_DIR}/beachJudge.key.pem")
 	set(JUDGE_SSL_CERT "${PROJECT_BINARY_DIR}/beachJudge.pem")
 
 	if(NOT EXISTS ${JUDGE_SSL_KEY} OR NOT EXISTS ${JUDGE_SSL_CERT})
+		message("Generating SSL certificate and key...")
 		execute_process(
 			COMMAND printf "GB\\nErewhon\\nAll around\\nbeachJudge\\n\\nlocalhost\\nnone@invalid.org\\n"
 			COMMAND "${OPENSSL_EXECUTABLE}"
@@ -59,20 +65,30 @@ endif()
 configure_file(${INC_DIR}/Judge/Config.h.in ${INC_DIR}/Judge/Config.h)
 include_directories(${INCLUDE})
 
-set(ASSETS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets)
-set(RES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res)
-add_custom_target(assets mkdir -p ${RES_DIR}
-	COMMAND lessc ${ASSETS_DIR}/site.less -x > ${RES_DIR}/site.min.css
-	COMMAND jade -p ${ASSETS_DIR}/layout < ${ASSETS_DIR}/index.jade > ${RES_DIR}/index.html
-	COMMAND jade -p ${ASSETS_DIR}/layout < ${ASSETS_DIR}/judge.jade > ${RES_DIR}/judge.html
-	COMMAND jade -p ${ASSETS_DIR}/layout < ${ASSETS_DIR}/login.jade > ${RES_DIR}/login.html
-	COMMAND cp ${ASSETS_DIR}/*.js ${RES_DIR}
-)
-#TODO: JS minify
+# Resourece Compilation
+set(BUILD_RES mkdir -p ${RES_DIR})
+message("Compiling resources...")
+
+# Less
+list(APPEND BUILD_RES COMMAND lessc ${STYLES_DIR}/site.less -x > ${RES_DIR}/site.min.css)
+
+# Jade
+file(GLOB files "${TEMPLATES_DIR}/*.jade")
+foreach(file ${files})
+	string(REPLACE ${TEMPLATES_DIR} ${RES_DIR} res ${file})
+	string(REPLACE ".jade" ".html" res ${res})
+	list(APPEND BUILD_RES COMMAND jade -p ${file} < ${file} > ${res})
+endforeach()
+
+# Javascript
+file(GLOB files "${JS_DIR}/*.js")
+list(APPEND BUILD_RES COMMAND cat ${files} | uglifyjs > ${RES_DIR}/site.min.js)
+
+add_custom_target(res ${BUILD_RES})
 
 add_executable(${PROJECT} ${SRC} ${INC})
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/bin)
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/bin)
 target_link_libraries(${PROJECT} ${LIB})
-add_dependencies(${PROJECT} assets)
+add_dependencies(${PROJECT} res)

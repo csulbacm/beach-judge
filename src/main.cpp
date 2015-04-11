@@ -267,13 +267,16 @@ static int callback_http(struct libwebsocket_context *context,
 
 		//TODO: Patch login access on logged in
 		//TODO: Restrict content loading to respective user groups
+//		if (lws_is_ssl(wsi) == 0) {
+//			strcat(buf,"/nonssl.html");
+		//} else if (strstr((char *)in, ".") == NULL) {
 		if (strstr((char *)in, ".") == NULL) {
 			if (pss->user == 0)
 				strcat(buf, "/login");
 			else if(pss->user->isJudge)
 				strcat(buf, "/judge");
 			else
-				strcat(buf, "/index");
+				strcat(buf, "/team");
 			strcat(buf, ".html");
 		} else if (strcmp((const char *)in, "/")) {
 			if (*((const char *)in) != '/')
@@ -789,6 +792,7 @@ int main(int argc, char *argv[])
 		sprintf(key_path, JUDGE_SSL_KEY);
 		info.ssl_cert_filepath = cert_path;
 		info.ssl_private_key_filepath = key_path;
+		info.options = LWS_SERVER_OPTION_ALLOW_NON_SSL_ON_SSL_PORT;
 #endif
 		context = libwebsocket_create_context(&info);
 	}
@@ -802,6 +806,7 @@ int main(int argc, char *argv[])
 	loadJudgeData();
 
 	//- Start Server -
+	printf("Server is running.\n");
 	if (!sigsetjmp(jmpenv, 1)) {
 		// Clean up upon orderly shut down. Do _not_ cleanup if we die
 		// unexpectedly, as we cannot guarantee if we are still in a valid

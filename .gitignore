@@ -43,9 +43,11 @@ ipch
 *.swo
 
 # Compiled files
-bin
-res
+res/*.html
+res/*.js
+res/*.css
 build
+bin
 
 # Generated Files
 include/Judge/Config.h
