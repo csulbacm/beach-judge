@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 set(BEACHJUDGE_VERSION_MAJOR 0)
 set(BEACHJUDGE_VERSION_MINOR 02)
 
-set(PROJECT "beach-judge")
+set(PROJECT "beachJudge")
 project(${PROJECT})
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
@@ -11,6 +11,7 @@ set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(INC
+	${INC_DIR}/Judge/Config.h
 )
 
 set(SRC
@@ -30,7 +31,30 @@ fetch_libwebsockets()
 list(APPEND LIB ${LIBWEBSOCKETS_LIBRARIES} ssl crypto z)
 list(APPEND INCLUDE ${LIBWEBSOCKETS_INCLUDE_DIR})
 
+# SSL
+message("Searching for OpenSSL executable and dlls")
+find_package(OpenSSL)
+find_package(OpenSSLbins)
+if(OPENSSL_EXECUTABLE)
+	set(JUDGE_SSL_KEY "${PROJECT_BINARY_DIR}/beachJudge.key.pem")
+	set(JUDGE_SSL_CERT "${PROJECT_BINARY_DIR}/beachJudge.pem")
 
+	if(NOT EXISTS ${JUDGE_SSL_KEY} OR NOT EXISTS ${JUDGE_SSL_CERT})
+		execute_process(
+			COMMAND printf "GB\\nErewhon\\nAll around\\nbeachJudge\\n\\nlocalhost\\nnone@invalid.org\\n"
+			COMMAND "${OPENSSL_EXECUTABLE}"
+				req -new -newkey rsa:1024 -days 10000 -nodes -x509 -keyout "${JUDGE_SSL_KEY}" -out "${JUDGE_SSL_CERT}"
+			RESULT_VARIABLE OPENSSL_RETURN_CODE)
+	
+		if (OPENSSL_RETURN_CODE)
+			message(WARNING "!!! Failed to generate SSL certificate for Test Server!!!:\nOpenSSL return code = ${OPENSSL_RETURN_CODE}")
+		else()
+			message("SUCCESSFULLY generated SSL certificate")
+		endif()
+	endif()
+endif()
+
+configure_file(${INC_DIR}/Judge/Config.h.in ${INC_DIR}/Judge/Config.h)
 include_directories(${INCLUDE})
 
 add_executable(${PROJECT} ${SRC} ${INC})

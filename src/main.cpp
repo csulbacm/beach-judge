@@ -6,7 +6,11 @@
 
 #include <libwebsockets.h>
 
+//- beachJudge -
+#include <Judge/Config.h>
+
 #define USE_STATIC_ASSETS 0
+#define USE_SSL 1
 
 using namespace std;
 
@@ -37,7 +41,7 @@ struct per_session_data__http {
 //	unsigned long long t;
 };
 
-const char * get_mimetype(const char *file)
+const char *get_mimetype(const char *file)
 {
 	int n = strlen(file);
 
@@ -299,11 +303,26 @@ int main(int argc, char *argv[])
 	int n = 0;
 	struct lws_context_creation_info info;
 	memset(&info, 0, sizeof info);
-  	info.port = 8081;
-	info.protocols = protocols;
-	info.gid = -1;
-	info.uid = -1;
-	context = libwebsocket_create_context(&info);
+	{
+ 	 	info.port = 8081;
+		info.protocols = protocols;
+		info.gid = -1;
+		info.uid = -1;
+#if USE_SSL
+		char cert_path[1024];
+		char key_path[1024];
+		int plen_check = strlen(resource_path) + 32;
+		if (plen_check > sizeof(cert_path) || plen_check > sizeof(key_path)) {
+			lwsl_err("resource path too long\n");
+			return -1;
+		}
+		sprintf(cert_path, JUDGE_SSL_CERT);
+		sprintf(key_path, JUDGE_SSL_KEY);
+		info.ssl_cert_filepath = cert_path;
+		info.ssl_private_key_filepath = key_path;
+#endif
+		context = libwebsocket_create_context(&info);
+	}
 	if (context == NULL) {
 		lwsl_err("libwebsocket init failed\n");
 		return -1;

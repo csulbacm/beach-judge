@@ -1,0 +1,7 @@
+#ifndef _JUDGE_CONFIG_H_
+#define _JUDGE_CONFIG_H_
+
+#define JUDGE_SSL_CERT "@JUDGE_SSL_CERT@"
+#define JUDGE_SSL_KEY "@JUDGE_SSL_KEY@"
+
+#endif
