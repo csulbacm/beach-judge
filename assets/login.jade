@@ -19,6 +19,8 @@ block content
 						if(result === "ERR") {
 							console.log("Login error");
 						} else {
+							sessionStorage.setItem("JUDGESESSID", result);
+							console.log(sessionStorage);
 							/*
 							var baseURL = window.location.protocol + "#{baseURL}/register/";
 							var link = document.getElementById('invitation');

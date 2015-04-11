@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <time.h>
+#include <stdlib.h>
 
 #include <libwebsockets.h>
 
@@ -41,6 +42,8 @@ const char *resource_path = "../res";
 struct per_session_data__http {
 	int fd;
 	unsigned long long t;
+	User *user;
+	string sessionID;
 };
 
 const char *get_mimetype(const char *file)
@@ -66,6 +69,8 @@ const char *get_mimetype(const char *file)
 }
 
 /* this protocol server (always the first one) just knows how to do HTTP */
+
+static map<string, User *> g_sessionMap = map<string, User *>();
 
 static int callback_http(struct libwebsocket_context *context,
 		struct libwebsocket *wsi,
@@ -105,14 +110,16 @@ static int callback_http(struct libwebsocket_context *context,
 		}
 
 		/* if a legal POST URL, let it continue and accept data */
-		if (lws_hdr_total_length(wsi, WSI_TOKEN_POST_URI))
+		if (lws_hdr_total_length(wsi, WSI_TOKEN_POST_URI)) {
+			printf("%lx: POST %s\n", (unsigned long)pss, (char *)in);
 			return 0;
+		}
 
 #if USE_STATIC_ASSETS
 #else
 		//TODO: Make favicon
 		if (strcmp((const char *)in, "/favicon.ico") == 0) {
-			printf("%lx: %s %d\n", (unsigned long)pss, (char *)in, HTTP_STATUS_NO_CONTENT);
+			printf("%lx: GET %s %d\n", (unsigned long)pss, (char *)in, HTTP_STATUS_NO_CONTENT);
 			libwebsockets_return_http_status(context, wsi,
 				      HTTP_STATUS_NO_CONTENT, NULL);
 			return -1;
@@ -125,7 +132,7 @@ static int callback_http(struct libwebsocket_context *context,
 				strcat(buf, "/");
 			strncat(buf, (const char *)in, sizeof(buf) - strlen(resource_path));
 		} else /* default file to serve */
-			strcat(buf, "/index.html");
+			strcat(buf, "/index");
 
 		if (strstr((char *)in, ".") == NULL)
 			strcat(buf, ".html");
@@ -147,7 +154,7 @@ static int callback_http(struct libwebsocket_context *context,
 		mimetype = get_mimetype(buf);
 		if (!mimetype) {
 			lwsl_err("Unknown mimetype for %s\n", buf);
-			printf("%lx: %s %d\n", (unsigned long)pss, (char *)in, HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE);
+			printf("%lx: GET %s %d\n", (unsigned long)pss, (char *)in, HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE);
 			libwebsockets_return_http_status(context, wsi,
 				      HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE, NULL);
 			return -1;
@@ -156,7 +163,7 @@ static int callback_http(struct libwebsocket_context *context,
 		n = libwebsockets_serve_http_file(context, wsi, buf,
 						mimetype, other_headers, n);
 
-		printf("%lx: %s 200 - %lld ms\n", (unsigned long)pss, (char *)in, getTimeMS() - pss->t);
+		printf("%lx: GET %s 200 - %lld ms\n", (unsigned long)pss, (char *)in, getTimeMS() - pss->t);
 
 		if (n < 0 || ((n > 0) && lws_http_transaction_completed(wsi)))
 			return -1; /* error or can't reuse connection: close the socket */
@@ -171,6 +178,7 @@ static int callback_http(struct libwebsocket_context *context,
 		break;
 
 	case LWS_CALLBACK_HTTP_BODY:
+	printf("BODY: %s\n", (char *)in);
 		char nameBuff[65];
 		char pwBuff[65];
 		nameBuff[64] = 0;
@@ -179,31 +187,81 @@ static int callback_http(struct libwebsocket_context *context,
 		sscanf((char *)in, "username=%64[a-zA-Z0-9]&password=%64[a-zA-Z0-9]", nameBuff, pwBuff);
 		
 		if (strlen(nameBuff) != 0 && strlen(pwBuff) != 0) {
+			char response[128];
+
 			//- Login Attempt -
 			printf("Login: %s %s\n", nameBuff, pwBuff);
 			string name(nameBuff);
 			if (User::s_usersByName.count(name) != 0) {
 				User *user = User::s_usersByName[name];
 				if (user->TestPassword(pwBuff)) {
-					printf("Login Success\n");
+					//- Generate Session Key -
+					unsigned int l = SHA256_DIGEST_LENGTH * 2;
+					char sessionKey[l + 1];
+					do
+					{
+						char randKey[21];
+						randKey[20] = 0;
+						sprintf(randKey, "%010d%010d", rand(), rand());
+						unsigned char hash[SHA256_DIGEST_LENGTH];
+						SHA256_CTX sha256;
+						SHA256_Init(&sha256);
+						SHA256_Update(&sha256, randKey, strlen(randKey));
+						SHA256_Final(hash, &sha256);
+						for (int a = 0; a < SHA256_DIGEST_LENGTH; ++a)
+							sprintf(sessionKey + (a << 1), "%02x", hash[a]);
+						sessionKey[l] = 0;
+						pss->sessionID = string(sessionKey);
+					} while(g_sessionMap.count(pss->sessionID));
+
+					//- Update Session Map -
+					g_sessionMap[pss->sessionID] = user;
+
+					//- Send Key to Client -
+					sprintf(response, "HTTP/1.0 200 OK\r\n"
+						"Connection: close\r\n"
+						"Content-Type: text/html; charset=UTF-8\r\n"
+						"Content-Length: %ld\r\n\r\n"
+						"%s\r\n",
+						strlen(sessionKey), sessionKey);
+					libwebsocket_write(wsi,
+						(unsigned char *)response,
+						strlen(response), LWS_WRITE_HTTP);
 				} else {
 					//TODO: Handle invalid pw error
-					printf("Login Failure\n");
+					sprintf(response, "HTTP/1.0 200 OK\r\n"
+						"Connection: close\r\n"
+						"Content-Type: text/html; charset=UTF-8\r\n"
+						"Content-Length: %d\r\n\r\n"
+						"%s\r\n",
+						3, "ERR");
+					libwebsocket_write(wsi,
+						(unsigned char *)response,
+						strlen(response), LWS_WRITE_HTTP);
 				}
 			} else {
 				//TODO: Handle user does not exist
-				printf("No User with Name\n");
+				sprintf(response, "HTTP/1.0 200 OK\r\n"
+					"Connection: close\r\n"
+					"Content-Type: text/html; charset=UTF-8\r\n"
+					"Content-Length: %d\r\n\r\n"
+					"%s\r\n",
+					3, "ERR");
+				libwebsocket_write(wsi,
+					(unsigned char *)response,
+					strlen(response), LWS_WRITE_HTTP);
 			}
 		}
 
-		break;
+		goto try_to_reuse;
 
 	case LWS_CALLBACK_HTTP_BODY_COMPLETION:
 
 		/* the whole of the sent body arrived, close or reuse the connection */
-		libwebsockets_return_http_status(context, wsi,
-						HTTP_STATUS_OK, NULL);
-		goto try_to_reuse;
+//		libwebsockets_return_http_status(context, wsi,
+//						HTTP_STATUS_OK, NULL);
+//		goto try_to_reuse;
+		return 0;
 
 	case LWS_CALLBACK_HTTP_FILE_COMPLETION:
 //		lwsl_info("LWS_CALLBACK_HTTP_FILE_COMPLETION seen\n");
