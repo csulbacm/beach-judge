@@ -80,8 +80,24 @@ function judgePopulate() {
 judgeConnect();
 
 //- Navigation -
+var judgeLastState;
 function onNavigate(stateObj) {
-	console.log("Nav:" + JSON.stringify(stateObj));
+	var container;
+	if (judgeLastState) {
+		container = judgeLastState.nav.substr(1);
+		if (container != '')
+			$('#' + container).hide();
+		else
+			$('#root').hide();
+	}
+	container = stateObj.nav.substr(1);
+	if (container != '')
+		$('#' + container).show();
+	else
+		$('#root').show();
+	judgeLastState = stateObj;
+	if (judgeDebug )
+		console.log("Nav:" + JSON.stringify(stateObj));
 }
 window.onpopstate = function(evt) {
 	onNavigate(evt.state);

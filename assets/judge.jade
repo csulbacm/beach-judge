@@ -1,5 +1,14 @@
 extends layout
 block content
-	.container
-		p Judge
+	.container.hideall
+		#root
+			p Root
+		#scoreboard
+			p Scoreboard
+		#teams
+			p Teams
 	script(src="user.js")
+	script.
+		$(function() {
+			$(".logout").before("<li><a href=\"javascript:nav('/teams')\">Teams</a></li>");
+		}).jquery();

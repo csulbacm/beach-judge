@@ -27,8 +27,8 @@ html
 		header: .container
 			ul
 				li: a(href="javascript:nav('/')") beachJudge
-				li.last: a(href="javascript:nav('/scoreboard')") Scoreboard
-				li.login: a(href="javascript:judgeLogout()") Logout
+				li: a(href="javascript:nav('/scoreboard')") Scoreboard
+				li.logout: a(href="javascript:judgeLogout()") Logout
 			script.
 				function judgeLogout() {
 					$.ajax({
