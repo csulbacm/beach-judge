@@ -350,7 +350,7 @@ int main(int argc, char *argv[])
 	}
 
 	//- Load user data -
-	User admin("test");
+	User admin("judge", "test");
 
 	n = 0;
 	while (n >= 0 && !force_exit) {
