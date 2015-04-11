@@ -1,0 +1,32 @@
+extends layout
+block content
+	.container
+		form.judge-form(auto-complete="off", action="javascript:judgeLogin()")
+			input.judge-form-string(name="username", type="text", placeholder="Username", autocomplete="off", required)
+			input.judge-form-string(name="password", type="password", placeholder="Password", autocomplete="off", required)
+			.judge-form-actions
+				input.form-button(value="Login", type="submit")
+				input.form-button(value="Cancel", type="button", onclick="window.history.back()")
+		p.judge-notification
+			a#notification(href="")
+		script.
+			function judgeLogin() {
+				$.ajax({
+					type: "POST",
+					url: "/login",
+					data: $(".judge-form").serialize(),
+					success: function(result) {
+						if(result === "ERR") {
+							console.log("Login error");
+						} else {
+							/*
+							var baseURL = window.location.protocol + "#{baseURL}/register/";
+							var link = document.getElementById('invitation');
+							link.innerHTML = baseURL + result;
+							link.href = baseURL + result;
+							link.parentNode.style.display = "block";
+							*/
+						}
+					}
+				});
+			}

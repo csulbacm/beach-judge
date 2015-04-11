@@ -62,8 +62,9 @@ include_directories(${INCLUDE})
 set(ASSETS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets)
 set(RES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res)
 add_custom_target(assets mkdir -p ${RES_DIR}
-	COMMAND less ${ASSETS_DIR}/site.less -x > ${RES_DIR}/site.min.css
-	COMMAND jade < ${ASSETS_DIR}/index.jade > ${RES_DIR}/index.html
+	COMMAND lessc ${ASSETS_DIR}/site.less -x > ${RES_DIR}/site.min.css
+	COMMAND jade -p ${ASSETS_DIR}/layout < ${ASSETS_DIR}/index.jade > ${RES_DIR}/index.html
+	COMMAND jade -p ${ASSETS_DIR}/layout < ${ASSETS_DIR}/login.jade > ${RES_DIR}/login.html
 )
 
 add_executable(${PROJECT} ${SRC} ${INC})

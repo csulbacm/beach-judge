@@ -127,6 +127,9 @@ static int callback_http(struct libwebsocket_context *context,
 		} else /* default file to serve */
 			strcat(buf, "/index.html");
 
+		if (strstr((char *)in, ".") == NULL)
+			strcat(buf, ".html");
+
 		buf[sizeof(buf) - 1] = '\0';
 
 		//- Handle file not found -
@@ -168,18 +171,22 @@ static int callback_http(struct libwebsocket_context *context,
 		break;
 
 	case LWS_CALLBACK_HTTP_BODY:
-		strncpy(buf, (const char *)in, 20);
-		buf[20] = '\0';
-		if (len < 20)
-			buf[len] = '\0';
-
-		lwsl_notice("LWS_CALLBACK_HTTP_BODY: %s... len %d\n",
-				(const char *)buf, (int)len);
+		char username[65];
+		char password[65];
+		username[64] = 0;
+		password[64] = 0;
+		
+		sscanf((char *)in, "username=%64[a-zA-Z0-9]&password=%64[a-zA-Z0-9]", username, password);
+		
+		if (strlen(username) != 0 && strlen(password) != 0) {
+			//- Login Attempt -
+			printf("Login: %s %s\n", username, password);
+		}
 
 		break;
 
 	case LWS_CALLBACK_HTTP_BODY_COMPLETION:
-		lwsl_notice("LWS_CALLBACK_HTTP_BODY_COMPLETION\n");
+
 		/* the whole of the sent body arrived, close or reuse the connection */
 		libwebsockets_return_http_status(context, wsi,
 						HTTP_STATUS_OK, NULL);
