@@ -662,6 +662,11 @@ callback_judge(struct libwebsocket_context *context,
 					"\"msg\": \"TL\","
 					"\"teams\": [ \"%s\" ]",
 					users.str().c_str());
+			} else if (memcmp(msgIn, "CT", 2) == 0) {
+				//- Create Team -
+				sprintf(msgOut, ""
+					"\"msg\": \"CT\","
+					"\"teams\": 0");
 			} else {
 				sprintf(msgOut, ""
 					"\"msg\": \"ERR\"");

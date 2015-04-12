@@ -51,6 +51,8 @@ function wsOnMessage(evt) {
 		for (var a = 0; a < data.teams.length; ++a)
 			h += '<li><a href="javascript:selectTeam(' + data.teams[a] + ');">' + data.teams[a] + '</a></li>';
 		$('#teamlist').html(h);
+	} else if (typeof(judge.msgHandler[data.msg] !== 'undefined')) {
+		judge.msgHandler[data.msg](data);
 	}
 }
 function wsOnError(evt) {
@@ -60,6 +62,7 @@ function wsOnError(evt) {
 
 
 var judge = [];
+judge.msgHandler = [];
 var judgeDebug = false;
 
 function judgeConnect() {
@@ -145,3 +148,8 @@ function nav(target) {
 	history.replaceState(stateObj, 'beachJudge', stateObj.nav);
 	onNavigate(stateObj);
 })();
+
+//- Cleanup -
+$(window).on('beforeunload', function() {
+	judge.ws.close();
+});
