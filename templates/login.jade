@@ -1,54 +1,13 @@
-doctype html
-html
-	head
-		meta(charset="utf-8")
-		meta(name="viewport", content="initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width")
-		
-		title= "beachJudge"
-		link(rel="stylesheet", href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css", type="text/css")
-		link(rel="stylesheet", href="//fonts.googleapis.com/css?family=Roboto", type="text/css")
-		link(rel="stylesheet", href="//fonts.googleapis.com/css?family=Open+Sans:400italic,400,300,600,700")
-		link(rel="stylesheet", href="/site.min.css")
-
-		script(src="//code.jquery.com/jquery-1.11.2.min.js")
-		script.
-			if (window.location.protocol != "https:")
-				window.location.href = "https:" + window.location.href.substring(window.location.protocol.length);
-			function setCookie(cname, cvalue, exdays) {
-				var d = new Date();
-				d.setTime(d.getTime() + (exdays*24*60*60*1000));
-				var expires = "expires="+d.toUTCString();
-				document.cookie = cname + "=" + cvalue + ";" + expires;
-			}
-		//script(src="/js/lib/jquery/jquery-1.10.2.min.js")
-		//script(src="/js/lib/markdown.js")
-	body: .beach-judge
-		header: .container
-			ul
-				li: a(href="") beachJudge
-		.container
-			form.judge-form(auto-complete="off", action="javascript:judgeLogin()")
-				input.judge-form-string(name="username", type="text", placeholder="Username", autocomplete="off", required)
-				input.judge-form-string(name="password", type="password", placeholder="Password", autocomplete="off", required)
-				.judge-form-actions
-					input.form-button(value="Login", type="submit")
-					input.form-button(value="Cancel", type="button", onclick="window.history.back()")
-			script.
-				function judgeLogin() {
-					$.ajax({
-						type: "POST",
-						url: "/",
-						data: $(".judge-form").serialize(),
-						success: function(result) {
-							if(result === "ERR") {
-								console.log("Login error");
-							} else {
-								sessionStorage.setItem("JUDGESESSID", result);
-								setCookie("JUDGESESSID", result, 1);
-								window.location = window.location.origin;
-							}
-						}
-					});
-				}
-		footer: .container
-			p &copy; 2014-2015 CSULB ACM
+extends layouts/default
+block head
+	link(rel="stylesheet", href="public.min.css")
+	script(src="public.min.js")
+block body
+	.title-container
+		.title
+			p beachJudge
+			form.judge-form(auto-complete="off", action="javascript:void(0)" onsubmit="judgeLogin(this)")
+				input.string(name="username", type="text", placeholder="Username", autocomplete="off", required)
+				input.string(name="password", type="password", placeholder="Password", autocomplete="off", required)
+				input.button(value="Login", type="submit")
+			p.login-error Login Failed!

@@ -4,6 +4,18 @@ if (!Date.now) {
 	};
 }
 
+if (window.location.protocol != 'https:')
+	window.location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
+function setCookie(cname, cvalue, exdays) {
+	var d = new Date();
+	d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+	var expires = 'expires=' + d.toUTCString();
+	document.cookie = cname + '=' + cvalue + ';' + expires;
+}
+function deleteCookie(cname) {
+	document.cookie = cname + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+}
+
 // From libwebsockets text.html example
 function get_appropriate_ws_url()
 {
@@ -60,7 +72,6 @@ function wsOnError(evt) {
 		console.log('judge: ERROR \'' + evt.data + '\'');
 }
 
-
 var judge = [];
 judge.msgHandler = [];
 var judgeDebug = false;
@@ -100,6 +111,22 @@ function judgeProcessQueue() {
 			judge.ws.send(judge.sendQueue[a]);
 	judge.sendQueue = [];
 }
+function judgeLogout() {
+	$.ajax({
+		type: 'POST',
+		url: '/logout',
+		data: '',
+		success: function(result) {
+			if(result === 'ERR') {
+				console.log('Logout error');
+			} else {
+				sessionStorage.removeItem('JUDGESESSID');
+				deleteCookie('JUDGESESSID');
+				window.location = window.location.origin;
+			}
+		}
+	});
+}
 
 function judgePopulate() {
 	judgeQueue('POP');
@@ -113,13 +140,13 @@ function onNavigate(stateObj) {
 	var container;
 	if (judgeLastState) {
 		container = judgeLastState.nav.substr(1);
-		if (container != '')
+		if (container.length)
 			$('#' + container).hide();
 		else
 			$('#root').hide();
 	}
 	container = stateObj.nav.substr(1);
-	if (container != '')
+	if (container.length)
 		$('#' + container).show();
 	else
 		$('#root').show();
@@ -141,13 +168,13 @@ function nav(target) {
 }
 
 //- Initialization -
-(function ()
-{
+$(document).ready(function(){
 	judgePopulate();
+	console.log(document.location.pathname);
 	var stateObj = { nav: document.location.pathname };
 	history.replaceState(stateObj, 'beachJudge', stateObj.nav);
 	onNavigate(stateObj);
-})();
+});
 
 //- Cleanup -
 $(window).on('beforeunload', function() {

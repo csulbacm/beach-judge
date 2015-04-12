@@ -71,7 +71,12 @@ message("Compiling resources...")
 #TODO: Compile on file changed
 
 # Less
-list(APPEND BUILD_RES COMMAND lessc ${STYLES_DIR}/site.less -x > ${RES_DIR}/site.min.css)
+file(GLOB files "${STYLES_DIR}/*.less")
+foreach(file ${files})
+	string(REPLACE ${STYLES_DIR} ${RES_DIR} res ${file})
+	string(REPLACE ".less" ".min.css" res ${res})
+	list(APPEND BUILD_RES COMMAND lessc ${file} -x > ${res})
+endforeach()
 
 # Jade
 file(GLOB files "${TEMPLATES_DIR}/*.jade")
@@ -82,8 +87,15 @@ foreach(file ${files})
 endforeach()
 
 # Javascript
-file(GLOB files "${JS_DIR}/*.js")
-list(APPEND BUILD_RES COMMAND cat ${files} | uglifyjs > ${RES_DIR}/site.min.js)
+#TODO: Generate by folder in JS_DIR
+#file(GLOB files "${JS_DIR}/team/*.js")
+#list(APPEND BUILD_RES COMMAND cat ${files} | uglifyjs > ${RES_DIR}/team.min.js)
+file(GLOB files "${JS_DIR}/judge/*.js")
+list(APPEND BUILD_RES COMMAND cat ${files} | uglifyjs > ${RES_DIR}/judge.min.js)
+file(GLOB files "${JS_DIR}/public/*.js")
+list(APPEND BUILD_RES COMMAND cat ${files} | uglifyjs > ${RES_DIR}/public.min.js)
+file(GLOB files "${JS_DIR}/common/*.js")
+list(APPEND BUILD_RES COMMAND cat ${files} | uglifyjs > ${RES_DIR}/common.min.js)
 
 add_custom_target(res ${BUILD_RES})
 
