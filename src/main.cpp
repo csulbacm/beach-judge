@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <fstream>
 #include <sstream>
+#include <map>
 
 #include <libwebsockets.h>
 
@@ -58,6 +59,65 @@ typedef struct Session {
 } Session;
 
 static map<string, Session> g_sessionMap = map<string, Session>();
+
+#define MAX_MESSAGE_QUEUE 32
+#define MAX_RESPONSE 2047
+
+struct per_session_data__judge {
+	struct libwebsocket *wsi;
+	int ringbuffer_tail;
+	struct Service *service;
+	int width;
+	int height;
+	long long lastSendMS;
+	char buffer[MAX_RESPONSE + LWS_SEND_BUFFER_PRE_PADDING + LWS_SEND_BUFFER_POST_PADDING];
+	char *msg;
+	Session *session;
+	User *user;
+};
+
+//----------------------------------------------
+//------------- Message Handling ---------------
+
+static map<string, void (*)(struct libwebsocket *wsi, struct per_session_data__judge *pss, char *msgIn)> g_msgHandlerMap;
+void msg_populate(struct libwebsocket *wsi, struct per_session_data__judge *pss, char *msgIn)
+{
+	//- Populate User Session Data -
+	sprintf(pss->msg, ""
+		"\"msg\": \"POP\","
+		"\"name\": \"%s\"",
+		pss->user->username.c_str());
+}
+void msg_teamList(struct libwebsocket *wsi, struct per_session_data__judge *pss, char *msgIn)
+{
+	//- Populate Team Data -
+	stringstream users;
+	map<string, User *>::iterator it = User::s_usersByName.begin();
+	map<string, User *>::iterator end = User::s_usersByName.end();
+	while (it != end) {
+		users << it->second->username.c_str();
+		++it;
+		if (it != end)
+			users << ", ";
+	}
+	sprintf(pss->msg, ""
+		"\"msg\": \"TL\","
+		"\"teams\": [ \"%s\" ]",
+		users.str().c_str());
+}
+void msg_createTeam(struct libwebsocket *wsi, struct per_session_data__judge *pss, char *msgIn)
+{
+	//- Create Team -
+	sprintf(pss->msg, ""
+		"\"msg\": \"CT\","
+		"\"teams\": 0");
+}
+void populateMsgHandlerMap(map<string, void (*)(struct libwebsocket *wsi, struct per_session_data__judge *pss, char *msgIn)> &m)
+{
+	m["POP"] = msg_populate;
+	m["TL"] = msg_teamList;
+	m["CT"] = msg_createTeam;
+}
 
 void loadJudgeData()
 {
@@ -534,23 +594,6 @@ try_to_reuse:
 	return 0;
 }
 
-#define MAX_MESSAGE_QUEUE 32
-#define MAX_RESPONSE 2047
-
-struct per_session_data__judge {
-	struct libwebsocket *wsi;
-	int								 ringbuffer_tail;
-	struct Service			*service;
-	int		 pty;
-	int			 width;
-	int		 height;
-	long long		 lastSendMS;
-	char		buffer[MAX_RESPONSE + LWS_SEND_BUFFER_PRE_PADDING + LWS_SEND_BUFFER_POST_PADDING];
-	char			*msg;
-	Session *session;
-	User *user;
-};
-
 struct a_message {
 	void *payload;
 	size_t len;
@@ -611,23 +654,19 @@ callback_judge(struct libwebsocket_context *context,
 		pss->wsi = wsi;
 
 		//- Initialize Session -
-//		pss->pty = -1;
 		pss->width = 0;
 		pss->height = 0;
 		pss->lastSendMS = 0;
 		pss->msg = pss->buffer + LWS_SEND_BUFFER_PRE_PADDING;
 
-//		printf("%lx: Connected\n", (unsigned long)pss);
+		printf("%lx: Connected\n", (unsigned long)pss);
 		break;
 
 	case LWS_CALLBACK_CLOSED:
-//		if (pss->pty >= 0)
-//			NOINTR(close(pss->pty));
-//		printf("%lx: Disconnected\n", (unsigned long)pss);
+		printf("%lx: Disconnected\n", (unsigned long)pss);
 		break;
 
 	case LWS_CALLBACK_PROTOCOL_DESTROY:
-		lwsl_notice("mirror protocol cleaning up\n");
 		for (n = 0; n < sizeof ringbuffer / sizeof ringbuffer[0]; n++)
 			if (ringbuffer[n].payload)
 				free(ringbuffer[n].payload);
@@ -635,39 +674,15 @@ callback_judge(struct libwebsocket_context *context,
 
 	case LWS_CALLBACK_SERVER_WRITEABLE:
 		while (pss->ringbuffer_tail != ringbuffer_head) {
-
 			//- Input Processing -
 			char *msgIn = (char *)ringbuffer[pss->ringbuffer_tail].payload + LWS_SEND_BUFFER_PRE_PADDING;
-			if (memcmp(msgIn, "POP", 3) == 0) {
-				//- Populate User Session Data -
-				sprintf(pss->msg, ""
-					"\"msg\": \"POP\","
-					"\"name\": \"%s\"",
-					pss->user->username.c_str());
-			} else if (memcmp(msgIn, "TL", 2) == 0) {
-				//- Populate Team Data -
-				stringstream users;
-				map<string, User *>::iterator it = User::s_usersByName.begin();
-				map<string, User *>::iterator end = User::s_usersByName.end();
-				while (it != end) {
-					users << it->second->username.c_str();
-					++it;
-					if (it != end)
-						users << ", ";
-				}
-				sprintf(pss->msg, ""
-					"\"msg\": \"TL\","
-					"\"teams\": [ \"%s\" ]",
-					users.str().c_str());
-			} else if (memcmp(msgIn, "CT", 2) == 0) {
-				//- Create Team -
-				sprintf(pss->msg, ""
-					"\"msg\": \"CT\","
-					"\"teams\": 0");
-			} else {
-				sprintf(pss->msg, ""
-					"\"msg\": \"ERR\"");
-			}
+			char msgType[5];
+			msgType[4] = 0;
+			sscanf(msgIn, "%4[a-zA-Z]:", msgType);
+			if (g_msgHandlerMap.count(msgType))
+				(*g_msgHandlerMap[msgType])(wsi, pss, msgIn);
+			else
+				sprintf(pss->msg, "\"msg\": \"ERR\"");
 			libwebsocket_write(wsi,
 				(unsigned char *)pss->msg,
 				strlen(pss->msg), LWS_WRITE_TEXT);
@@ -774,6 +789,11 @@ static void sigHandler(int signo, siginfo_t *info, void *context) {
 
 int main(int argc, char *argv[])
 {
+	//- Populate Msg Handler Map -
+	populateMsgHandlerMap(g_msgHandlerMap);
+
+	//- Initialize LWS -
+	lws_set_log_level(0, NULL);
 	int n = 0;
 	struct lws_context_creation_info info;
 	memset(&info, 0, sizeof info);

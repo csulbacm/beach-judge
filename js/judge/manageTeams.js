@@ -2,8 +2,9 @@ $(document).ready(function(){
 	judge.msgHandler['CT'] = function(evt) {
 		console.log('CT: ' + JSON.stringify(evt));
 	};
-});
 
-function judgeCreateTeam(form) {
-	judgeQueue('CT ' + $(form).serialize());
-}
+	$("#create-team-form").submit(function(evt) {
+		judgeQueue('CT ' + $(this).serialize());
+		return false;
+	});
+});

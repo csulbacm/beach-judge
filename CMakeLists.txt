@@ -79,11 +79,11 @@ foreach(file ${files})
 endforeach()
 
 # Jade
-file(GLOB files "${TEMPLATES_DIR}/*.jade")
+file(GLOB files "${TEMPLATES_DIR}/views/*.jade")
 foreach(file ${files})
-	string(REPLACE ${TEMPLATES_DIR} ${RES_DIR} res ${file})
+	string(REPLACE ${TEMPLATES_DIR}/views ${RES_DIR} res ${file})
 	string(REPLACE ".jade" ".html" res ${res})
-	list(APPEND BUILD_RES COMMAND jade -p ${file} < ${file} > ${res})
+	list(APPEND BUILD_RES COMMAND jade -p ${TEMPLATES_DIR}/file < ${file} > ${res})
 endforeach()
 
 # Javascript

@@ -24,10 +24,10 @@ block body
 				.actions
 					.createTeam
 						p.header Create Team
-						form.judge-form(auto-complete="off", action="javascript:void(0)", onsubmit="judgeCreateTeam(this)")
+						form#create-team-form.judge-form(auto-complete="off")
 							input.judge-form-string(name="n", type="text", placeholder="Username", autocomplete="off", required)
 							input.judge-form-string(name="p1", type="password", placeholder="Password", autocomplete="off", required)
 							input.judge-form-string(name="p2", type="password", placeholder="Confirm Password", autocomplete="off", required)
-							.judge-form-actions
-								input.form-button(value="Create Team", type="submit")
-								input.form-button(value="Clear", type="button", onclick="parentNode.parentNode.reset()")
+							input.form-button(value="Create Team", type="submit")
+							input.form-button(value="Clear", type="button", onclick="parentNode.reset()")
+							p.form-error

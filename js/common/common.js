@@ -76,7 +76,7 @@ function wsOnError(evt) {
 
 var judge = [];
 judge.msgHandler = [];
-	judge.sendQueue = [];
+judge.sendQueue = [];
 var judgeDebug = false;
 var judgeReloadOnReconnect = true;
 var judgeReconnect = false;
@@ -135,7 +135,7 @@ function judgeLogout() {
 }
 
 function judgePopulate() {
-	judgeQueue('POP');
+	judgeQueue('POP:');
 }
 
 judgeConnect();
@@ -161,7 +161,7 @@ function onNavigate(stateObj) {
 		console.log('Nav:' + JSON.stringify(stateObj));
 
 	if (stateObj.nav === '/teams') {
-		judgeQueue('TL');
+		judgeQueue('TL:');
 	}
 }
 window.onpopstate = function(evt) {
