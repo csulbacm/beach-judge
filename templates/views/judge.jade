@@ -1,33 +1,17 @@
-extends layouts/default
-block head
-	link(rel="stylesheet", href="judge.min.css")
-	script(src="common.min.js")
-	script(src="judge.min.js")
-block header
-	header: .container
-		ul.mainNav
-			li: a(href="javascript:nav('/')") beachJudge
-			li: a(href="javascript:nav('/scoreboard')") Scoreboard
-			li: a(href="javascript:nav('/teams')") Teams
-			li.logout: a(href="javascript:judgeLogout()") Logout
-block body
-	.container
-		.hideall
-			#root
-				p Root
-			#scoreboard
-				p Scoreboard
-			#teams
-				.list
-					p.header Teams
-					ul#teamlist
-				.actions
-					.createTeam
-						p.header Create Team
-						form#create-team-form.judge-form(auto-complete="off")
-							input.judge-form-string(name="n", type="text", placeholder="Username", autocomplete="off", required)
-							input.judge-form-string(name="p1", type="password", placeholder="Password", autocomplete="off", required)
-							input.judge-form-string(name="p2", type="password", placeholder="Confirm Password", autocomplete="off", required)
-							input.form-button(value="Create Team", type="submit")
-							input.form-button(value="Clear", type="button", onclick="parentNode.reset()")
-							p.form-error
+extends layouts/judge
+block root
+block scoreboard
+block teams
+	.list
+		p.header Teams
+		ul#teamlist
+	.actions
+		.createTeam
+			p.header Create Team
+			form#create-team-form.judge-form(auto-complete="off")
+				input.judge-form-string(name="n", type="text", placeholder="Username", autocomplete="off", required)
+				input.judge-form-string(name="p1", type="password", placeholder="Password", autocomplete="off", required)
+				input.judge-form-string(name="p2", type="password", placeholder="Confirm Password", autocomplete="off", required)
+				input.form-button(value="Create Team", type="submit")
+				input.form-button(value="Clear", type="button", onclick="parentNode.reset()")
+				p.form-error

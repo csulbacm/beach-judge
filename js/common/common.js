@@ -59,12 +59,6 @@ function wsOnMessage(evt) {
 	var data = JSON.parse('{' + evt.data + '}');
 	if (data.msg === 'POP') {
 		$('.user').html(data.name);
-	} else if (data.msg === 'TL') {
-		var h = '';
-		//TODO: Use team ID
-		for (var a = 0; a < data.teams.length; ++a)
-			h += '<li><a href="javascript:selectTeam(' + data.teams[a] + ');">' + data.teams[a] + '</a></li>';
-		$('#teamlist').html(h);
 	} else if (typeof(judge.msgHandler[data.msg] !== 'undefined')) {
 		judge.msgHandler[data.msg](data);
 	}

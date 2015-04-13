@@ -84,8 +84,8 @@ void msg_populate(struct libwebsocket *wsi, struct per_session_data__judge *pss,
 {
 	//- Populate User Session Data -
 	sprintf(pss->msg, ""
-		"\"msg\": \"POP\","
-		"\"name\": \"%s\"",
+		"\"msg\":\"POP\","
+		"\"name\":\"%s\"",
 		pss->user->username.c_str());
 }
 void msg_teamList(struct libwebsocket *wsi, struct per_session_data__judge *pss, char *msgIn)
@@ -98,19 +98,58 @@ void msg_teamList(struct libwebsocket *wsi, struct per_session_data__judge *pss,
 		users << it->second->username.c_str();
 		++it;
 		if (it != end)
-			users << ", ";
+			users << "\",\"";
 	}
 	sprintf(pss->msg, ""
-		"\"msg\": \"TL\","
-		"\"teams\": [ \"%s\" ]",
+		"\"msg\":\"TL\","
+		"\"teams\":[\"%s\"]",
 		users.str().c_str());
 }
 void msg_createTeam(struct libwebsocket *wsi, struct per_session_data__judge *pss, char *msgIn)
 {
-	//- Create Team -
+	//- Restrict action to judge -
+	if (pss->user->isJudge == false) {
+		sprintf(pss->msg, "\"msg\": \"ERR\"");
+		return;
+	}
+
+	//TODO: Define name/password length requirements
+	//TODO: Split username and display name
+	char name[16], p1[16], p2[16];
+	int r = sscanf(msgIn, "n=%[a-zA-Z0-9]&p1=%[a-zA-Z0-9]&p2=%[a-zA-Z0-9]", name, p1, p2);
+	if (r != 3) {
+		sprintf(pss->msg, ""
+			"\"msg\":\"CT\","
+			"\"err\":\"I\"");
+		return;
+	}
+	if (strcmp(p1, p2) != 0) {
+		//TODO: memcpy prebuilt errors
+		sprintf(pss->msg, ""
+			"\"msg\":\"CT\","
+			"\"err\":\"P\"");
+		return;
+	}
+
+	//- Set name to lower case -
+	{
+		int l = strlen(name);
+		for (int a = 0; a < l; ++a)
+			name[a] = tolower(name[a]);
+	}
+
+	if (User::s_usersByName.count(name) != 0) {
+		sprintf(pss->msg, ""
+			"\"msg\":\"CT\","
+			"\"err\":\"N\"");
+		return;
+	}
+
+	User *newUser = new User(name, p1, false);
 	sprintf(pss->msg, ""
-		"\"msg\": \"CT\","
-		"\"teams\": 0");
+		"\"msg\":\"CT\","
+		"\"name\":\"%s\"",
+		newUser->username.c_str());
 }
 void populateMsgHandlerMap(map<string, void (*)(struct libwebsocket *wsi, struct per_session_data__judge *pss, char *msgIn)> &m)
 {
@@ -680,7 +719,7 @@ callback_judge(struct libwebsocket_context *context,
 			msgType[4] = 0;
 			sscanf(msgIn, "%4[a-zA-Z]:", msgType);
 			if (g_msgHandlerMap.count(msgType))
-				(*g_msgHandlerMap[msgType])(wsi, pss, msgIn);
+				(*g_msgHandlerMap[msgType])(wsi, pss, msgIn + strlen(msgType) + 1);
 			else
 				sprintf(pss->msg, "\"msg\": \"ERR\"");
 			libwebsocket_write(wsi,

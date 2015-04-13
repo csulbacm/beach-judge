@@ -1,0 +1,21 @@
+extends default
+block head
+	link(rel="stylesheet", href="judge.min.css")
+	script(src="common.min.js")
+	script(src="judge.min.js")
+block header
+	header: .container
+		ul.mainNav
+			li: a(href="javascript:nav('/')") beachJudge
+			li: a(href="javascript:nav('/scoreboard')") Scoreboard
+			li: a(href="javascript:nav('/teams')") Teams
+			li.logout: a(href="javascript:judgeLogout()") Logout
+block body
+	.container
+		.hideall
+			#root
+				block root
+			#scoreboard
+				block scoreboard
+			#teams
+				block teams
