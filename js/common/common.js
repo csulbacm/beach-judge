@@ -43,16 +43,18 @@ function get_appropriate_ws_url()
 	return pcol + u[0] + '/xxx';
 }
 function wsOnOpen(evt) {
-	if (judgeDebug )
+	if (judgeDebug)
 		console.log('judge: Connected');
-	judgeQueue();
+	judgeProcessQueue();
 }
 function wsOnClose(evt) {
-	if (judgeDebug )
+	if (judgeDebug)
 		console.log('judge: Disconnected');
+	judgeReconnect = true;
+	setTimeout(judgeConnect, 1000);
 }
 function wsOnMessage(evt) {
-	if (judgeDebug )
+	if (judgeDebug)
 		console.log('judge: \'' + evt.data + '\'');
 	var data = JSON.parse('{' + evt.data + '}');
 	if (data.msg === 'POP') {
@@ -74,10 +76,13 @@ function wsOnError(evt) {
 
 var judge = [];
 judge.msgHandler = [];
+	judge.sendQueue = [];
 var judgeDebug = false;
+var judgeReloadOnReconnect = true;
+var judgeReconnect = false;
 
+var wsUrl = get_appropriate_ws_url();
 function judgeConnect() {
-	var wsUrl = get_appropriate_ws_url();
 	if (typeof MozWebSocket != 'undefined') {
 		judge.ws = new MozWebSocket(wsUrl,
 			'judge-protocol');
@@ -91,7 +96,6 @@ function judgeConnect() {
 	judge.ws.onclose = wsOnClose;
 	judge.ws.onmessage = wsOnMessage;
 	judge.ws.onerror = wsOnError;
-	judge.sendQueue = [];
 }
 function judgeQueue(str) {
 	if (judge.ws.readyState != WebSocket.OPEN)
@@ -110,6 +114,8 @@ function judgeProcessQueue() {
 		if (judge.sendQueue[a])
 			judge.ws.send(judge.sendQueue[a]);
 	judge.sendQueue = [];
+	if (judgeReconnect && judgeReloadOnReconnect)
+		window.location.reload();
 }
 function judgeLogout() {
 	$.ajax({
@@ -122,7 +128,7 @@ function judgeLogout() {
 			} else {
 				sessionStorage.removeItem('JUDGESESSID');
 				deleteCookie('JUDGESESSID');
-				window.location = window.location.origin;
+				window.location = window.location;
 			}
 		}
 	});

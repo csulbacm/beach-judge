@@ -616,6 +616,7 @@ callback_judge(struct libwebsocket_context *context,
 		pss->height = 0;
 		pss->lastSendMS = 0;
 		pss->msg = pss->buffer + LWS_SEND_BUFFER_PRE_PADDING;
+
 //		printf("%lx: Connected\n", (unsigned long)pss);
 		break;
 
@@ -636,14 +637,10 @@ callback_judge(struct libwebsocket_context *context,
 		while (pss->ringbuffer_tail != ringbuffer_head) {
 
 			//- Input Processing -
-			char response[1024];
-			memset(response, 0, 1024);
-			//TODO: Handle buffer len
 			char *msgIn = (char *)ringbuffer[pss->ringbuffer_tail].payload + LWS_SEND_BUFFER_PRE_PADDING;
-			char *msgOut = response + LWS_SEND_BUFFER_PRE_PADDING;
 			if (memcmp(msgIn, "POP", 3) == 0) {
 				//- Populate User Session Data -
-				sprintf(msgOut, ""
+				sprintf(pss->msg, ""
 					"\"msg\": \"POP\","
 					"\"name\": \"%s\"",
 					pss->user->username.c_str());
@@ -658,22 +655,22 @@ callback_judge(struct libwebsocket_context *context,
 					if (it != end)
 						users << ", ";
 				}
-				sprintf(msgOut, ""
+				sprintf(pss->msg, ""
 					"\"msg\": \"TL\","
 					"\"teams\": [ \"%s\" ]",
 					users.str().c_str());
 			} else if (memcmp(msgIn, "CT", 2) == 0) {
 				//- Create Team -
-				sprintf(msgOut, ""
+				sprintf(pss->msg, ""
 					"\"msg\": \"CT\","
 					"\"teams\": 0");
 			} else {
-				sprintf(msgOut, ""
+				sprintf(pss->msg, ""
 					"\"msg\": \"ERR\"");
 			}
 			libwebsocket_write(wsi,
-				(unsigned char *)msgOut,
-				strlen(msgOut), LWS_WRITE_TEXT);
+				(unsigned char *)pss->msg,
+				strlen(pss->msg), LWS_WRITE_TEXT);
 
 			if (pss->ringbuffer_tail == (MAX_MESSAGE_QUEUE - 1))
 				pss->ringbuffer_tail = 0;
