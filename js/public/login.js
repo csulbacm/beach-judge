@@ -8,20 +8,23 @@ function setCookie(cname, cvalue, exdays) {
 	document.cookie = cname + '=' + cvalue + ';' + expires;
 }
 
-function judgeLogin(form) {
-	$('.login-error').hide();
-	$.ajax({
-		type: 'POST',
-		url: '/',
-		data: $(form).serialize(),
-		success: function(result) {
-			if(result === 'ERR')
-				$('.login-error').show();
-			else {
-				sessionStorage.setItem('JUDGESESSID', result);
-				setCookie('JUDGESESSID', result, 1);
-				window.location = window.location.origin;
+$(document).ready(function() {
+	$("#login-form").submit(function(evt) {
+		$('.login-error').hide();
+		$.ajax({
+			type: 'POST',
+			url: '/',
+			data: $(this).serialize(),
+			success: function(result) {
+				if(result === 'ERR')
+					$('.login-error').show();
+				else {
+					sessionStorage.setItem('JUDGESESSID', result);
+					setCookie('JUDGESESSID', result, 1);
+					window.location = window.location.origin;
+				}
 			}
-		}
+		});
+		return false;
 	});
-}
+});

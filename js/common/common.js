@@ -170,7 +170,6 @@ function nav(target) {
 //- Initialization -
 $(document).ready(function(){
 	judgePopulate();
-	console.log(document.location.pathname);
 	var stateObj = { nav: document.location.pathname };
 	history.replaceState(stateObj, 'beachJudge', stateObj.nav);
 	onNavigate(stateObj);

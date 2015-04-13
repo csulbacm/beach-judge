@@ -239,7 +239,7 @@ static int callback_http(struct libwebsocket_context *context,
 						"Connection: close\r\n"
 						"Content-Type: text/html; charset=UTF-8\r\n"
 						"Content-Length: %d\r\n\r\n"
-						"%s\r\n",
+						"%s",
 						2, "OK");
 					libwebsocket_write(wsi,
 						(unsigned char *)response,
@@ -372,7 +372,7 @@ static int callback_http(struct libwebsocket_context *context,
 							"Connection: close\r\n"
 							"Content-Type: text/html; charset=UTF-8\r\n"
 							"Content-Length: %ld\r\n\r\n"
-							"%s\r\n",
+							"%s",
 							strlen(sessionKey), sessionKey);
 						libwebsocket_write(wsi,
 							(unsigned char *)response,
@@ -383,7 +383,7 @@ static int callback_http(struct libwebsocket_context *context,
 							"Connection: close\r\n"
 							"Content-Type: text/html; charset=UTF-8\r\n"
 							"Content-Length: %d\r\n\r\n"
-							"%s\r\n",
+							"%s",
 							3, "ERR");
 						libwebsocket_write(wsi,
 							(unsigned char *)response,
@@ -395,7 +395,7 @@ static int callback_http(struct libwebsocket_context *context,
 						"Connection: close\r\n"
 						"Content-Type: text/html; charset=UTF-8\r\n"
 						"Content-Length: %d\r\n\r\n"
-						"%s\r\n",
+						"%s",
 						3, "ERR");
 					libwebsocket_write(wsi,
 						(unsigned char *)response,
