@@ -122,7 +122,7 @@ function judgeLogout() {
 			} else {
 				sessionStorage.removeItem('JUDGESESSID');
 				deleteCookie('JUDGESESSID');
-				window.location = window.location;
+				window.location = window.location.origin;
 			}
 		}
 	});
@@ -137,6 +137,7 @@ judgeConnect();
 //- Navigation -
 var judgeLastState;
 function onNavigate(stateObj) {
+	//TODO: Don't reload if data hasn't changed
 	var container;
 	if (judgeLastState) {
 		container = judgeLastState.nav.substr(1);
@@ -155,6 +156,7 @@ function onNavigate(stateObj) {
 		console.log('Nav:' + JSON.stringify(stateObj));
 
 	if (stateObj.nav === '/teams') {
+		//TODO: Send unix timestamp for last received data
 		judgeQueue('TL:');
 	}
 }
@@ -170,7 +172,7 @@ function nav(target) {
 //- Initialization -
 $(document).ready(function(){
 	judgePopulate();
-	var stateObj = { nav: document.location.pathname };
+	var stateObj = { nav: window.location.pathname };
 	history.replaceState(stateObj, 'beachJudge', stateObj.nav);
 	onNavigate(stateObj);
 });

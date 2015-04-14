@@ -90,12 +90,14 @@ endforeach()
 #TODO: Generate by folder in JS_DIR
 #file(GLOB files "${JS_DIR}/team/*.js")
 #list(APPEND BUILD_RES COMMAND cat ${files} | uglifyjs > ${RES_DIR}/team.min.js)
+#TODO: Remove -b flag when finalized
+set(UGFLAG "-b")
 file(GLOB files "${JS_DIR}/judge/*.js")
-list(APPEND BUILD_RES COMMAND cat ${files} | uglifyjs > ${RES_DIR}/judge.min.js)
+list(APPEND BUILD_RES COMMAND cat ${files} | uglifyjs ${UGFLAG} > ${RES_DIR}/judge.min.js)
 file(GLOB files "${JS_DIR}/public/*.js")
-list(APPEND BUILD_RES COMMAND cat ${files} | uglifyjs > ${RES_DIR}/public.min.js)
+list(APPEND BUILD_RES COMMAND cat ${files} | uglifyjs ${UGFLAG} > ${RES_DIR}/public.min.js)
 file(GLOB files "${JS_DIR}/common/*.js")
-list(APPEND BUILD_RES COMMAND cat ${files} | uglifyjs > ${RES_DIR}/common.min.js)
+list(APPEND BUILD_RES COMMAND cat ${files} | uglifyjs ${UGFLAG} > ${RES_DIR}/common.min.js)
 
 add_custom_target(res ${BUILD_RES})
 

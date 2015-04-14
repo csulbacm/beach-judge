@@ -5,7 +5,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <time.h>
 #include <stdlib.h>
 #include <fstream>
 #include <sstream>
@@ -21,13 +20,6 @@
 
 using namespace judge;
 using namespace std;
-
-struct timespec g_timespec;
-inline unsigned long long getTimeMS()
-{
-  clock_gettime(CLOCK_REALTIME, &g_timespec);
-  return g_timespec.tv_sec * 1000 + g_timespec.tv_nsec / 1000000;
-}
 
 static unsigned long long sessionExpireTimeMS = 1000 * 60 * 60 * 1;
 typedef struct Session {
@@ -54,7 +46,7 @@ typedef struct Session {
 
 	void Reset()
 	{
-		expireTimeMS = getTimeMS() + sessionExpireTimeMS;
+		expireTimeMS = getRealTimeMS() + sessionExpireTimeMS;
 	}
 } Session;
 
@@ -76,10 +68,12 @@ struct per_session_data__judge {
 	User *user;
 };
 
+
 //----------------------------------------------
 //------------- Message Handling ---------------
 
-static map<string, void (*)(struct libwebsocket *wsi, struct per_session_data__judge *pss, char *msgIn)> g_msgHandlerMap;
+static map<string, void (*)(struct libwebsocket *wsi,
+	struct per_session_data__judge *pss, char *msgIn)> g_msgHandlerMap;
 void msg_populate(struct libwebsocket *wsi, struct per_session_data__judge *pss, char *msgIn)
 {
 	//- Populate User Session Data -
@@ -105,7 +99,8 @@ void msg_teamList(struct libwebsocket *wsi, struct per_session_data__judge *pss,
 		"\"teams\":[\"%s\"]",
 		users.str().c_str());
 }
-void msg_createTeam(struct libwebsocket *wsi, struct per_session_data__judge *pss, char *msgIn)
+void msg_createTeam(struct libwebsocket *wsi, struct per_session_data__judge *pss,
+	char *msgIn)
 {
 	//- Restrict action to judge -
 	if (pss->user->isJudge == false) {
@@ -151,7 +146,8 @@ void msg_createTeam(struct libwebsocket *wsi, struct per_session_data__judge *ps
 		"\"name\":\"%s\"",
 		newUser->username.c_str());
 }
-void populateMsgHandlerMap(map<string, void (*)(struct libwebsocket *wsi, struct per_session_data__judge *pss, char *msgIn)> &m)
+void populateMsgHandlerMap(map<string, void (*)(struct libwebsocket *wsi,
+	struct per_session_data__judge *pss, char *msgIn)> &m)
 {
 	m["POP"] = msg_populate;
 	m["TL"] = msg_teamList;
@@ -224,31 +220,6 @@ struct per_session_data__http {
 	char sessionID[65];
 };
 
-const char *get_mimetype(const char *file)
-{
-	int n = strlen(file);
-
-	if (n < 5)
-		return NULL;
-
-	if (!strcmp(&file[n - 4], ".ico"))
-		return "image/x-icon";
-
-	if (!strcmp(&file[n - 4], ".png"))
-		return "image/png";
-
-	if (!strcmp(&file[n - 5], ".html"))
-		return "text/html";
-
-	if (!strcmp(&file[n - 4], ".css"))
-		return "text/css";
-
-	if (!strcmp(&file[n - 3], ".js"))
-		return "text/javascript";
-
-	return NULL;
-}
-
 /* this protocol server (always the first one) just knows how to do HTTP */
 
 static int callback_http(struct libwebsocket_context *context,
@@ -308,7 +279,7 @@ static int callback_http(struct libwebsocket_context *context,
 	case LWS_CALLBACK_CLOSED_HTTP:
 		break;
 	case LWS_CALLBACK_HTTP: {
-		pss->t = getTimeMS();
+		pss->t = getRealTimeMS();
 
 		if (len < 1) {
 			libwebsockets_return_http_status(context, wsi,
@@ -409,7 +380,7 @@ static int callback_http(struct libwebsocket_context *context,
 		n = libwebsockets_serve_http_file(context, wsi, buf,
 						mimetype, other_headers, n);
 
-		printf("%lx: GET %s 200 - %lld ms\n", (unsigned long)pss, (char *)in, getTimeMS() - pss->t);
+		printf("%lx: GET %s 200 - %lld ms\n", (unsigned long)pss, (char *)in, getRealTimeMS() - pss->t);
 
 		if (n < 0 || ((n > 0) && lws_http_transaction_completed(wsi)))
 			return -1; /* error or can't reuse connection: close the socket */
@@ -428,6 +399,7 @@ static int callback_http(struct libwebsocket_context *context,
 		char pwBuff[65];
 		nameBuff[64] = 0;
 		pwBuff[64] = 0;
+		char response[128];
 
 		{
 			char body[len + 1];
@@ -435,7 +407,6 @@ static int callback_http(struct libwebsocket_context *context,
 			memcpy(body, in, len);
 			body[len] = 0;
 			if (sscanf(body, "username=%64[a-zA-Z0-9]&password=%64[a-zA-Z0-9]", nameBuff, pwBuff) == 2) {
-				char response[128];
 	
 				//- Login Attempt -
 				printf("  %lx: Login %s\n", (unsigned long)pss, nameBuff);
@@ -450,8 +421,7 @@ static int callback_http(struct libwebsocket_context *context,
 						sessionKey[l] = 0;
 						randKey[20] = 0;
 						string sessID;
-						do
-						{
+						do {
 							sprintf(randKey, "%010d%010d", rand(), rand());
 							unsigned char hash[SHA256_DIGEST_LENGTH];
 							SHA256_CTX sha256;
@@ -476,32 +446,22 @@ static int callback_http(struct libwebsocket_context *context,
 						libwebsocket_write(wsi,
 							(unsigned char *)response,
 							strlen(response), LWS_WRITE_HTTP);
-					} else {
-						//TODO: Handle invalid pw error
-						sprintf(response, "HTTP/1.0 200 OK\r\n"
-							"Connection: close\r\n"
-							"Content-Type: text/html; charset=UTF-8\r\n"
-							"Content-Length: %d\r\n\r\n"
-							"%s",
-							3, "ERR");
-						libwebsocket_write(wsi,
-							(unsigned char *)response,
-							strlen(response), LWS_WRITE_HTTP);
-					}
-				} else {
-					//TODO: Handle user does not exist
-					sprintf(response, "HTTP/1.0 200 OK\r\n"
-						"Connection: close\r\n"
-						"Content-Type: text/html; charset=UTF-8\r\n"
-						"Content-Length: %d\r\n\r\n"
-						"%s",
-						3, "ERR");
-					libwebsocket_write(wsi,
-						(unsigned char *)response,
-						strlen(response), LWS_WRITE_HTTP);
-				}
-			}
+					} else goto login_failed;
+				} else goto login_failed;
+			} else goto login_failed;
 		}
+		goto try_to_reuse;
+
+login_failed:
+		sprintf(response, "HTTP/1.0 200 OK\r\n"
+			"Connection: close\r\n"
+			"Content-Type: text/html; charset=UTF-8\r\n"
+			"Content-Length: %d\r\n\r\n"
+			"%s",
+			3, "ERR");
+		libwebsocket_write(wsi,
+			(unsigned char *)response,
+			strlen(response), LWS_WRITE_HTTP);
 
 		goto try_to_reuse;
 
@@ -540,6 +500,7 @@ static int callback_http(struct libwebsocket_context *context,
 			
 			n = read(pss->fd, buffer + LWS_SEND_BUFFER_PRE_PADDING,
 									n);
+			printf("R: %d\n", n);
 			/* problem reading, close conn */
 			if (n < 0)
 				goto bail;
@@ -593,33 +554,6 @@ flush_bail:
 bail:
 		close(pss->fd);
 		return -1;
-
-	/*
-	 * callback for confirming to continue with client IP appear in
-	 * protocol 0 callback since no websocket protocol has been agreed
-	 * yet.  You can just ignore this if you won't filter on client IP
-	 * since the default uhandled callback return is 0 meaning let the
-	 * connection continue.
-	 */
-
-	case LWS_CALLBACK_FILTER_NETWORK_CONNECTION:
-
-		/* if we returned non-zero from here, we kill the connection */
-		break;
-
-
-	case LWS_CALLBACK_GET_THREAD_ID:
-		/*
-		 * if you will call "libwebsocket_callback_on_writable"
-		 * from a different thread, return the caller thread ID
-		 * here so lws can use this information to work out if it
-		 * should signal the poll() loop to exit and restart early
-		 */
-
-		/* return pthread_getthreadid_np(); */
-
-		break;
-
 	default:
 		break;
 	}
@@ -684,6 +618,11 @@ callback_judge(struct libwebsocket_context *context,
 
 			n++;
 		} while (c);
+		
+		//- Block connections without valid session -
+		if (pss->user == 0)
+			return -1;
+
 		break;
 	}
 

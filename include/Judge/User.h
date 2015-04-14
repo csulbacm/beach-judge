@@ -12,6 +12,7 @@ namespace judge {
 	typedef struct User
 	{
 		static std::map<std::string, User *> s_usersByName;
+		static std::map<unsigned short, User *> s_usersById;
 
 		static inline void Cleanup()
 		{
@@ -44,6 +45,8 @@ namespace judge {
 		}
 
 		bool isJudge;
+
+		unsigned short id;
 
 
 		//----------------------------------------------
