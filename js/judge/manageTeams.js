@@ -1,6 +1,6 @@
 $(document).ready(function(){
 	var _teamList = $('#teamlist');
-	var _createTeamForm = $("#create-team-form");
+	var _createTeamForm = $('#create-team-form');
 
 	judge.msgHandler['CT'] = function(msg) {
 		if (typeof msg.err != 'undefined') {
@@ -18,11 +18,13 @@ $(document).ready(function(){
 		} else {
 			_teamList.children().each(function() {
 				if (this.firstChild.innerText.toLowerCase().localeCompare(msg.n.toLowerCase()) > 0) {
-					$(this).before('<li><a href="javascript:selectTeam(\'' + msg.i + '\');">' + msg.n + '</a></li>');
+					$(this).before('<li><a onclick="judgeSelectTeam(this, \'' + msg.i
+						+ '\'); return false;">' + msg.n + '</a></li>');
 					return false;
 				}
 				if (this.parentNode.lastChild === this) {
-					$(this).after('<li><a href="javascript:selectTeam(\'' + msg.i + '\');">' + msg.n + '</a></li>');
+					$(this).after('<li><a onclick="judgeSelectTeam(this, \'' + msg.i
+						+ '\'); return false;">' + msg.n + '</a></li>');
 					return false;
 				}
 			});
@@ -33,7 +35,8 @@ $(document).ready(function(){
 		var h = '';
 		//TODO: Use team ID
 		for (var a = 0; a < msg.teams.length; ++a)
-			h += '<li><a href="javascript:selectTeam(\'' + msg.teams[a].i + '\');">' + msg.teams[a].n + '</a></li>';
+			h += '<li><a onclick="judgeSelectTeam(this, \'' + msg.teams[a].i
+				+ '\'); return false;">' + msg.teams[a].n + '</a></li>';
 		_teamList.html(h);
 	};
 
@@ -42,8 +45,23 @@ $(document).ready(function(){
 		judgeQueue('CT ' + $(this).serialize());
 		return false;
 	});
+
+	var _selectedTeam;
+	var _lastSelectCtrl;
+	judgeSelectTeam = function selectTeam(ctrl, id) {
+		if (id === _selectedTeam) {
+			$('.editTeam').hide();
+			_selectedTeam = '';
+			_lastSelectCtrl.removeClass('selected');
+			_lastSelectctrl = '';
+		} else {
+			if (_lastSelectCtrl)
+				_lastSelectCtrl.removeClass('selected');
+			$('.editTeam').show();
+			_selectedTeam = id;
+			_lastSelectCtrl = $(ctrl);
+			_lastSelectCtrl.addClass('selected');
+		}
+	}
 });
 
-function selectTeam(id) {
-	console.log(id);
-}

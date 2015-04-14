@@ -35,6 +35,9 @@
 				display: block;
 				padding: 8px 16px 8px 16px;
 			}
+			> li > a.selected {
+				background-color: rgb(0, 0, 0);
+			}
 			> li > a:hover {
 				background-color: rgb(12, 12, 12);
 			}
@@ -42,5 +45,10 @@
 	}
 	> .actions {
 		width: 100%;
+
+		> .editTeam {
+			display: none;
+		}
 	}
+
 }
