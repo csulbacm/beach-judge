@@ -17,12 +17,12 @@ $(document).ready(function(){
 			}
 		} else {
 			_teamList.children().each(function() {
-				if (this.firstChild.innerText.toLowerCase().localeCompare(msg.name.toLowerCase()) > 0) {
-					$(this).before('<li><a href="javascript:selectTeam(' + msg.name + ');">' + msg.name + '</a></li>');
+				if (this.firstChild.innerText.toLowerCase().localeCompare(msg.n.toLowerCase()) > 0) {
+					$(this).before('<li><a href="javascript:selectTeam(\'' + msg.i + '\');">' + msg.n + '</a></li>');
 					return false;
 				}
 				if (this.parentNode.lastChild === this) {
-					$(this).after('<li><a href="javascript:selectTeam(' + msg.name + ');">' + msg.name + '</a></li>');
+					$(this).after('<li><a href="javascript:selectTeam(\'' + msg.i + '\');">' + msg.n + '</a></li>');
 					return false;
 				}
 			});
@@ -33,7 +33,7 @@ $(document).ready(function(){
 		var h = '';
 		//TODO: Use team ID
 		for (var a = 0; a < msg.teams.length; ++a)
-			h += '<li><a href="javascript:selectTeam(' + msg.teams[a] + ');">' + msg.teams[a] + '</a></li>';
+			h += '<li><a href="javascript:selectTeam(\'' + msg.teams[a].i + '\');">' + msg.teams[a].n + '</a></li>';
 		_teamList.html(h);
 	};
 
@@ -43,3 +43,7 @@ $(document).ready(function(){
 		return false;
 	});
 });
+
+function selectTeam(id) {
+	console.log(id);
+}

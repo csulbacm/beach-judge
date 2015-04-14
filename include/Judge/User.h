@@ -2,6 +2,7 @@
 #define _JUDGE_USER_H_
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string>
 #include <string.h>
 #include <map>
@@ -28,13 +29,20 @@ namespace judge {
 		{
 		}
 
-		User(const char *name, const char *pw, bool judge) :
+		User(const char *name, const char *pw, bool judge, unsigned short _id = 65535) :
 			username(name),
-			isJudge(judge)
+			isJudge(judge),
+			id(_id)
 		{
 			SetPassword(pw);
 
 			s_usersByName[username] = this;
+
+			if (id == 65535) {
+				do id = rand() % 65536;
+				while (s_usersById.count(id));
+				s_usersById[id] = this;
+			}
 		}
 
 		~User()
@@ -42,6 +50,7 @@ namespace judge {
 			//- Keep an entry in the user map so we can reload the user later-
 			if (username.length())
 				s_usersByName[username] = 0;
+			s_usersById[id] = 0;
 		}
 
 		bool isJudge;

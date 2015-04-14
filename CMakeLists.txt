@@ -83,7 +83,8 @@ file(GLOB files "${TEMPLATES_DIR}/views/*.jade")
 foreach(file ${files})
 	string(REPLACE ${TEMPLATES_DIR}/views ${RES_DIR} res ${file})
 	string(REPLACE ".jade" ".html" res ${res})
-	list(APPEND BUILD_RES COMMAND jade -p ${TEMPLATES_DIR}/file < ${file} > ${res})
+	#TODO: Remove -P when finalized
+	list(APPEND BUILD_RES COMMAND jade -P -p ${TEMPLATES_DIR}/file < ${file} > ${res})
 endforeach()
 
 # Javascript

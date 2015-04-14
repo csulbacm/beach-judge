@@ -88,15 +88,18 @@ void msg_teamList(struct libwebsocket *wsi, struct per_session_data__judge *pss,
 	stringstream users;
 	map<string, User *>::iterator it = User::s_usersByName.begin();
 	map<string, User *>::iterator end = User::s_usersByName.end();
+	char entry[32];
 	while (it != end) {
-		users << it->second->username.c_str();
+		sprintf(entry, "{\"i\":\"%04x\",\"n\":\"%s\"}",
+			it->second->id, it->second->username.c_str());
+		users << entry;
 		++it;
 		if (it != end)
 			users << "\",\"";
 	}
 	sprintf(pss->msg, ""
 		"\"msg\":\"TL\","
-		"\"teams\":[\"%s\"]",
+		"\"teams\":[%s]",
 		users.str().c_str());
 }
 void msg_createTeam(struct libwebsocket *wsi, struct per_session_data__judge *pss,
@@ -143,7 +146,9 @@ void msg_createTeam(struct libwebsocket *wsi, struct per_session_data__judge *ps
 	User *newUser = new User(name, p1, false);
 	sprintf(pss->msg, ""
 		"\"msg\":\"CT\","
-		"\"name\":\"%s\"",
+		"\"i\":\"%04x\","
+		"\"n\":\"%s\"",
+		newUser->id,
 		newUser->username.c_str());
 }
 void populateMsgHandlerMap(map<string, void (*)(struct libwebsocket *wsi,
@@ -159,7 +164,7 @@ void loadJudgeData()
 	//- Create default judge account -
 	if (User::s_usersByName.count("judge") == 0) {
 		printf("Creating judge account...\n");
-		new User("judge", "test", true);
+		new User("judge", "test", true, 0);
 	}
 
 	printf("Loading user sessions...\n");
@@ -767,6 +772,8 @@ static void sigHandler(int signo, siginfo_t *info, void *context) {
 
 int main(int argc, char *argv[])
 {
+	srand(time(NULL));
+
 	//- Populate Msg Handler Map -
 	populateMsgHandlerMap(g_msgHandlerMap);
 
