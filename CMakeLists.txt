@@ -36,7 +36,7 @@ set(LIB "")
 include("${CMAKE_MODULE_PATH}/FetchLibWebSockets.cmake")
 fetch_libwebsockets()
 list(APPEND LIB ${LIBWEBSOCKETS_LIBRARIES} ssl crypto z)
-list(APPEND INCLUDE ${LIBWEBSOCKETS_INCLUDE_DIR})
+list(APPEND INCLUDE ${LIBWEBSOCKETS_INCLUDE_DIR} ${LIBWEBSOCKETS_INCLUDE_DIR}/..)
 
 # SSL Cert/Key Generation
 #  Generation from libwebsockets
@@ -75,7 +75,7 @@ file(GLOB files "${STYLES_DIR}/*.less")
 foreach(file ${files})
 	string(REPLACE ${STYLES_DIR} ${RES_DIR} res ${file})
 	string(REPLACE ".less" ".min.css" res ${res})
-	list(APPEND BUILD_RES COMMAND lessc ${file} -x > ${res})
+	list(APPEND BUILD_RES COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/less.sh ${file} ${res})
 endforeach()
 
 # Jade
