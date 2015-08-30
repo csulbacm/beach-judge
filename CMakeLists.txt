@@ -67,15 +67,17 @@ include_directories(${INCLUDE})
 
 # Resourece Compilation
 set(BUILD_RES mkdir -p ${RES_DIR})
-message("Compiling resources...")
-#TODO: Compile on file changed
+set(RES "")
 
 # Less
 file(GLOB files "${STYLES_DIR}/*.less")
 foreach(file ${files})
 	string(REPLACE ${STYLES_DIR} ${RES_DIR} res ${file})
 	string(REPLACE ".less" ".min.css" res ${res})
-	list(APPEND BUILD_RES COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/less.sh ${file} ${res})
+	list(APPEND RES ${res})
+	add_custom_command(OUTPUT ${res} 
+		DEPENDS ${file}
+		COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/less.sh ${file} ${res})
 endforeach()
 
 # Jade
@@ -84,27 +86,40 @@ foreach(file ${files})
 	string(REPLACE ${TEMPLATES_DIR}/views ${RES_DIR} res ${file})
 	string(REPLACE ".jade" ".html" res ${res})
 	#TODO: Remove -P when finalized
-	list(APPEND BUILD_RES COMMAND jade -P -p ${TEMPLATES_DIR}/file < ${file} > ${res})
+	list(APPEND RES ${res})
+	add_custom_command(OUTPUT ${res} 
+		DEPENDS ${file}
+		COMMAND jade -P -p ${TEMPLATES_DIR}/file < ${file} > ${res})
 endforeach()
 
 # Javascript
-#TODO: Generate by folder in JS_DIR
-#file(GLOB files "${JS_DIR}/team/*.js")
-#list(APPEND BUILD_RES COMMAND cat ${files} | uglifyjs > ${RES_DIR}/team.min.js)
 #TODO: Remove -b flag when finalized
 set(UGFLAG "-b")
 file(GLOB files "${JS_DIR}/judge/*.js")
-list(APPEND BUILD_RES COMMAND cat ${files} | uglifyjs ${UGFLAG} > ${RES_DIR}/judge.min.js)
+set(res ${RES_DIR}/judge.min.js)
+list(APPEND RES ${res})
+add_custom_command(OUTPUT ${res} 
+	DEPENDS ${files}
+	COMMAND cat ${files} | uglifyjs ${UGFLAG} > ${res})
 file(GLOB files "${JS_DIR}/public/*.js")
-list(APPEND BUILD_RES COMMAND cat ${files} | uglifyjs ${UGFLAG} > ${RES_DIR}/public.min.js)
+set(res ${RES_DIR}/public.min.js)
+list(APPEND RES ${res})
+add_custom_command(OUTPUT ${res} 
+	DEPENDS ${files}
+	COMMAND cat ${files} | uglifyjs ${UGFLAG} > ${res})
 file(GLOB files "${JS_DIR}/common/*.js")
-list(APPEND BUILD_RES COMMAND cat ${files} | uglifyjs ${UGFLAG} > ${RES_DIR}/common.min.js)
+set(res ${RES_DIR}/common.min.js)
+list(APPEND RES ${res})
+add_custom_command(OUTPUT ${res} 
+	DEPENDS ${files}
+	COMMAND cat ${files} | uglifyjs ${UGFLAG} > ${res})
 
-add_custom_target(res ${BUILD_RES})
+add_custom_target(resources ALL DEPENDS ${RES})
 
 add_executable(${PROJECT} ${SRC} ${INC})
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/bin)
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/bin)
 target_link_libraries(${PROJECT} ${LIB})
-add_dependencies(${PROJECT} res)
+#add_dependencies(${PROJECT} ${DEPS})
+add_dependencies(${PROJECT} resources)

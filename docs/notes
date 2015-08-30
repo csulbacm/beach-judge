@@ -5,3 +5,46 @@ NodeJS
 		less
 		uglifyjs
 		less-plugin-clean-css
+
+
+=== TODO ===
+
+Team Management
+	Show Teams
+	Create Team
+	Delete Team
+	Modify Team
+	Generate Teams
+
+Scoreboard
+	Show Grid
+	Order by Problem Score & Number Solved
+	Realtime Update
+
+Problem Management
+	Create Problems
+	Delete Problem
+	Order Problems
+	Upload PDF
+	Upload Sample Data
+
+Test Management
+	Create Test
+	Delete Test
+
+Account Settings
+	Change Password
+
+Submission
+	Upload Code/Choose Problem
+	View Current Submissions/Status
+	Realtime Update on Review
+
+Review
+	View submissions and Code
+	AutoTesting
+
+Questions
+	Ask Question
+	Answer Question
+	View questions by problem
