@@ -48,7 +48,7 @@ $(document).ready(function(){
 
 	var _selectedTeam;
 	var _lastSelectCtrl;
-	judgeSelectTeam = function selectTeam(ctrl, id) {
+	judgeSelectTeam = function(ctrl, id) {
 		if (id === _selectedTeam) {
 			$('.editTeam').hide();
 			_selectedTeam = '';

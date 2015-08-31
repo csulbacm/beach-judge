@@ -166,6 +166,7 @@ void populateMsgHandlerMap(map<string, void (*)(struct libwebsocket *wsi,
 void loadJudgeData()
 {
 	// Create default judge account
+	//TODO: Turn this into an administrator account and make dummy judge accounts
 	if (User::s_usersByName.count("judge") == 0) {
 		printf("Creating judge account...\n");
 		new User("judge", "test", true, 0);
