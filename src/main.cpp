@@ -21,36 +21,6 @@
 using namespace judge;
 using namespace std;
 
-static unsigned long long sessionExpireTimeMS = 1000 * 60 * 60 * 1;
-
-typedef struct Session {
-	User *user;
-	unsigned long long expireTimeMS;
-
-	Session() :
-		user(0),
-		expireTimeMS(0)
-	{
-	}
-
-	Session(User *user) :
-		user(user)
-	{
-		Reset();
-	}
-
-	Session(User *user, unsigned long long timeMS) :
-		user(user),
-		expireTimeMS(timeMS)
-	{
-	}
-
-	void Reset()
-	{
-		expireTimeMS = getRealTimeMS() + sessionExpireTimeMS;
-	}
-} Session;
-
 static map<string, Session> g_sessionMap = map<string, Session>();
 
 #define MAX_MESSAGE_QUEUE 32

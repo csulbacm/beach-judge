@@ -17,6 +17,9 @@ set(RES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res)
 
 set(INC
 	${INC_DIR}/Judge/Config.h
+	${INC_DIR}/Judge/Base.h
+	${INC_DIR}/Judge/Judge.h
+	${INC_DIR}/Judge/Session.h
 	${INC_DIR}/Judge/User.h
 )
 
