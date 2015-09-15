@@ -69,8 +69,8 @@ configure_file(${INC_DIR}/Judge/Config.h.in ${INC_DIR}/Judge/Config.h)
 include_directories(${INCLUDE})
 
 # Resourece Compilation
-set(BUILD_RES mkdir -p ${RES_DIR})
-set(RES "")
+add_custom_target(res_dir COMMAND ${CMAKE_COMMAND} -E make_directory ${RES_DIR})
+set(RES res_dir)
 
 # Less
 file(GLOB files "${STYLES_DIR}/*.less")
@@ -124,5 +124,4 @@ set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_S
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/bin)
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/bin)
 target_link_libraries(${PROJECT} ${LIB})
-#add_dependencies(${PROJECT} ${DEPS})
 add_dependencies(${PROJECT} resources)
