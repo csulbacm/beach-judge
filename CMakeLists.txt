@@ -74,12 +74,13 @@ set(RES res_dir)
 
 # Less
 file(GLOB files "${STYLES_DIR}/*.less")
+file(GLOB common "${STYLES_DIR}/common/*.less")
 foreach(file ${files})
 	string(REPLACE ${STYLES_DIR} ${RES_DIR} res ${file})
 	string(REPLACE ".less" ".min.css" res ${res})
 	list(APPEND RES ${res})
 	add_custom_command(OUTPUT ${res} 
-		DEPENDS ${file}
+		DEPENDS ${file} ${common}
 		COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/less.sh ${file} ${res})
 endforeach()
 
