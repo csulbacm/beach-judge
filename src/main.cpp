@@ -26,9 +26,17 @@ static map<string, Session> g_sessionMap = map<string, Session>();
 #define MAX_MESSAGE_QUEUE 32
 #define MAX_RESPONSE 2047
 
+struct a_message {
+	void *payload;
+	size_t len;
+};
+
 struct per_session_data__judge {
 	struct libwebsocket *wsi;
 	int ringbuffer_tail;
+	struct a_message ringbuffer[MAX_MESSAGE_QUEUE];
+	int ringbuffer_head;
+
 	struct Service *service;
 	int width;
 	int height;
@@ -61,7 +69,7 @@ void msg_teamList(struct libwebsocket *wsi, struct per_session_data__judge *pss,
 	stringstream users;
 	map<string, User *>::iterator it = User::s_usersByName.begin();
 	map<string, User *>::iterator end = User::s_usersByName.end();
-	char entry[32];
+	char entry[64];
 	while (it != end) {
 		sprintf(entry, "{\"i\":\"%04x\",\"n\":\"%s\"}",
 			it->second->id, it->second->username.c_str());
@@ -544,14 +552,6 @@ try_to_reuse:
 	return 0;
 }
 
-struct a_message {
-	void *payload;
-	size_t len;
-};
-
-static struct a_message ringbuffer[MAX_MESSAGE_QUEUE];
-static int ringbuffer_head;
-
 static int callback_judge(struct libwebsocket_context *context,
 	struct libwebsocket *wsi,
 	enum libwebsocket_callback_reasons reason,
@@ -604,7 +604,7 @@ static int callback_judge(struct libwebsocket_context *context,
 
 	case LWS_CALLBACK_ESTABLISHED:
 		lwsl_info("callback_judge: LWS_CALLBACK_ESTABLISHED\n");
-		pss->ringbuffer_tail = ringbuffer_head;
+		pss->ringbuffer_tail = pss->ringbuffer_head;
 		pss->wsi = wsi;
 
 		// Initialize Session
@@ -621,15 +621,15 @@ static int callback_judge(struct libwebsocket_context *context,
 		break;
 
 	case LWS_CALLBACK_PROTOCOL_DESTROY:
-		for (n = 0; n < sizeof ringbuffer / sizeof ringbuffer[0]; n++)
-			if (ringbuffer[n].payload)
-				free(ringbuffer[n].payload);
+		for (n = 0; n < sizeof pss->ringbuffer / sizeof pss->ringbuffer[0]; n++)
+			if (pss->ringbuffer[n].payload)
+				free(pss->ringbuffer[n].payload);
 		break;
 
 	case LWS_CALLBACK_SERVER_WRITEABLE:
-		while (pss->ringbuffer_tail != ringbuffer_head) {
+		while (pss->ringbuffer_tail != pss->ringbuffer_head) {
 			// Input Processing
-			char *msgIn = (char *)ringbuffer[pss->ringbuffer_tail].payload + LWS_SEND_BUFFER_PRE_PADDING;
+			char *msgIn = (char *)pss->ringbuffer[pss->ringbuffer_tail].payload + LWS_SEND_BUFFER_PRE_PADDING;
 			char msgType[5];
 			msgType[4] = 0;
 			sscanf(msgIn, "%4[a-zA-Z]:", msgType);
@@ -646,12 +646,12 @@ static int callback_judge(struct libwebsocket_context *context,
 			else
 				pss->ringbuffer_tail++;
 
-			if (((ringbuffer_head - pss->ringbuffer_tail) &
+			if (((pss->ringbuffer_head - pss->ringbuffer_tail) &
 					(MAX_MESSAGE_QUEUE - 1)) == (MAX_MESSAGE_QUEUE - 15))
 				libwebsocket_rx_flow_allow_all_protocol(
 								 libwebsockets_get_protocol(wsi));
 
-//			lwsl_debug("tx fifo %d\n", (ringbuffer_head - pss->ringbuffer_tail) & (MAX_MESSAGE_QUEUE - 1));
+//			lwsl_debug("tx fifo %d\n", (pss->ringbuffer_head - pss->ringbuffer_tail) & (MAX_MESSAGE_QUEUE - 1));
 
 			if (lws_partial_buffered(wsi) || lws_send_pipe_choked(wsi)) {
 				libwebsocket_callback_on_writable(context, wsi);
@@ -671,27 +671,27 @@ static int callback_judge(struct libwebsocket_context *context,
 		break;
 
 	case LWS_CALLBACK_RECEIVE:
-		if (((ringbuffer_head - pss->ringbuffer_tail) &
+		if (((pss->ringbuffer_head - pss->ringbuffer_tail) &
 					(MAX_MESSAGE_QUEUE - 1)) == (MAX_MESSAGE_QUEUE - 1)) {
 			lwsl_err("dropping!\n");
 			goto choke;
 		}
 
-		if (ringbuffer[ringbuffer_head].payload)
-			free(ringbuffer[ringbuffer_head].payload);
+		if (pss->ringbuffer[pss->ringbuffer_head].payload)
+			free(pss->ringbuffer[pss->ringbuffer_head].payload);
 
-		ringbuffer[ringbuffer_head].payload =
+		pss->ringbuffer[pss->ringbuffer_head].payload =
 				malloc(LWS_SEND_BUFFER_PRE_PADDING + len +
 							LWS_SEND_BUFFER_POST_PADDING);
-		ringbuffer[ringbuffer_head].len = len;
-		memcpy((char *)ringbuffer[ringbuffer_head].payload +
-						LWS_SEND_BUFFER_PRE_PADDING, in, len);
-		if (ringbuffer_head == (MAX_MESSAGE_QUEUE - 1))
-			ringbuffer_head = 0;
+		pss->ringbuffer[pss->ringbuffer_head].len = len;
+		memcpy((char *)pss->ringbuffer[pss->ringbuffer_head].payload +
+						LWS_SEND_BUFFER_PRE_PADDING, in, len + 1);
+		if (pss->ringbuffer_head == (MAX_MESSAGE_QUEUE - 1))
+			pss->ringbuffer_head = 0;
 		else
-			ringbuffer_head++;
+			pss->ringbuffer_head++;
 
-		if (((ringbuffer_head - pss->ringbuffer_tail) &
+		if (((pss->ringbuffer_head - pss->ringbuffer_tail) &
 					(MAX_MESSAGE_QUEUE - 1)) != (MAX_MESSAGE_QUEUE - 2))
 			goto done;
 
@@ -699,7 +699,7 @@ choke:
 		lwsl_debug("LWS_CALLBACK_RECEIVE: throttling %p\n", wsi);
 		libwebsocket_rx_flow_control(wsi, 0);
 
-//		lwsl_debug("rx fifo %d\n", (ringbuffer_head - pss->ringbuffer_tail) & (MAX_MESSAGE_QUEUE - 1));
+//		lwsl_debug("rx fifo %d\n", (pss->ringbuffer_head - pss->ringbuffer_tail) & (MAX_MESSAGE_QUEUE - 1));
 done:
 		libwebsocket_callback_on_writable_all_protocol(
 								 libwebsockets_get_protocol(wsi));

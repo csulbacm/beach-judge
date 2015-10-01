@@ -17,7 +17,7 @@ $(document).ready(function(){
 			}
 		} else {
 			_teamList.children().each(function() {
-				if (this.firstChild.innerText.toLowerCase().localeCompare(msg.n.toLowerCase()) > 0) {
+				if (this.firstChild.innerHTML.toLowerCase().localeCompare(msg.n.toLowerCase()) > 0) {
 					$(this).before('<li><a onclick="judgeSelectTeam(this, \'' + msg.i
 						+ '\'); return false;">' + msg.n + '</a></li>');
 					return false;

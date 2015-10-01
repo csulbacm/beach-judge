@@ -5,7 +5,8 @@ if (!Date.now) {
 }
 
 if (window.location.protocol != 'https:')
-	window.location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
+	window.location.href = 'https:' +
+		window.location.href.substring(window.location.protocol.length);
 function setCookie(cname, cvalue, exdays) {
 	var d = new Date();
 	d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
@@ -16,17 +17,12 @@ function deleteCookie(cname) {
 	document.cookie = cname + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 }
 
-// From libwebsockets text.html example
-function get_appropriate_ws_url()
+function getWSURL()
 {
 	var pcol;
 	var u = document.URL;
 
-	/*
-	 * We open the websocket encrypted if this page came on an
-	 * https:// url itself, otherwise unencrypted
-	 */
-
+	// Open secure socket if https
 	if (u.substring(0, 5) == 'https') {
 		pcol = 'wss://';
 		u = u.substr(8);
@@ -35,11 +31,9 @@ function get_appropriate_ws_url()
 		if (u.substring(0, 4) == 'http')
 			u = u.substr(7);
 	}
-
 	u = u.split('/');
 
-	/* + '/xxx' bit is for IE10 workaround */
-
+	// Append '/xxx' for IE 10
 	return pcol + u[0] + '/xxx';
 }
 function wsOnOpen(evt) {
@@ -56,6 +50,7 @@ function wsOnClose(evt) {
 function wsOnMessage(evt) {
 	if (judgeDebug)
 		console.log('judge: \'' + evt.data + '\'');
+	console.log(evt.data);
 	var data = JSON.parse('{' + evt.data + '}');
 	if (data.msg === 'POP') {
 		$('.user').html(data.name);
@@ -75,7 +70,7 @@ var judgeDebug = false;
 var judgeReloadOnReconnect = true;
 var judgeReconnect = false;
 
-var wsUrl = get_appropriate_ws_url();
+var wsUrl = getWSURL();
 function judgeConnect() {
 	if (typeof MozWebSocket != 'undefined') {
 		judge.ws = new MozWebSocket(wsUrl,
