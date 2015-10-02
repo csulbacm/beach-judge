@@ -48,3 +48,19 @@ Questions
 	Ask Question
 	Answer Question
 	View questions by problem
+
+
+
+=== Notes ===
+
+System is possible without dynamic memory
+Object Pools
+	Store/Read limits in file
+	Increase limits in realtime
+
+	Pools:
+		Sessions
+		Users
+		Submissions
+		Questions/Messages
+

@@ -126,3 +126,8 @@ set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${P
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/bin)
 target_link_libraries(${PROJECT} ${LIB})
 add_dependencies(${PROJECT} resources)
+
+#TODO: Remove this for release
+if(UNIX)
+	add_custom_target(r COMMAND exec 3<>/dev/tcp/localhost/28888 DEPENDS ${PROJECT})
+endif()

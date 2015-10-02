@@ -11,9 +11,9 @@ block teams
 		.editTeam
 			p.header Edit Team
 			form#team-team-form.judge-form(auto-complete="off")
-				input.judge-form-string(name="n", type="text", placeholder="Username", autocomplete="off", required)
-				input.judge-form-string(name="p1", type="password", placeholder="Password", autocomplete="off", required)
-				input.judge-form-string(name="p2", type="password", placeholder="Confirm Password", autocomplete="off", required)
+				input.judge-form-string(name="n", type="text", placeholder="Username", autocomplete="off")
+				input.judge-form-string(name="p1", type="password", placeholder="Password", autocomplete="off")
+				input.judge-form-string(name="p2", type="password", placeholder="Confirm Password", autocomplete="off")
 				input.form-button(value="Edit Team", type="submit")
 				input.form-button(value="Clear", type="button", onclick="parentNode.reset()")
 				input.form-button(value="Delete Team", type="button", onclick="judgeDeleteTeam(form)")
