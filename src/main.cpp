@@ -15,9 +15,6 @@
 // beachJudge
 #include <Judge/Judge.h>
 
-#define USE_STATIC_ASSETS 0
-#define USE_SSL 1
-
 using namespace judge;
 using namespace std;
 
@@ -307,7 +304,7 @@ static int callback_http(struct libwebsocket_context *context,
 			return 0;
 		}
 
-#if USE_STATIC_ASSETS
+#if JUDGE_STATIC_ASSETS
 #else
 		//TODO: Make favicon
 		if (strcmp((const char *)in, "/favicon.ico") == 0) {
@@ -758,7 +755,7 @@ int main(int argc, char *argv[])
 		info.protocols = protocols;
 		info.gid = -1;
 		info.uid = -1;
-#if USE_SSL
+#if JUDGE_USE_SSL
 		char cert_path[1024];
 		char key_path[1024];
 		int plen_check = strlen(resource_path) + 32;

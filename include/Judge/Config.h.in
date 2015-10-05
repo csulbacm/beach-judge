@@ -4,4 +4,7 @@
 #define JUDGE_SSL_CERT "@JUDGE_SSL_CERT@"
 #define JUDGE_SSL_KEY "@JUDGE_SSL_KEY@"
 
+#define JUDGE_SSL 1
+#define JUDGE_STATIC_ASSETS 0
+
 #endif

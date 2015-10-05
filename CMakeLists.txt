@@ -129,5 +129,5 @@ add_dependencies(${PROJECT} resources)
 
 #TODO: Remove this for release
 if(UNIX)
-	add_custom_target(r COMMAND exec 3<>/dev/tcp/localhost/28888 DEPENDS ${PROJECT})
+	add_custom_target(r COMMAND bash -c ${PROJECT_SOURCE_DIR}/tools/tsock.sh DEPENDS ${PROJECT})
 endif()
