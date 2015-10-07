@@ -1,18 +1,20 @@
 #ifndef _JUDGE_SESSION_H_
 #define _JUDGE_SESSION_H_
 
+// beachJudge
 #include <Judge/User.h>
+#include <Judge/Types.h>
 
 namespace judge {
 
-const unsigned long long sessionExpireTimeMS = 1000 * 60 * 60 * 1;
+const u64 sessionExpireTimeMS = 1000 * 60 * 60 * 1;
 
 typedef struct Session
 {
 
 	User *user;
 
-	unsigned long long expireTimeMS;
+	u64 expireTimeMS;
 
 	Session() :
 		user(0),
@@ -26,7 +28,7 @@ typedef struct Session
 		Reset();
 	}
 
-	Session(User *user, unsigned long long timeMS) :
+	Session(User *user, u64 timeMS) :
 		user(user),
 		expireTimeMS(timeMS)
 	{

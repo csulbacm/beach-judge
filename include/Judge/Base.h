@@ -2,10 +2,14 @@
 #define _JUDGE_BASE_H_
 
 #include <time.h>
+#include <string.h>
+
+// beachJudge
+#include <Judge/Types.h>
 
 namespace judge {
 
-inline unsigned long long getRealTimeMS()
+inline u64 getRealTimeMS()
 {
 	struct timespec t;
 	clock_gettime(CLOCK_REALTIME, &t);

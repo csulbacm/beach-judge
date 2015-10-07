@@ -25,19 +25,19 @@ static map<string, Session> g_sessionMap = map<string, Session>();
 
 struct a_message {
 	void *payload;
-	size_t len;
+	u16 len;
 };
 
 struct per_session_data__judge {
 	struct libwebsocket *wsi;
-	int ringbuffer_tail;
+	u16 ringbuffer_tail;
 	struct a_message ringbuffer[MAX_MESSAGE_QUEUE];
-	int ringbuffer_head;
+	u16 ringbuffer_head;
 
 	struct Service *service;
-	int width;
-	int height;
-	long long lastSendMS;
+	u16 width;
+	u16 height;
+	u64 lastSendMS;
 	char buffer[MAX_RESPONSE + LWS_SEND_BUFFER_PRE_PADDING + LWS_SEND_BUFFER_POST_PADDING];
 	char *msg;
 	Session *session;
@@ -92,7 +92,7 @@ void msg_createTeam(struct libwebsocket *wsi, struct per_session_data__judge *ps
 	//TODO: Define name/password length requirements
 	//TODO: Split username and display name
 	char name[16], p1[16], p2[16];
-	int r = sscanf(msgIn, "n=%[a-zA-Z0-9]&p1=%[a-zA-Z0-9]&p2=%[a-zA-Z0-9]", name, p1, p2);
+	i16 r = sscanf(msgIn, "n=%[a-zA-Z0-9]&p1=%[a-zA-Z0-9]&p2=%[a-zA-Z0-9]", name, p1, p2);
 	if (r != 3) {
 		sprintf(pss->msg, ""
 			"\"msg\":\"CT\","
@@ -109,8 +109,8 @@ void msg_createTeam(struct libwebsocket *wsi, struct per_session_data__judge *ps
 
 	// Set name to lower case
 	{
-		int l = strlen(name);
-		for (int a = 0; a < l; ++a)
+		i16 l = strlen(name);
+		for (i16 a = 0; a < l; ++a)
 			name[a] = tolower(name[a]);
 	}
 
@@ -152,7 +152,7 @@ void loadJudgeData()
 		ifstream file(".sessions");
 		if (file.is_open()) {
 			string sessID, name;
-			unsigned long long expireTimeMS;
+			u64 expireTimeMS;
 			while (file >> sessID >> name >> expireTimeMS) {
 				if (User::s_usersByName.count(name) == 0)
 					continue;
@@ -183,8 +183,8 @@ void saveJudgeData()
 }
 
 
-static struct libwebsocket_context *context;
-static volatile int force_exit = 0;
+struct libwebsocket_context *context;
+volatile int force_exit = 0;
 
 enum lws_protocols {
 	PROTOCOL_HTTP = 0,
@@ -204,7 +204,7 @@ struct per_session_data__http {
 
 /* this protocol server (always the first one) just knows how to do HTTP */
 
-static int callback_http(struct libwebsocket_context *context,
+int callback_http(struct libwebsocket_context *context,
 	struct libwebsocket *wsi,
 	enum libwebsocket_callback_reasons reason, void *user,
 	void *in, size_t len)
@@ -216,7 +216,7 @@ static int callback_http(struct libwebsocket_context *context,
 	int n, m;
 	unsigned char *p;
 	char *other_headers = 0;
-	static unsigned char buffer[4096];
+	unsigned char buffer[4096];
 	struct stat stat_buf;
 	struct per_session_data__http *pss =
 			(struct per_session_data__http *)user;
@@ -224,7 +224,7 @@ static int callback_http(struct libwebsocket_context *context,
 	unsigned char *end;
 	switch (reason) {
 	case LWS_CALLBACK_FILTER_HTTP_CONNECTION: {
-		int n = 0;
+		i16 n = 0;
 		char buf[256];
 		const unsigned char *c;
 		do {
@@ -278,11 +278,11 @@ static int callback_http(struct libwebsocket_context *context,
 
 		/* if a legal POST URL, let it continue and accept data */
 		if (lws_hdr_total_length(wsi, WSI_TOKEN_POST_URI)) {
-			printf("%lx: POST %s\n", (unsigned long)pss, (char *)in);
+			printf("%p: POST %s\n", pss, (char *)in);
 
 			if (pss->user != 0) {
 				if (memcmp(in, "/logout", 7) == 0) {
-					printf("  %lx: Logout %s\n", (unsigned long)pss, pss->user->username.c_str());
+					printf("  %p: Logout %s\n", pss, pss->user->username.c_str());
 					g_sessionMap.erase(string(pss->sessionID));
 
 					//TODO: Handle invalid pw error
@@ -308,7 +308,7 @@ static int callback_http(struct libwebsocket_context *context,
 #else
 		//TODO: Make favicon
 		if (strcmp((const char *)in, "/favicon.ico") == 0) {
-			printf("%lx: GET %s %d\n", (unsigned long)pss, (char *)in, HTTP_STATUS_NO_CONTENT);
+			printf("%p: GET %s %d\n", pss, (char *)in, HTTP_STATUS_NO_CONTENT);
 			libwebsockets_return_http_status(context, wsi,
 				HTTP_STATUS_NO_CONTENT, NULL);
 			return -1;
@@ -342,7 +342,7 @@ static int callback_http(struct libwebsocket_context *context,
 		{
 			struct stat fileExist;
 			if (stat(buf, &fileExist) != 0) {
-				printf("%lx: GET %s %d\n", (unsigned long)pss, (char *)in, HTTP_STATUS_NOT_FOUND);
+				printf("%p: GET %s %d\n", pss, (char *)in, HTTP_STATUS_NOT_FOUND);
 				libwebsockets_return_http_status(context, wsi,
 					HTTP_STATUS_NOT_FOUND, NULL);
 				return -1;
@@ -353,7 +353,7 @@ static int callback_http(struct libwebsocket_context *context,
 		mimetype = getMimeType(buf);
 		if (!mimetype) {
 			lwsl_err("Unknown mimetype for %s\n", buf);
-			printf("%lx: GET %s %d\n", (unsigned long)pss, (char *)in, HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE);
+			printf("%p: GET %s %d\n", pss, (char *)in, HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE);
 			libwebsockets_return_http_status(context, wsi,
 				HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE, NULL);
 			return -1;
@@ -362,7 +362,7 @@ static int callback_http(struct libwebsocket_context *context,
 		n = libwebsockets_serve_http_file(context, wsi, buf,
 						mimetype, other_headers, n);
 
-		printf("%lx: GET %s 200 - %lld ms\n", (unsigned long)pss, (char *)in, getRealTimeMS() - pss->t);
+		printf("%p: GET %s 200 - %lld ms\n", pss, (char *)in, getRealTimeMS() - pss->t);
 
 		if (n < 0 || ((n > 0) && lws_http_transaction_completed(wsi)))
 			return -1; /* error or can't reuse connection: close the socket */
@@ -391,13 +391,13 @@ static int callback_http(struct libwebsocket_context *context,
 			if (sscanf(body, "username=%64[a-zA-Z0-9]&password=%64[a-zA-Z0-9]", nameBuff, pwBuff) == 2) {
 	
 				// Login Attempt
-				printf("  %lx: Login %s\n", (unsigned long)pss, nameBuff);
+				printf("  %p: Login %s\n", pss, nameBuff);
 				string name(nameBuff);
 				if (User::s_usersByName.count(name) != 0) {
 					User *user = User::s_usersByName[name];
 					if (user->TestPassword(pwBuff)) {
 						// Generate Session Key
-						unsigned int l = SHA256_DIGEST_LENGTH * 2;
+						u16 l = SHA256_DIGEST_LENGTH * 2;
 						char sessionKey[l + 1];
 						char randKey[21];
 						sessionKey[l] = 0;
@@ -410,7 +410,7 @@ static int callback_http(struct libwebsocket_context *context,
 							SHA256_Init(&sha256);
 							SHA256_Update(&sha256, randKey, strlen(randKey));
 							SHA256_Final(hash, &sha256);
-							for (int a = 0; a < SHA256_DIGEST_LENGTH; ++a)
+							for (i16 a = 0; a < SHA256_DIGEST_LENGTH; ++a)
 								sprintf(sessionKey + (a << 1), "%02x", hash[a]);
 							sessID = string(sessionKey);
 						} while (g_sessionMap.count(sessID));
@@ -549,18 +549,18 @@ try_to_reuse:
 	return 0;
 }
 
-static int callback_judge(struct libwebsocket_context *context,
+int callback_judge(struct libwebsocket_context *context,
 	struct libwebsocket *wsi,
 	enum libwebsocket_callback_reasons reason,
 	void *user, void *in, size_t len)
 {
-	int n;
+	i16 n;
 	struct per_session_data__judge *pss = (struct per_session_data__judge *)user;
 
 	switch (reason) {
 
 	case LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION: {
-		int n = 0;
+		i16 n = 0;
 		char buf[256];
 		const unsigned char *c;
 		do {
@@ -610,11 +610,11 @@ static int callback_judge(struct libwebsocket_context *context,
 		pss->lastSendMS = 0;
 		pss->msg = pss->buffer + LWS_SEND_BUFFER_PRE_PADDING;
 
-		printf("%lx: Connected\n", (unsigned long)pss);
+		printf("%p: Connected\n", pss);
 		break;
 
 	case LWS_CALLBACK_CLOSED:
-		printf("%lx: Disconnected\n", (unsigned long)pss);
+		printf("%p: Disconnected\n", pss);
 		break;
 
 	case LWS_CALLBACK_PROTOCOL_DESTROY:
@@ -711,7 +711,7 @@ done:
 
 /* list of supported protocols and callbacks */
 
-static struct libwebsocket_protocols protocols[] = {
+struct libwebsocket_protocols protocols[] = {
 	/* first protocol must always be HTTP handler */
 
 	{
@@ -729,9 +729,9 @@ static struct libwebsocket_protocols protocols[] = {
 	{ NULL, NULL, 0, 0 } /* terminator */
 };
 
-static volatile int   exiting;
-static sigjmp_buf     jmpenv;
-static void sigHandler(int signo, siginfo_t *info, void *context) {
+volatile i16   exiting;
+sigjmp_buf     jmpenv;
+void sigHandler(int signo, siginfo_t *info, void *context) {
 	if (exiting++) {
 		_exit(1);
 	}
@@ -747,7 +747,7 @@ int main(int argc, char *argv[])
 
 	// Initialize LWS
 	lws_set_log_level(0, NULL);
-	int n = 0;
+	i16 n = 0;
 	struct lws_context_creation_info info;
 	memset(&info, 0, sizeof info);
 	{
@@ -758,7 +758,7 @@ int main(int argc, char *argv[])
 #if JUDGE_USE_SSL
 		char cert_path[1024];
 		char key_path[1024];
-		int plen_check = strlen(resource_path) + 32;
+		u16 plen_check = strlen(resource_path) + 32;
 		if (plen_check > sizeof(cert_path) || plen_check > sizeof(key_path)) {
 			lwsl_err("resource path too long\n");
 			return -1;
@@ -786,12 +786,12 @@ int main(int argc, char *argv[])
 		// Clean up upon orderly shut down. Do _not_ cleanup if we die
 		// unexpectedly, as we cannot guarantee if we are still in a valid
 		// static. This means, we should never catch SIGABRT.
-		static const int signals[] = { SIGHUP, SIGINT, SIGQUIT, SIGTERM };
+		static const i16 signals[] = { SIGHUP, SIGINT, SIGQUIT, SIGTERM };
 		struct sigaction sa;
 		memset(&sa, 0, sizeof(sa));
 		sa.sa_sigaction = sigHandler;
 		sa.sa_flags	 = SA_SIGINFO | SA_RESETHAND;
-		for (int i = 0; i < sizeof(signals)/sizeof(*signals); ++i) {
+		for (u16 i = 0; i < sizeof(signals)/sizeof(*signals); ++i) {
 			sigaction(signals[i], &sa, NULL);
 		}
 

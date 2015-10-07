@@ -8,12 +8,15 @@
 #include <map>
 #include <openssl/sha.h>
 
+// beachJudge
+#include <Judge/Types.h>
+
 namespace judge {
 
 typedef struct User
 {
 	static std::map<std::string, User *> s_usersByName;
-	static std::map<unsigned short, User *> s_usersById;
+	static std::map<u16, User *> s_usersById;
 
 	static inline void Cleanup()
 	{
@@ -29,7 +32,7 @@ typedef struct User
 	{
 	}
 
-	User(const char *name, const char *pw, bool judge, unsigned short _id = 65535) :
+	User(const char *name, const char *pw, bool judge, u16 _id = 65535) :
 		username(name),
 		isJudge(judge),
 		id(_id)
@@ -55,7 +58,7 @@ typedef struct User
 
 	bool isJudge;
 
-	unsigned short id;
+	u16 id;
 
 
 	//----------------------------------------------
@@ -71,14 +74,14 @@ typedef struct User
 
 	void SetPassword(const char *pw)
 	{
-		unsigned int len = SHA256_DIGEST_LENGTH * 2;
+		u16 len = SHA256_DIGEST_LENGTH * 2;
 		char buffer[len + 1];
 		unsigned char hash[SHA256_DIGEST_LENGTH];
 		SHA256_CTX sha256;
 		SHA256_Init(&sha256);
 		SHA256_Update(&sha256, pw, strlen(pw));
 		SHA256_Final(hash, &sha256);
-		for (int a = 0; a < SHA256_DIGEST_LENGTH; ++a)
+		for (u16 a = 0; a < SHA256_DIGEST_LENGTH; ++a)
 			sprintf(buffer + (a << 1), "%02x", hash[a]);
 		buffer[len] = 0;
 		password = buffer;
@@ -86,14 +89,14 @@ typedef struct User
 
 	bool TestPassword(const char *pw)
 	{
-		unsigned int len = SHA256_DIGEST_LENGTH * 2;
+		u16 len = SHA256_DIGEST_LENGTH * 2;
 		char buffer[len + 1];
 		unsigned char hash[SHA256_DIGEST_LENGTH];
 		SHA256_CTX sha256;
 		SHA256_Init(&sha256);
 		SHA256_Update(&sha256, pw, strlen(pw));
 		SHA256_Final(hash, &sha256);
-		for (int a = 0; a < SHA256_DIGEST_LENGTH; ++a)
+		for (u16 a = 0; a < SHA256_DIGEST_LENGTH; ++a)
 			sprintf(buffer + (a << 1), "%02x", hash[a]);
 		buffer[len] = 0;
 
