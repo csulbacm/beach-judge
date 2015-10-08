@@ -755,7 +755,7 @@ int main(int argc, char *argv[])
 		info.protocols = protocols;
 		info.gid = -1;
 		info.uid = -1;
-#if JUDGE_USE_SSL
+#if JUDGE_SSL
 		char cert_path[1024];
 		char key_path[1024];
 		u16 plen_check = strlen(resource_path) + 32;
