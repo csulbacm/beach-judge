@@ -162,7 +162,7 @@ struct per_session_data__http {
 
 int callback_http(libwebsocket_context *context,
 	libwebsocket *wsi,
-	enum libwebsocket_callback_reasons reason, void *user,
+	libwebsocket_callback_reasons reason, void *user,
 	void *in, size_t len)
 {
 	char buf[256];
@@ -507,7 +507,7 @@ try_to_reuse:
 
 int callback_judge(libwebsocket_context *context,
 	libwebsocket *wsi,
-	enum libwebsocket_callback_reasons reason,
+	libwebsocket_callback_reasons reason,
 	void *user, void *in, size_t len)
 {
 	i16 n;
@@ -665,18 +665,14 @@ done:
 	return 0;
 }
 
-/* list of supported protocols and callbacks */
-
 libwebsocket_protocols protocols[] = {
-	/* first protocol must always be HTTP handler */
-
-	{
+	{ // HTTP Handler
 		"http-only",		/* name */
 		callback_http,		/* callback */
 		sizeof (per_session_data__http),	/* per_session_data_size */
 		0,			/* max frame size / rx buffer */
 	},
-	{
+	{ // beachJudge Protocol
 		"judge-protocol",
 		callback_judge,
 		sizeof(per_session_data__judge),
@@ -685,12 +681,11 @@ libwebsocket_protocols protocols[] = {
 	{ NULL, NULL, 0, 0 } /* terminator */
 };
 
-volatile i16   exiting;
-sigjmp_buf     jmpenv;
+volatile i16 exiting = 0;
+sigjmp_buf jmpenv;
 void sigHandler(int signo, siginfo_t *info, void *context) {
-	if (exiting++) {
+	if (exiting++)
 		_exit(1);
-	}
 	siglongjmp(jmpenv, 1);
 }
 
@@ -703,7 +698,6 @@ int main(int argc, char *argv[])
 
 	// Initialize LWS
 	lws_set_log_level(0, NULL);
-	i16 n = 0;
 	lws_context_creation_info info;
 	memset(&info, 0, sizeof info);
 	{
@@ -747,19 +741,19 @@ int main(int argc, char *argv[])
 		memset(&sa, 0, sizeof(sa));
 		sa.sa_sigaction = sigHandler;
 		sa.sa_flags	 = SA_SIGINFO | SA_RESETHAND;
-		for (u16 i = 0; i < sizeof(signals)/sizeof(*signals); ++i) {
+		for (u16 i = 0; i < sizeof(signals) / sizeof(*signals); ++i)
 			sigaction(signals[i], &sa, NULL);
-		}
 
-		n = 0;
-		while (n >= 0 && !force_exit) {
+		// Main Loop
+		i16 n = 0;
+		while (n >= 0 && !force_exit)
 			n = libwebsocket_service(context, 50);
-		}
 	}
 
+	// Cleanup
+	//TODO: Debug seg fault on from this line
+	printf("Server is shutting down...\n");
 	libwebsocket_context_destroy(context);
-	lwsl_notice("libwebsockets-test-server exited cleanly\n");
-
 	printf("Saving beachJudge data...\n");
 	saveJudgeData();
 	User::Cleanup();
