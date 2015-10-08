@@ -19,12 +19,15 @@ set(INC
 	${INC_DIR}/Judge/Config.h
 	${INC_DIR}/Judge/Base.h
 	${INC_DIR}/Judge/Judge.h
+	${INC_DIR}/Judge/Persistence.h
 	${INC_DIR}/Judge/Session.h
+	${INC_DIR}/Judge/Types.h
 	${INC_DIR}/Judge/User.h
 )
 
 set(SRC
 	${SRC_DIR}/main.cpp
+	${SRC_DIR}/Persistence.cpp
 	${SRC_DIR}/User.cpp
 )
 

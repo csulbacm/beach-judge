@@ -6,7 +6,7 @@ block body
 	.title-container
 		.title
 			p beachJudge
-			form#login-form.judge-form
+			form(method="POST")#login-form.judge-form
 				input.string(name="username", type="text", placeholder="Username", required)
 				input.string(name="password", type="password", placeholder="Password", required)
 				input.button(value="Login", type="submit")

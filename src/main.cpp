@@ -10,6 +10,7 @@
 #include <sstream>
 #include <map>
 
+// lws
 #include <libwebsockets.h>
 
 // beachJudge
@@ -18,7 +19,7 @@
 using namespace judge;
 using namespace std;
 
-static map<string, Session> g_sessionMap = map<string, Session>();
+map<string, Session> Session::s_sessionMap = map<string, Session>();
 
 #define MAX_MESSAGE_QUEUE 32
 #define MAX_RESPONSE 2047
@@ -29,9 +30,9 @@ struct a_message {
 };
 
 struct per_session_data__judge {
-	struct libwebsocket *wsi;
+	libwebsocket *wsi;
 	u16 ringbuffer_tail;
-	struct a_message ringbuffer[MAX_MESSAGE_QUEUE];
+	a_message ringbuffer[MAX_MESSAGE_QUEUE];
 	u16 ringbuffer_head;
 
 	struct Service *service;
@@ -48,10 +49,10 @@ struct per_session_data__judge {
 //----------------------------------------------
 //------------- Message Handling ---------------
 
-static map<string, void (*)(struct libwebsocket *wsi,
-	struct per_session_data__judge *pss, char *msgIn)> g_msgHandlerMap;
+map<string, void (*)(libwebsocket *wsi,
+	per_session_data__judge *pss, char *msgIn)> g_msgHandlerMap;
 
-void msg_populate(struct libwebsocket *wsi, struct per_session_data__judge *pss, char *msgIn)
+void msg_populate(libwebsocket *wsi, per_session_data__judge *pss, char *msgIn)
 {
 	// Populate User Session Data
 	sprintf(pss->msg, ""
@@ -60,7 +61,7 @@ void msg_populate(struct libwebsocket *wsi, struct per_session_data__judge *pss,
 		pss->user->username.c_str());
 }
 
-void msg_teamList(struct libwebsocket *wsi, struct per_session_data__judge *pss, char *msgIn)
+void msg_teamList(libwebsocket *wsi, per_session_data__judge *pss, char *msgIn)
 {
 	// Populate Team Data
 	stringstream users;
@@ -81,7 +82,7 @@ void msg_teamList(struct libwebsocket *wsi, struct per_session_data__judge *pss,
 		users.str().c_str());
 }
 
-void msg_createTeam(struct libwebsocket *wsi, struct per_session_data__judge *pss, char *msgIn)
+void msg_createTeam(libwebsocket *wsi, per_session_data__judge *pss, char *msgIn)
 {
 	// Restrict action to judge
 	if (pss->user->isJudge == false) {
@@ -130,60 +131,15 @@ void msg_createTeam(struct libwebsocket *wsi, struct per_session_data__judge *ps
 		newUser->username.c_str());
 }
 
-void populateMsgHandlerMap(map<string, void (*)(struct libwebsocket *wsi,
-	struct per_session_data__judge *pss, char *msgIn)> &m)
+void populateMsgHandlerMap(map<string, void (*)(libwebsocket *wsi,
+	per_session_data__judge *pss, char *msgIn)> &m)
 {
 	m["POP"] = msg_populate;
 	m["TL"] = msg_teamList;
 	m["CT"] = msg_createTeam;
 }
 
-void loadJudgeData()
-{
-	// Create default judge account
-	//TODO: Turn this into an administrator account and make dummy judge accounts
-	if (User::s_usersByName.count("judge") == 0) {
-		printf("Creating judge account...\n");
-		new User("judge", "test", true, 0);
-	}
-
-	printf("Loading user sessions...\n");
-	{
-		ifstream file(".sessions");
-		if (file.is_open()) {
-			string sessID, name;
-			u64 expireTimeMS;
-			while (file >> sessID >> name >> expireTimeMS) {
-				if (User::s_usersByName.count(name) == 0)
-					continue;
-				g_sessionMap[sessID] = Session(User::s_usersByName[name], expireTimeMS);
-			}
-			file.close();
-		}
-	}
-}
-
-void saveJudgeData()
-{
-	printf("Saving user sessions...\n");
-	{
-		ofstream file;
-		file.open(".sessions");
-		std::map<std::string, Session>::iterator it = g_sessionMap.begin();
-		std::map<std::string, Session>::iterator end = g_sessionMap.end();
-		while (it != end) {
-			file << it->first
-				<< ' ' << it->second.user->username.c_str() 
-				<< ' ' << it->second.expireTimeMS
-				<< '\n';
-			++it;
-		}
-		file.close();
-	}
-}
-
-
-struct libwebsocket_context *context;
+libwebsocket_context *context;
 volatile int force_exit = 0;
 
 enum lws_protocols {
@@ -196,7 +152,7 @@ const char *resource_path = "../res";
 
 struct per_session_data__http {
 	int fd;
-	unsigned long long t;
+	u64 t;
 	User *user;
 	Session *session;
 	char sessionID[65];
@@ -204,22 +160,22 @@ struct per_session_data__http {
 
 /* this protocol server (always the first one) just knows how to do HTTP */
 
-int callback_http(struct libwebsocket_context *context,
-	struct libwebsocket *wsi,
+int callback_http(libwebsocket_context *context,
+	libwebsocket *wsi,
 	enum libwebsocket_callback_reasons reason, void *user,
 	void *in, size_t len)
 {
 	char buf[256];
 	char leaf_path[1024];
 	char b64[64];
-	struct timeval tv;
+	timeval tv;
 	int n, m;
 	unsigned char *p;
 	char *other_headers = 0;
 	unsigned char buffer[4096];
 	struct stat stat_buf;
-	struct per_session_data__http *pss =
-			(struct per_session_data__http *)user;
+	per_session_data__http *pss =
+			(per_session_data__http *)user;
 	const char *mimetype;
 	unsigned char *end;
 	switch (reason) {
@@ -245,8 +201,8 @@ int callback_http(struct libwebsocket_context *context,
 				sessID[64] = 0;
 				if (sscanf(buf, "JUDGESESSID=%[0-9a-zA-Z]", sessID) == 1) {
 					string sessionID = string(sessID);
-					if (g_sessionMap.count(sessionID) != 0) {
-						pss->session = &g_sessionMap[sessionID];
+					if (Session::s_sessionMap.count(sessionID) != 0) {
+						pss->session = &Session::s_sessionMap[sessionID];
 						pss->session->Reset();
 						pss->user = pss->session->user;
 						memcpy(pss->sessionID, sessID, 65);
@@ -283,7 +239,7 @@ int callback_http(struct libwebsocket_context *context,
 			if (pss->user != 0) {
 				if (memcmp(in, "/logout", 7) == 0) {
 					printf("  %p: Logout %s\n", pss, pss->user->username.c_str());
-					g_sessionMap.erase(string(pss->sessionID));
+					Session::s_sessionMap.erase(string(pss->sessionID));
 
 					//TODO: Handle invalid pw error
 					char response[128];
@@ -362,7 +318,7 @@ int callback_http(struct libwebsocket_context *context,
 		n = libwebsockets_serve_http_file(context, wsi, buf,
 						mimetype, other_headers, n);
 
-		printf("%p: GET %s 200 - %lld ms\n", pss, (char *)in, getRealTimeMS() - pss->t);
+		printf("%p: GET %s 200 - %ld ms\n", pss, (char *)in, getRealTimeMS() - pss->t);
 
 		if (n < 0 || ((n > 0) && lws_http_transaction_completed(wsi)))
 			return -1; /* error or can't reuse connection: close the socket */
@@ -413,10 +369,10 @@ int callback_http(struct libwebsocket_context *context,
 							for (i16 a = 0; a < SHA256_DIGEST_LENGTH; ++a)
 								sprintf(sessionKey + (a << 1), "%02x", hash[a]);
 							sessID = string(sessionKey);
-						} while (g_sessionMap.count(sessID));
+						} while (Session::s_sessionMap.count(sessID));
 	
 						// Update Session Map
-						g_sessionMap[sessID] = Session(user);
+						Session::s_sessionMap[sessID] = Session(user);
 	
 						// Send Key to Client
 						sprintf(response, "HTTP/1.0 200 OK\r\n"
@@ -549,13 +505,13 @@ try_to_reuse:
 	return 0;
 }
 
-int callback_judge(struct libwebsocket_context *context,
-	struct libwebsocket *wsi,
+int callback_judge(libwebsocket_context *context,
+	libwebsocket *wsi,
 	enum libwebsocket_callback_reasons reason,
 	void *user, void *in, size_t len)
 {
 	i16 n;
-	struct per_session_data__judge *pss = (struct per_session_data__judge *)user;
+	per_session_data__judge *pss = (per_session_data__judge *)user;
 
 	switch (reason) {
 
@@ -581,8 +537,8 @@ int callback_judge(struct libwebsocket_context *context,
 				sessID[64] = 0;
 				if (sscanf(buf, "JUDGESESSID=%[0-9a-zA-Z]", sessID) == 1) {
 					string sessionID = string(sessID);
-					if (g_sessionMap.count(sessionID) != 0) {
-						pss->session = &g_sessionMap[sessionID];
+					if (Session::s_sessionMap.count(sessionID) != 0) {
+						pss->session = &Session::s_sessionMap[sessionID];
 						pss->session->Reset();
 						pss->user = pss->session->user;
 					}
@@ -711,19 +667,19 @@ done:
 
 /* list of supported protocols and callbacks */
 
-struct libwebsocket_protocols protocols[] = {
+libwebsocket_protocols protocols[] = {
 	/* first protocol must always be HTTP handler */
 
 	{
 		"http-only",		/* name */
 		callback_http,		/* callback */
-		sizeof (struct per_session_data__http),	/* per_session_data_size */
+		sizeof (per_session_data__http),	/* per_session_data_size */
 		0,			/* max frame size / rx buffer */
 	},
 	{
 		"judge-protocol",
 		callback_judge,
-		sizeof(struct per_session_data__judge),
+		sizeof(per_session_data__judge),
 		128,
 	},
 	{ NULL, NULL, 0, 0 } /* terminator */
@@ -748,7 +704,7 @@ int main(int argc, char *argv[])
 	// Initialize LWS
 	lws_set_log_level(0, NULL);
 	i16 n = 0;
-	struct lws_context_creation_info info;
+	lws_context_creation_info info;
 	memset(&info, 0, sizeof info);
 	{
 		info.port = 8081;
