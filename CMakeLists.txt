@@ -28,11 +28,13 @@ set(INC
 	${INC_DIR}/Judge/Session.h
 	${INC_DIR}/Judge/Types.h
 	${INC_DIR}/Judge/User.h
+	${INC_DIR}/Judge/WS_Judge.h
 )
 set(SRC
 	${SRC_DIR}/main.cpp
 	${SRC_DIR}/Persistence.cpp
 	${SRC_DIR}/User.cpp
+	${SRC_DIR}/WS_Judge.cpp
 )
 
 

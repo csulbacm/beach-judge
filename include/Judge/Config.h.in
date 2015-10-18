@@ -7,4 +7,9 @@
 #define JUDGE_SSL 1
 #define JUDGE_STATIC_ASSETS 0
 
+// Websocket configuration
+#define JUDGE_MAX_MESSAGE_QUEUE 32
+#define JUDGE_MAX_RESPONSE 2047
+
+
 #endif
