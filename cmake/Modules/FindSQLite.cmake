@@ -3,22 +3,20 @@
 # SQLITE_LIBRARIES
 # SQLITE_FOUND
 
-find_path(SQLITE_INCLUDE_DIR sqlite3.h)
-
+find_path(SQLITE_INCLUDE_DIR
+	NAMES sqlite3.h
+)
 find_library(SQLITE_LIBRARIES
 	NAMES libsqlite3.a sqlite3
 )
-
 get_filename_component(SQLITE_LIBRARY_DIR
 	${SQLITE_LIBRARIES} PATH)
-
 set(SQLITE_FOUND "NO")
 if(SQLITE_INCLUDE_DIR)
 	if(SQLITE_LIBRARIES)
 		set(SQLITE_FOUND "YES")
 	endif()
 endif()
-
 mark_as_advanced(
 	SQLITE_LIBRARY_DIR
 	SQLITE_INCLUDE_DIR

@@ -6,6 +6,8 @@ set(BEACHJUDGE_VERSION_MINOR 02)
 set(PROJECT "beachJudge")
 project(${PROJECT})
 
+######### Paths #########
+
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -14,6 +16,9 @@ set(JS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/js)
 set(STYLES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/styles)
 set(TEMPLATES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/templates)
 set(RES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res)
+
+
+######### Files #########
 
 set(INC
 	${INC_DIR}/Judge/Config.h
@@ -24,19 +29,17 @@ set(INC
 	${INC_DIR}/Judge/Types.h
 	${INC_DIR}/Judge/User.h
 )
-
 set(SRC
 	${SRC_DIR}/main.cpp
 	${SRC_DIR}/Persistence.cpp
 	${SRC_DIR}/User.cpp
 )
 
-set(INCLUDE
-	${INC_DIR}
-)
 
+######### Dependencies #########
+
+set(INCLUDE ${INC_DIR})
 set(LIB "")
-
 
 # libwebsockets
 include("${CMAKE_MODULE_PATH}/FetchLibWebSockets.cmake")
@@ -74,8 +77,8 @@ if(OPENSSL_EXECUTABLE)
 	endif()
 endif()
 
-configure_file(${INC_DIR}/Judge/Config.h.in ${INC_DIR}/Judge/Config.h)
-include_directories(${INCLUDE})
+
+######### Resource Compilation #########
 
 # Resource Compilation
 add_custom_target(res_dir COMMAND ${CMAKE_COMMAND} -E make_directory ${RES_DIR})
@@ -129,12 +132,21 @@ add_custom_command(OUTPUT ${res}
 
 add_custom_target(resources ALL DEPENDS ${RES})
 
+
+######### Finalization #########
+
+configure_file(${INC_DIR}/Judge/Config.h.in ${INC_DIR}/Judge/Config.h)
+include_directories(${INCLUDE})
+
 add_executable(${PROJECT} ${SRC} ${INC})
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/bin)
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/bin)
 target_link_libraries(${PROJECT} ${LIB})
 add_dependencies(${PROJECT} resources)
+
+
+######### Development Hook #########
 
 #TODO: Remove this for release
 if(UNIX)

@@ -163,6 +163,7 @@ struct per_session_data__http {
 
 /* this protocol server (always the first one) just knows how to do HTTP */
 
+//TODO: Simplify this function
 int callback_http(libwebsocket_context *context,
 	libwebsocket *wsi,
 	libwebsocket_callback_reasons reason, void *user,
