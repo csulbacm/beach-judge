@@ -11,5 +11,4 @@
 #define JUDGE_MAX_MESSAGE_QUEUE 32
 #define JUDGE_MAX_RESPONSE 2047
 
-
 #endif
