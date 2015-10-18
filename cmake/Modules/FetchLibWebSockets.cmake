@@ -28,8 +28,11 @@ if(NOT LIBWEBSOCKETS_FOUND)
 
 	endif()
 
-	set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${T_LWS_PATH}/lib)
+	set(CMAKE_INCLUDE_PATH ${T_LWS_PATH})
+	set(CMAKE_LIBRARY_PATH ${T_LWS_PATH}/lib)
 	find_package(LibWebSockets REQUIRED)
+	unset(CMAKE_INCLUDE_PATH)
+	unset(CMAKE_LIBRARY_PATH)
 endif()
 
 endmacro()

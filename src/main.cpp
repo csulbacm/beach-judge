@@ -10,6 +10,9 @@
 #include <sstream>
 #include <map>
 
+// sqlite
+#include <sqlite3.h>
+
 // lws
 #include <libwebsockets.h>
 
@@ -729,6 +732,16 @@ int main(int argc, char *argv[])
 	// Load beachJudge Data
 	printf("Loading beachJudge data...\n");
 	loadJudgeData();
+
+
+	// SQLite Test
+	{
+		printf("Opening SQLIte Database...\n");
+		sqlite3 *db;
+		int c = sqlite3_open(".data", &db);
+		printf("   C: %d\n", c);
+		sqlite3_close(db);
+	}
 
 	// Start Server
 	printf("Server is running.\n");

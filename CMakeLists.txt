@@ -47,6 +47,8 @@ list(APPEND INCLUDE ${LIBWEBSOCKETS_INCLUDE_DIR} ${LIBWEBSOCKETS_INCLUDE_DIR}/..
 # sqlite
 include("${CMAKE_MODULE_PATH}/FetchSQLite.cmake")
 fetch_sqlite()
+list(APPEND LIB ${SQLITE_LIBRARIES} pthread dl)
+list(APPEND INCLUDE ${SQLITE_INCLUDE_DIR})
 
 # SSL Cert/Key Generation
 #  Generation from libwebsockets

@@ -26,8 +26,11 @@ if(NOT SQLITE_FOUND)
 
 	endif()
 
-	#set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${T_SQLITE} ${T_SQLITE_PATH}/.libs)
-	#find_package(SQLite REQUIRED)
+	set(CMAKE_INCLUDE_PATH ${T_SQLITE_PATH})
+	set(CMAKE_LIBRARY_PATH ${T_SQLITE_PATH}/.libs)
+	find_package(SQLite REQUIRED)
+	unset(CMAKE_INCLUDE_PATH)
+	unset(CMAKE_LIBRARY_PATH)
 endif()
 
 endmacro()
