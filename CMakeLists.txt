@@ -44,6 +44,10 @@ fetch_libwebsockets()
 list(APPEND LIB ${LIBWEBSOCKETS_LIBRARIES} ssl crypto z)
 list(APPEND INCLUDE ${LIBWEBSOCKETS_INCLUDE_DIR} ${LIBWEBSOCKETS_INCLUDE_DIR}/..)
 
+# sqlite
+include("${CMAKE_MODULE_PATH}/FetchSQLite.cmake")
+fetch_sqlite()
+
 # SSL Cert/Key Generation
 #  Generation from libwebsockets
 find_package(OpenSSL)
@@ -71,7 +75,7 @@ endif()
 configure_file(${INC_DIR}/Judge/Config.h.in ${INC_DIR}/Judge/Config.h)
 include_directories(${INCLUDE})
 
-# Resourece Compilation
+# Resource Compilation
 add_custom_target(res_dir COMMAND ${CMAKE_COMMAND} -E make_directory ${RES_DIR})
 set(RES res_dir)
 

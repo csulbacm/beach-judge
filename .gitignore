@@ -41,6 +41,7 @@ ipch
 # Vim
 *.swp
 *.swo
+*.swn
 
 # Compiled files
 res/*.html
