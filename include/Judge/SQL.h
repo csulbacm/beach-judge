@@ -18,7 +18,10 @@ typedef struct SQL
 
 	// SQL Statements
 	
-	static sqlite3_stmt *session_selectAll;
+	static sqlite3_stmt *session_selectAll,
+		*session_insert,
+		*session_update,
+		*session_delete;
 
 
 } SQL;

@@ -5,9 +5,19 @@
 
 namespace judge {
 
+#define SQL_STMT(stmt, qry, ret) \
+	ret = sqlite3_prepare_v2(g_sql, qry, -1, &stmt, NULL); \
+	if (ret != SQLITE_OK) { \
+		printf("ERR "#stmt": %d\n", ret); \
+		return false; \
+	}
+
 sqlite3 *g_sql = 0;
 
-sqlite3_stmt *SQL::session_selectAll = 0;
+sqlite3_stmt *SQL::session_selectAll = 0,
+	*SQL::session_insert = 0,
+	*SQL::session_update = 0,
+	*SQL::session_delete = 0;
 
 bool SQL::Init()
 {
@@ -23,29 +33,35 @@ bool SQL::Init()
 		return false;
 	}
 
-	// Table Setup
+
+	//-----------------------------------------
+	//--------------- Tables ------------------
+	
+	// Session
 	sqlite3_stmt *stmt = 0;
-	s = sqlite3_prepare_v2(g_sql,
+	SQL_STMT(stmt, 
 		"CREATE TABLE IF NOT EXISTS jd_session(\n"
 			"Key VARCHAR(20),\n"
 			"User INT,\n"
+			"Expire INT,\n"
 			"PRIMARY KEY(Key)\n"
-		")", -1, &stmt, NULL);
-	if (s != SQLITE_OK) {
-		printf("ERR session_createTable: %d\n", s);
-		return false;
-	}
+		")", s);
 	sqlite3_step(stmt);
 	sqlite3_finalize(stmt);
 
-	// Prepared Statements
-	s = sqlite3_prepare_v2(g_sql,
-		"SELECT * FROM jd_session",
-		-1, &session_selectAll, NULL);
-	if (s != SQLITE_OK) {
-		printf("ERR session_selectAll: %d\n", s);
-		return false;
-	}
+
+	//-----------------------------------------
+	//--------------- Session -----------------
+
+	SQL_STMT(session_selectAll, 
+		"SELECT * FROM jd_session", s);
+	SQL_STMT(session_insert,
+		"INSERT INTO jd_session VALUES (?,?,?)", s);
+	SQL_STMT(session_update,
+		"UPDATE jd_session SET Expire=? WHERE Key=?", s);
+	SQL_STMT(session_delete,
+		"DELETE FROM jd_session WHERE Key=?", s);
+
 
 	return true;
 }
