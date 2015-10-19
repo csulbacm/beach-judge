@@ -51,6 +51,7 @@ int ws_http(libwebsocket_context *context,
 					if (Session::s_sessionMap.count(sessionID) != 0) {
 						pss->session = &Session::s_sessionMap[sessionID];
 						pss->session->Reset();
+						pss->session->SQL_Sync();
 						pss->user = pss->session->user;
 						memcpy(pss->sessionID, sessID, 65);
 					}
@@ -219,8 +220,10 @@ int ws_http(libwebsocket_context *context,
 						} while (Session::s_sessionMap.count(sessID));
 	
 						// Update Session Map
-						Session::s_sessionMap[sessID] = Session(user);
-	
+						Session::s_sessionMap[sessID] =
+							Session(sessID.c_str(), user);
+						Session::s_sessionMap[sessID].SQL_Insert();
+
 						// Send Key to Client
 						sprintf(response, "HTTP/1.0 200 OK\r\n"
 							"Connection: close\r\n"

@@ -147,6 +147,7 @@ int ws_judge(libwebsocket_context *context,
 					if (Session::s_sessionMap.count(sessionID) != 0) {
 						pss->session = &Session::s_sessionMap[sessionID];
 						pss->session->Reset();
+						pss->session->SQL_Sync();
 						pss->user = pss->session->user;
 					}
 				}

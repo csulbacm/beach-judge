@@ -12,12 +12,14 @@ void loadJudgeData()
 {
 	// Create default judge account
 	//TODO: Turn this into an administrator account and make dummy judge accounts
-	if (User::s_usersByName.count("judge") == 0) {
-		printf("Creating judge account...\n");
-		new User("judge", "test", true, 0);
+	if (User::s_usersByName.count("admin") == 0) {
+		printf("Creating admin account...\n");
+		new User("admin", "test", true, 0);
 	}
 
 	printf("Loading user sessions...\n");
+	Session::SQL_LoadAll();
+	return;
 	{
 		ifstream file(".sessions");
 		if (file.is_open()) {
@@ -26,7 +28,7 @@ void loadJudgeData()
 			while (file >> sessID >> name >> expireTimeMS) {
 				if (User::s_usersByName.count(name) == 0)
 					continue;
-				Session::s_sessionMap[sessID] = Session(User::s_usersByName[name], expireTimeMS);
+				Session::s_sessionMap[sessID] = Session(sessID.c_str(), User::s_usersByName[name], expireTimeMS);
 			}
 			file.close();
 		}

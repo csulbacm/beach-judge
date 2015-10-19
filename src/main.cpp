@@ -91,12 +91,12 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	if (!SQL::Init())
+		return 0;
+
 	// Load beachJudge Data
 	printf("Loading beachJudge data...\n");
 	loadJudgeData();
-
-	if (!SQL::Init())
-		return 0;
 
 	// Start Server
 	printf("Server is running.\n");
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
 	printf("Server is shutting down...\n");
 	libwebsocket_context_destroy(context);
 	printf("Saving beachJudge data...\n");
-	saveJudgeData();
+//	saveJudgeData();
 	User::Cleanup();
 	SQL::Cleanup();
 
