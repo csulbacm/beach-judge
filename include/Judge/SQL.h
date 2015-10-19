@@ -16,6 +16,11 @@ typedef struct SQL
 	static void Cleanup();
 
 
+	// SQL Statements
+	
+	static sqlite3_stmt *session_selectAll;
+
+
 } SQL;
 
 
