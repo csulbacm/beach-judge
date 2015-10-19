@@ -1,22 +1,13 @@
 #include <setjmp.h>
 #include <signal.h>
 #include <stdio.h>
-#include <string.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <fstream>
-#include <sstream>
-#include <map>
-
-// sqlite
-#include <sqlite3.h>
 
 // lws
 #include <libwebsockets.h>
 
 // beachJudge
 #include <Judge/Judge.h>
+#include <Judge/SQL.h>
 #include <Judge/WS_HTTP.h>
 #include <Judge/WS_Judge.h>
 
@@ -24,6 +15,7 @@ using namespace judge;
 using namespace std;
 
 const char *judge::g_resourcePath = "../res";
+sqlite3 *judge::g_sql = 0;
 
 map<string, Session> Session::s_sessionMap = map<string, Session>();
 
@@ -34,9 +26,12 @@ enum lws_protocols {
 };
 
 // Catch program termination
+volatile i16 force_exit = 0;
 volatile i16 exiting = 0;
 sigjmp_buf jmpenv;
-void sigHandler(int signo, siginfo_t *info, void *context) {
+void sigHandler(int signo, siginfo_t *info, void *context)
+{
+	force_exit = 1;
 	if (exiting++)
 		_exit(1);
 	siglongjmp(jmpenv, 1);
@@ -46,7 +41,6 @@ void sigHandler(int signo, siginfo_t *info, void *context) {
 //-----------------------------------------
 //------------ Entry Function -------------
 
-volatile int force_exit = 0;
 int main(int argc, char *argv[])
 {
 	srand(time(NULL));
@@ -102,13 +96,11 @@ int main(int argc, char *argv[])
 	printf("Loading beachJudge data...\n");
 	loadJudgeData();
 
-	// SQLite Test
-	{
-		printf("Opening SQLIte Database...\n");
-		sqlite3 *db;
-		int c = sqlite3_open(".data", &db);
-		printf("   C: %d\n", c);
-		sqlite3_close(db);
+	//TODO: Expand this error check
+	if (sqlite3_open("judge.dat", &g_sql) != SQLITE_OK) {
+		printf("SQLite encountered and error.\n");
+		sqlite3_close(g_sql);
+		return 0;
 	}
 
 	// Start Server
@@ -138,6 +130,7 @@ int main(int argc, char *argv[])
 	printf("Saving beachJudge data...\n");
 	saveJudgeData();
 	User::Cleanup();
+	sqlite3_close(g_sql);
 
 	return 0;
 }

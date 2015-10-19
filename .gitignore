@@ -48,6 +48,7 @@ res/*.html
 res/*.js
 res/*.css
 build
+debug
 bin
 
 # Generated Files

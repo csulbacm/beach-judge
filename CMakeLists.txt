@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 2.8)
 set(BEACHJUDGE_VERSION_MAJOR 0)
 set(BEACHJUDGE_VERSION_MINOR 02)
 
-set(PROJECT "beachJudge")
-project(${PROJECT})
+set(TARGET "beachJudge")
+project(${TARGET})
 
 ######### Paths #########
 
@@ -142,17 +142,18 @@ add_custom_target(resources ALL DEPENDS ${RES})
 configure_file(${INC_DIR}/Judge/Config.h.in ${INC_DIR}/Judge/Config.h)
 include_directories(${INCLUDE})
 
-add_executable(${PROJECT} ${SRC} ${INC})
-set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/bin)
-set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/bin)
-target_link_libraries(${PROJECT} ${LIB})
-add_dependencies(${PROJECT} resources)
+add_executable(${TARGET} ${SRC} ${INC})
+set_target_properties(${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+set_target_properties(${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/bin)
+set_target_properties(${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/bin)
+target_link_libraries(${TARGET} ${LIB})
+set_target_properties(${TARGET} PROPERTIES DEBUG_POSTFIX -d)
+add_dependencies(${TARGET} resources)
 
 
 ######### Development Hook #########
 
 #TODO: Remove this for release
 if(UNIX)
-	add_custom_target(r COMMAND bash -c ${PROJECT_SOURCE_DIR}/tools/tsock.sh DEPENDS ${PROJECT})
+	add_custom_target(r COMMAND bash -c ${PROJECT_SOURCE_DIR}/tools/tsock.sh DEPENDS ${TARGET})
 endif()

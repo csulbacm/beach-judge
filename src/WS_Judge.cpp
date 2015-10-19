@@ -177,13 +177,14 @@ int ws_judge(libwebsocket_context *context,
 		break;
 
 	case LWS_CALLBACK_CLOSED:
+		if (pss)
+			for (n = 0; n < (sizeof pss->ringbuffer / sizeof pss->ringbuffer[0]); ++n)
+				if (pss->ringbuffer[n].payload)
+					free(pss->ringbuffer[n].payload);
 		printf("%p: Disconnected\n", pss);
 		break;
 
 	case LWS_CALLBACK_PROTOCOL_DESTROY:
-		for (n = 0; n < sizeof pss->ringbuffer / sizeof pss->ringbuffer[0]; n++)
-			if (pss->ringbuffer[n].payload)
-				free(pss->ringbuffer[n].payload);
 		break;
 
 	case LWS_CALLBACK_SERVER_WRITEABLE:
