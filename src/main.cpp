@@ -15,7 +15,6 @@ using namespace judge;
 using namespace std;
 
 const char *judge::g_resourcePath = "../res";
-sqlite3 *judge::g_sql = 0;
 
 map<string, Session> Session::s_sessionMap = map<string, Session>();
 
@@ -96,12 +95,8 @@ int main(int argc, char *argv[])
 	printf("Loading beachJudge data...\n");
 	loadJudgeData();
 
-	//TODO: Expand this error check
-	if (sqlite3_open("judge.dat", &g_sql) != SQLITE_OK) {
-		printf("SQLite encountered and error.\n");
-		sqlite3_close(g_sql);
+	if (!SQL::Init())
 		return 0;
-	}
 
 	// Start Server
 	printf("Server is running.\n");
@@ -130,7 +125,7 @@ int main(int argc, char *argv[])
 	printf("Saving beachJudge data...\n");
 	saveJudgeData();
 	User::Cleanup();
-	sqlite3_close(g_sql);
+	SQL::Cleanup();
 
 	return 0;
 }

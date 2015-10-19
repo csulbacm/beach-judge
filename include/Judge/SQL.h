@@ -8,6 +8,17 @@ namespace judge {
 
 extern sqlite3 *g_sql;
 
+typedef struct SQL
+{
+
+	static bool Init();
+
+	static void Cleanup();
+
+
+} SQL;
+
+
 }
 
 #endif
