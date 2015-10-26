@@ -100,6 +100,7 @@ void msg_createTeam(libwebsocket *w, psd_judge *p, char *m)
 	}
 
 	//TODO: Get group id from selection
+	/*
 	User *newUser = new User(name, p1, 0, false);
 	sprintf(p->msg, ""
 		"\"msg\":\"CT\","
@@ -107,6 +108,7 @@ void msg_createTeam(libwebsocket *w, psd_judge *p, char *m)
 		"\"n\":\"%s\"",
 		newUser->id,
 		newUser->name.c_str());
+		*/
 }
 
 

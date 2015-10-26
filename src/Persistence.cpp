@@ -5,19 +5,25 @@
 #include <Judge/Session.h>
 #include <Judge/User.h>
 #include <Judge/Persistence.h>
+#include <Judge/SQL.h>
 
 namespace judge {
 
 void loadJudgeData()
 {
+	// Load Users & Groups
+	printf("Loading user groups...\n");
+	UserGroup::SQL_LoadAll();
+	User::SQL_LoadAll();
+
 	// Default User Data
 	if (UserGroup::s_groupsByID.count(0) == 0) {
 		printf("Creating global user group...\n");
-		new UserGroup("Global", 0);
+		(new UserGroup("Global", 0))->SQL_Insert();
 	}
 	if (User::s_usersByName.count("admin") == 0) {
 		printf("Creating admin user...\n");
-		new User("admin", "test", 0, true, 0);
+		(new User("admin", "test", "admin", User::Admin, 0, 0))->SQL_Insert();
 	}
 
 	printf("Loading user sessions...\n");
