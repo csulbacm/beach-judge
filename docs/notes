@@ -49,7 +49,43 @@ Questions
 	Answer Question
 	View questions by problem
 
+=== Structure ===
 
+Competition
+	Name
+	Duration
+
+User Groups
+	~ Years
+	~ Global
+
+Users
+	Level - 0, 1, 2
+	Submissions - Per Competition
+	Scores - Per Competition
+		Penalties
+		Time
+		Optional: Export to CSV/tabbed file
+	Total Score
+		Penalties
+		Time
+	Display Name
+	Password
+
+Problem - Per Competition
+	PDF
+	Sample Files
+
+Submission - Per Competition
+	User
+	Time
+	Problem
+
+Test Case
+	Problem
+
+Session
+	User
 
 === Notes ===
 
