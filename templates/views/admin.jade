@@ -4,26 +4,42 @@ block root
 block scoreboard
 	p Scoreboard
 block teams
-	.list
-		p.header Teams
-		ul#teamlist
-	.actions
-		.editTeam
-			p.header Edit Team
-			form#team-team-form.judge-form(auto-complete="off")
-				input.judge-form-string(name="n", type="text", placeholder="Username", autocomplete="off")
-				input.judge-form-string(name="p1", type="password", placeholder="Password", autocomplete="off")
-				input.judge-form-string(name="p2", type="password", placeholder="Confirm Password", autocomplete="off")
-				input.form-button(value="Edit Team", type="submit")
-				input.form-button(value="Clear", type="button", onclick="parentNode.reset()")
-				input.form-button(value="Delete Team", type="button", onclick="judgeDeleteTeam(form)")
-				p.form-error
-		.createTeam
-			p.header Create Team
-			form#create-team-form.judge-form(auto-complete="off")
-				input.judge-form-string(name="n", type="text", placeholder="Username", autocomplete="off", required)
-				input.judge-form-string(name="p1", type="password", placeholder="Password", autocomplete="off", required)
-				input.judge-form-string(name="p2", type="password", placeholder="Confirm Password", autocomplete="off", required)
-				input.form-button(value="Create Team", type="submit")
-				input.form-button(value="Clear", type="button", onclick="parentNode.reset()")
-				p.form-error
+	.block
+		.list
+			p.header Group
+			select#grouplist(onchange="jUserGroupSelect()")
+				option admin
+				option judge1
+				option acm123
+				option david
+		.userGroup
+			.createGroup
+				p.header Edit User Group
+				button.delete Delete
+			.createGroup
+				p.header Create User Group
+				button.create Create
+	.block#users
+		.list
+			p.header Teams
+			ul#teamlist
+		.actions
+			.editTeam
+				p.header Edit Team
+				form#team-team-form.judge-form(auto-complete="off")
+					input.judge-form-string(name="n", type="text", placeholder="Username", autocomplete="off")
+					input.judge-form-string(name="p1", type="password", placeholder="Password", autocomplete="off")
+					input.judge-form-string(name="p2", type="password", placeholder="Confirm Password", autocomplete="off")
+					input.form-button(value="Edit Team", type="submit")
+					input.form-button(value="Clear", type="button", onclick="parentNode.reset()")
+					input.form-button(value="Delete Team", type="button", onclick="judgeDeleteTeam(form)")
+					p.form-error
+			.createTeam
+				p.header Create Team
+				form#create-team-form.judge-form(auto-complete="off")
+					input.judge-form-string(name="n", type="text", placeholder="Username", autocomplete="off", required)
+					input.judge-form-string(name="p1", type="password", placeholder="Password", autocomplete="off", required)
+					input.judge-form-string(name="p2", type="password", placeholder="Confirm Password", autocomplete="off", required)
+					input.form-button(value="Create Team", type="submit")
+					input.form-button(value="Clear", type="button", onclick="parentNode.reset()")
+					p.form-error

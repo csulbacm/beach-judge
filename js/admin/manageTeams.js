@@ -1,6 +1,12 @@
 $(document).ready(function(){
+	var _groupList = $('#grouplist');
 	var _teamList = $('#teamlist');
 	var _createTeamForm = $('#create-team-form');
+
+	var _groupList = $('#grouplist');
+	jUserGroupSelect = function() {
+		console.log(_groupList[0].selectedIndex);
+	}
 
 	judge.msgHandler['CT'] = function(msg) {
 		if (typeof msg.err != 'undefined') {
