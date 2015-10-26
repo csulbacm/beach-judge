@@ -45,7 +45,7 @@ void saveJudgeData()
 		std::map<std::string, Session>::iterator end = Session::s_sessionMap.end();
 		while (it != end) {
 			file << it->first
-				<< ' ' << it->second.user->username.c_str() 
+				<< ' ' << it->second.user->name.c_str() 
 				<< ' ' << it->second.expireTimeMS
 				<< '\n';
 			++it;

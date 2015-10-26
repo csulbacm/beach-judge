@@ -18,6 +18,10 @@ const u64 sessionExpireTimeMS = 1000 * 60 * 60 * 1;
 
 typedef struct Session
 {
+	// ID
+	// Key
+	// ExpireTime
+	// User
 
 	static std::map<std::string, Session> s_sessionMap;
 

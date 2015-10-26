@@ -86,7 +86,7 @@ int ws_http(libwebsocket_context *context,
 
 			if (pss->user != 0) {
 				if (memcmp(in, "/logout", 7) == 0) {
-					printf("  %p: Logout %s\n", pss, pss->user->username.c_str());
+					printf("  %p: Logout %s\n", pss, pss->user->name.c_str());
 					Session::s_sessionMap.erase(string(pss->sessionID));
 
 					//TODO: Handle invalid pw error

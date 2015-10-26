@@ -6,6 +6,18 @@ set(BEACHJUDGE_VERSION_MINOR 02)
 set(TARGET "beachJudge")
 project(${TARGET})
 
+######### Compiler Configuration #########
+
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag("-std=c++11" S_CXX11)
+check_cxx_compiler_flag("-std=c++0x" S_CXX0X)
+if(S_CXX11)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+elseif(S_CXX0X)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+endif()
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+
 ######### Paths #########
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")

@@ -9,6 +9,11 @@ NodeJS
 
 === TODO ===
 
+	Default Admin & Global User Group
+	User & User Group Storage
+	UserGroup Management
+
+
 Team Management
 	Show Teams
 	Create Team
@@ -51,14 +56,12 @@ Questions
 
 === Structure ===
 
-Competition
-	Name
-	Duration
+Session
+	User
 
 User Groups
 	~ Years
 	~ Global
-
 Users
 	Level - 0, 1, 2
 	Submissions - Per Competition
@@ -72,20 +75,19 @@ Users
 	Display Name
 	Password
 
+ProblemSet
+	Name
+	Duration
+	StartTime
 Problem - Per Competition
 	PDF
 	Sample Files
-
 Submission - Per Competition
 	User
 	Time
 	Problem
-
 Test Case
 	Problem
-
-Session
-	User
 
 === Notes ===
 

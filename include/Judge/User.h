@@ -7,14 +7,65 @@
 #include <string.h>
 #include <map>
 #include <openssl/sha.h>
+#include <vector>
 
 // beachJudge
 #include <Judge/Types.h>
 
 namespace judge {
 
-typedef struct User
+typedef struct User User;
+typedef struct UserGroup UserGroup;
+
+
+//------------------------------------------------------
+//--------------------- UserGroup ----------------------
+
+struct UserGroup
 {
+
+	UserGroup()
+	{
+	}
+
+
+	//-------------------- ID ----------------------
+
+	u16 id;
+
+
+	//------------------- Name ---------------------
+
+	std::string name;
+
+
+	//---------------- Activation ------------------
+	// Inactive users cannot log into the system.
+
+	bool isActive;
+
+
+	//------------------ Users ---------------------
+
+	std::map<u32, User> users;
+
+
+};
+
+
+//------------------------------------------------------
+//----------------------- User -------------------------
+
+struct User
+{
+	// ID
+	// Name
+	// DisplayName
+	//
+	// Submissions
+	// Scores
+	// Messages
+
 	static std::map<std::string, User *> s_usersByName;
 	static std::map<u16, User *> s_usersById;
 
@@ -33,13 +84,13 @@ typedef struct User
 	}
 
 	User(const char *name, const char *pw, bool judge, u16 _id = 65535) :
-		username(name),
+		name(name),
 		isJudge(judge),
 		id(_id)
 	{
 		SetPassword(pw);
 
-		s_usersByName[username] = this;
+		s_usersByName[name] = this;
 
 		if (id == 65535) {
 			do id = rand() % 65536;
@@ -51,8 +102,8 @@ typedef struct User
 	~User()
 	{
 		// Keep an entry in the user map so we can reload the user later
-		if (username.length())
-			s_usersByName[username] = 0;
+		if (name.length())
+			s_usersByName[name] = 0;
 		s_usersById[id] = 0;
 	}
 
@@ -61,14 +112,13 @@ typedef struct User
 	u16 id;
 
 
-	//----------------------------------------------
-	//----------------- Username -------------------
+	//------------------- Name ---------------------
 
-	std::string username;
+	std::string name;
 
 
-	//----------------------------------------------
 	//----------------- Password -------------------
+	//TODO: Add salt and secret key or implement HMAC
 
 	std::string password;
 
@@ -103,10 +153,8 @@ typedef struct User
 		return password.compare(buffer) == 0;
 	}
 
-	//TODO: Add salt and secret key or implement HMAC
 
-
-} User;
+};
 
 
 }

@@ -35,7 +35,7 @@ void msg_populate(libwebsocket *w, psd_judge *p, char *m)
 	sprintf(p->msg, ""
 		"\"msg\":\"POP\","
 		"\"name\":\"%s\"",
-		p->user->username.c_str());
+		p->user->name.c_str());
 }
 
 void msg_teamList(libwebsocket *w, psd_judge *p, char *m)
@@ -47,7 +47,7 @@ void msg_teamList(libwebsocket *w, psd_judge *p, char *m)
 	char entry[64];
 	while (it != end) {
 		sprintf(entry, "{\"i\":\"%04x\",\"n\":\"%s\"}",
-			it->second->id, it->second->username.c_str());
+			it->second->id, it->second->name.c_str());
 		users << entry;
 		++it;
 		if (it != end)
@@ -105,7 +105,7 @@ void msg_createTeam(libwebsocket *w, psd_judge *p, char *m)
 		"\"i\":\"%04x\","
 		"\"n\":\"%s\"",
 		newUser->id,
-		newUser->username.c_str());
+		newUser->name.c_str());
 }
 
 
