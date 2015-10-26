@@ -10,11 +10,14 @@ namespace judge {
 
 void loadJudgeData()
 {
-	// Create default judge account
-	//TODO: Turn this into an administrator account and make dummy judge accounts
+	// Default User Data
+	if (UserGroup::s_groupsByID.count(0) == 0) {
+		printf("Creating global user group...\n");
+		new UserGroup("Global", 0);
+	}
 	if (User::s_usersByName.count("admin") == 0) {
-		printf("Creating admin account...\n");
-		new User("admin", "test", true, 0);
+		printf("Creating admin user...\n");
+		new User("admin", "test", 0, true, 0);
 	}
 
 	printf("Loading user sessions...\n");

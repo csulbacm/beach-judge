@@ -7,8 +7,10 @@ using namespace std;
 
 namespace judge {
 
+map<u16, UserGroup *> UserGroup::s_groupsByID = map<u16, UserGroup *>();
+
 map<string, User *> User::s_usersByName = map<string, User *>();
-map<u16, User *> User::s_usersById = map<u16, User *>();
+map<u16, User *> User::s_usersByID = map<u16, User *>();
 
 
 }

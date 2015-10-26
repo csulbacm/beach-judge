@@ -23,9 +23,34 @@ typedef struct UserGroup UserGroup;
 
 struct UserGroup
 {
+	// ID
+	// Name
+	// IsActive
+	//
+	// Users
+
+	static std::map<u16, UserGroup *> s_groupsByID;
 
 	UserGroup()
 	{
+	}
+
+	UserGroup(const char *name, u16 id = 65535, bool isActive = true) :
+		name(name),
+		id(id),
+		isActive(isActive)
+	{
+		if (id == 65535) {
+			id = 0;
+			do ++id;
+			while (s_groupsByID.count(id));
+		}
+		s_groupsByID[id] = this;
+	}
+
+	~UserGroup()
+	{
+		s_groupsByID[id] = 0;
 	}
 
 
@@ -47,7 +72,7 @@ struct UserGroup
 
 	//------------------ Users ---------------------
 
-	std::map<u32, User> users;
+	std::vector<User> users;
 
 
 };
@@ -61,13 +86,15 @@ struct User
 	// ID
 	// Name
 	// DisplayName
+	// Level
+	// Group
 	//
 	// Submissions
 	// Scores
 	// Messages
 
 	static std::map<std::string, User *> s_usersByName;
-	static std::map<u16, User *> s_usersById;
+	static std::map<u16, User *> s_usersByID;
 
 	static inline void Cleanup()
 	{
@@ -83,8 +110,9 @@ struct User
 	{
 	}
 
-	User(const char *name, const char *pw, bool judge, u16 _id = 65535) :
+	User(const char *name, const char *pw, u16 *groupID, bool judge, u16 _id = 65535) :
 		name(name),
+		groupID(groupID),
 		isJudge(judge),
 		id(_id)
 	{
@@ -94,9 +122,9 @@ struct User
 
 		if (id == 65535) {
 			do id = rand() % 65536;
-			while (s_usersById.count(id));
-			s_usersById[id] = this;
+			while (s_usersByID.count(id));
 		}
+		s_usersByID[id] = this;
 	}
 
 	~User()
@@ -104,7 +132,7 @@ struct User
 		// Keep an entry in the user map so we can reload the user later
 		if (name.length())
 			s_usersByName[name] = 0;
-		s_usersById[id] = 0;
+		s_usersByID[id] = 0;
 	}
 
 	bool isJudge;
@@ -115,6 +143,8 @@ struct User
 	//------------------- Name ---------------------
 
 	std::string name;
+
+	std::string displayName;
 
 
 	//----------------- Password -------------------
@@ -154,6 +184,9 @@ struct User
 	}
 
 
+	//------------------- Group --------------------
+
+	u16 *groupID;
 };
 
 

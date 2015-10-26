@@ -12,6 +12,18 @@ NodeJS
 	Default Admin & Global User Group
 	User & User Group Storage
 	UserGroup Management
+	Show UserGroups
+	Create/Manage UserGroups
+		Toggle Activity
+	Show Users in Group
+	Create/Manage Users
+	Move User to Group
+	Delete User
+	Set User Level
+	Show ProblemSets
+	Create/Manage ProblemSets
+	Show Problems in Set
+	Create/Manage Problems
 
 
 Team Management
