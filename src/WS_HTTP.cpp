@@ -129,10 +129,12 @@ int ws_http(libwebsocket_context *context,
 		if (strstr((char *)in, ".") == NULL) {
 			if (pss->user == 0)
 				strcat(buf, "/login");
-			else if(pss->user->isJudge)
+			else if(pss->user->level == User::Judge)
 				strcat(buf, "/judge");
+			else if(pss->user->level == User::Admin)
+				strcat(buf, "/admin");
 			else
-				strcat(buf, "/team");
+				strcat(buf, "/user");
 			strcat(buf, ".html");
 		} else if (strcmp((const char *)in, "/")) {
 			if (*((const char *)in) != '/')

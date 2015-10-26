@@ -12,7 +12,7 @@ namespace judge {
 void loadJudgeData()
 {
 	// Load Users & Groups
-	printf("Loading user groups...\n");
+	printf("Loading user data...\n");
 	UserGroup::SQL_LoadAll();
 	User::SQL_LoadAll();
 
@@ -26,7 +26,7 @@ void loadJudgeData()
 		(new User("admin", "test", "admin", User::Admin, 0, 0))->SQL_Insert();
 	}
 
-	printf("Loading user sessions...\n");
+	printf("Restoring sessions...\n");
 	Session::SQL_LoadAll();
 	return;
 	{

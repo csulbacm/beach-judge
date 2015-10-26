@@ -200,8 +200,6 @@ struct User
 		//TODO: Remove user from userGroup
 	}
 
-	bool isJudge;
-
 	u32 id;
 
 

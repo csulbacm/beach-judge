@@ -62,7 +62,7 @@ void msg_teamList(libwebsocket *w, psd_judge *p, char *m)
 void msg_createTeam(libwebsocket *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
-	if (p->user->isJudge == false) {
+	if (p->user->level < User::Admin) {
 		sprintf(p->msg, "\"msg\": \"ERR\"");
 		return;
 	}
