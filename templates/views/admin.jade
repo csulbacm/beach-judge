@@ -14,11 +14,24 @@ block teams
 				option david
 		.userGroup
 			.createGroup
-				p.header Edit User Group
-				button.delete Delete
-			.createGroup
 				p.header Create User Group
-				button.create Create
+				form#team-groupCreate-form.judge-form(auto-complete="off")
+					input.judge-form-string(name="n", type="text", placeholder="Name", autocomplete="off")
+					input#chk-active(name="a", type="checkbox")
+					label(for="chk-active") Active
+					input.form-button(value="Clear", type="button", onclick="parentNode.reset()")
+					input.form-button(value="Create", type="button", onclick="judgeGroupCreate(form)")
+					p.form-error
+			.editGroup
+				p.header Edit User Group
+				form#team-groupEdit-form.judge-form(auto-complete="off")
+					input.judge-form-string(name="n", type="text", placeholder="Name", autocomplete="off")
+					input#chk-active(name="a", type="checkbox")
+					label(for="chk-active") Active
+					input.form-button(value="Clear", type="button", onclick="parentNode.reset()")
+					input.form-button(value="Edit", type="button", onclick="judgeGroupUpdate(form)")
+					input.form-button(value="Delete", type="button", onclick="judgeGroupDelete(form)")
+					p.form-error
 	.block#users
 		.list
 			p.header Teams
