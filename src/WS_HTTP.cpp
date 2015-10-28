@@ -187,7 +187,8 @@ int ws_http(libwebsocket_context *context,
 		char pwBuff[65];
 		nameBuff[64] = 0;
 		pwBuff[64] = 0;
-		char response[128];
+		char response[192];
+		//TODO: Minimize response buffer
 
 		{
 			char body[len + 1];
