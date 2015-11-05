@@ -10,16 +10,16 @@ namespace judge {
 //-----------------------------------------
 //------------- Message Map ---------------
 
-void msg_createTeam(libwebsocket *w, psd_judge *p, char *m);
+void msg_createUser(libwebsocket *w, psd_judge *p, char *m);
 void msg_populate(libwebsocket *w, psd_judge *p, char *m);
-void msg_teamList(libwebsocket *w, psd_judge *p, char *m);
+void msg_userList(libwebsocket *w, psd_judge *p, char *m);
 
 map<string, func_judge> createMsgMap()
 {
 	map<string, func_judge> m = map<string, func_judge>();
 	m["POP"] = msg_populate;
-	m["TL"] = msg_teamList;
-	m["CT"] = msg_createTeam;
+	m["UL"] = msg_userList;
+	m["CU"] = msg_createUser;
 	return m;
 }
 map<string, func_judge> g_msgMap =
@@ -38,9 +38,9 @@ void msg_populate(libwebsocket *w, psd_judge *p, char *m)
 		p->user->name.c_str());
 }
 
-void msg_teamList(libwebsocket *w, psd_judge *p, char *m)
+void msg_userList(libwebsocket *w, psd_judge *p, char *m)
 {
-	// Populate Team Data
+	// Populate User Data
 	stringstream users;
 	map<string, User *>::iterator it = User::s_usersByName.begin();
 	map<string, User *>::iterator end = User::s_usersByName.end();
@@ -54,12 +54,12 @@ void msg_teamList(libwebsocket *w, psd_judge *p, char *m)
 			users << "\",\"";
 	}
 	sprintf(p->msg, ""
-		"\"msg\":\"TL\","
-		"\"teams\":[%s]",
+		"\"msg\":\"UL\","
+		"\"users\":[%s]",
 		users.str().c_str());
 }
 
-void msg_createTeam(libwebsocket *w, psd_judge *p, char *m)
+void msg_createUser(libwebsocket *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
 	if (p->user->level < User::Admin) {

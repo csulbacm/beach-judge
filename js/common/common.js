@@ -150,9 +150,9 @@ function onNavigate(stateObj) {
 	if (judgeDebug )
 		console.log('Nav:' + JSON.stringify(stateObj));
 
-	if (stateObj.nav === '/teams') {
+	if (stateObj.nav === '/users') {
 		//TODO: Send unix timestamp for last received data
-		judgeQueue('TL:');
+		judgeQueue('UL:');
 	}
 }
 window.onpopstate = function(evt) {

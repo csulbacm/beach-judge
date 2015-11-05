@@ -134,12 +134,12 @@ list(APPEND RES ${res})
 add_custom_command(OUTPUT ${res} 
 	DEPENDS ${files}
 	COMMAND cat ${files} | uglifyjs ${UGFLAG} > ${res})
-#file(GLOB files "${JS_DIR}/judge/*.js")
-#set(res ${RES_DIR}/judge.min.js)
-#list(APPEND RES ${res})
-#add_custom_command(OUTPUT ${res} 
-#	DEPENDS ${files}
-#	COMMAND cat ${files} | uglifyjs ${UGFLAG} > ${res})
+file(GLOB files "${JS_DIR}/judge/*.js")
+set(res ${RES_DIR}/judge.min.js)
+list(APPEND RES ${res})
+add_custom_command(OUTPUT ${res} 
+	DEPENDS ${files}
+	COMMAND cat ${files} | uglifyjs ${UGFLAG} > ${res})
 file(GLOB files "${JS_DIR}/public/*.js")
 set(res ${RES_DIR}/public.min.js)
 list(APPEND RES ${res})

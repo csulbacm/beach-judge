@@ -10,7 +10,7 @@ block header
 		ul.mainNav
 			li: a(href="javascript:nav('/')") beachJudge
 			li: a(href="javascript:nav('/scoreboard')") Scoreboard
-			li: a(href="javascript:nav('/teams')") Teams
+			li: a(href="javascript:nav('/users')") Users
 			li.logout: a(href="javascript:judgeLogout()") Logout
 block body
 	.container
@@ -19,5 +19,5 @@ block body
 				block root
 			#scoreboard
 				block scoreboard
-			#teams
-				block teams
+			#users
+				block users
