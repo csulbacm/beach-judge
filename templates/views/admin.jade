@@ -4,7 +4,12 @@ block root
 block scoreboard
 	p Scoreboard
 block teams
-	.block
+	.mode
+		p
+			a(href="#") User Groups
+			span |
+			a(href="#") Users
+	.block#usergroups
 		.list
 			p.header Group
 			select#grouplist(onchange="jUserGroupSelect()")
