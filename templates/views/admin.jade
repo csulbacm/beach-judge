@@ -4,13 +4,23 @@ block root
 block scoreboard
 	p Scoreboard
 block users
-	.mode
+	//.mode
 		p
 			a(href="#") User Groups
 			span |
 			a(href="#") Users
-	.block#usergroups
-		.userGroup
+	#usergroup
+		#usergroup-hover
+			p Edit
+		.block
+			p.header User Groups
+			.list
+				ul
+					li: a(href="/usergroup/1", onmouseenter="jUserGroupMouseEnter(this)", onmouseleave="jUserGroupMouseLeave()", i="1") admin
+					li: a(href="/usergroup/2", onmouseenter="jUserGroupMouseEnter(this)", onmouseleave="jUserGroupMouseLeave()", i="2") judge1
+					li: a(href="/usergroup/3", onmouseenter="jUserGroupMouseEnter(this)", onmouseleave="jUserGroupMouseLeave()", i="3") acm123
+					li: p There are no user groups.
+		.block
 			.createGroup
 				p.header Create User Group
 				form#user-groupCreate-form.judge-form(auto-complete="off")
@@ -27,7 +37,6 @@ block users
 						option admin
 						option judge1
 						option acm123
-						option david
 					input.judge-form-string(name="n", type="text", placeholder="Name", autocomplete="off")
 					input#chk-active(name="a", type="checkbox")
 					label(for="chk-active") Active

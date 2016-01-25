@@ -56,6 +56,26 @@ $(document).ready(function(){
 		return false;
 	});
 
+	//TODO: Make this work for onClick for mobile
+	var jUserGroupMouseTimeout = "";
+	var _groupHover = $('#usergroup-hover');
+	var _groupHoverTarget = "";
+	jUserGroupMouseEnter = function(e) {
+		clearTimeout(jUserGroupMouseTimeout);
+		var rect = e.getBoundingClientRect();
+		//jUserGroupTarget = e.getAttribute("i");
+		//_groupHover.setAttribute("href", "#" + e.getAttribute("i"));
+		_groupHoverTarget = $(e);
+	//	_groupHoverTarget.addClass('hover');
+		_groupHover.css({top: rect.top, left: rect.left, width: rect.right - rect.left});
+		_groupHover.show();
+	}
+	jUserGroupMouseLeave = function() {
+	//	_groupHoverTarget.removeClass('hover');
+		jUserGroupMouseTimeout = setTimeout(function() {
+			_groupHover.hide();
+		}, 100);
+	}
 
 });
 
