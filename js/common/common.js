@@ -72,6 +72,7 @@ var judgeReconnect = false;
 
 var wsUrl = getWSURL();
 function judgeConnect() {
+	//TODO: Fix "The connection to wss:... was interrupted while the page was loading."
 	if (typeof MozWebSocket != 'undefined') {
 		judge.ws = new MozWebSocket(wsUrl,
 			'judge-protocol');
@@ -127,9 +128,7 @@ function judgePopulate() {
 	judgeQueue('POP:');
 }
 
-judgeConnect();
-
-//- Navigation -
+// Navigation
 var judgeLastState;
 function onNavigate(stateObj) {
 	//TODO: Don't reload if data hasn't changed
@@ -152,7 +151,8 @@ function onNavigate(stateObj) {
 
 	if (stateObj.nav === '/users') {
 		//TODO: Send unix timestamp for last received data
-		judgeQueue('UL:');
+		judgeQueue('UGL');
+		//judgeQueue('UL:');
 	}
 }
 window.onpopstate = function(evt) {
@@ -164,15 +164,16 @@ function nav(target) {
 	onNavigate(stateObj);
 }
 
-//- Initialization -
+// Initialization
 $(document).ready(function(){
+	judgeConnect();
 	judgePopulate();
 	var stateObj = { nav: window.location.pathname };
 	history.replaceState(stateObj, 'beachJudge', stateObj.nav);
 	onNavigate(stateObj);
 });
 
-//- Cleanup -
+// Cleanup
 $(window).on('beforeunload', function() {
 	judge.ws.close();
 });

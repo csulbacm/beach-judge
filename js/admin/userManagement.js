@@ -1,5 +1,4 @@
 $(document).ready(function(){
-	var _groupList = $('#grouplist');
 	var _userList = $('#userlist');
 	var _createUserForm = $('#create-user-form');
 
@@ -45,7 +44,7 @@ $(document).ready(function(){
 		//TODO: Use User ID
 		for (var a = 0; a < msg.users.length; ++a) {
 			h += '<option id=\'' + msg.users[a].i
-						+ '\'>' + msg.users[a].n + '</option>';
+				+ '\'>' + msg.users[a].n + '</option>';
 		}
 		_userList.html(h);
 	};
@@ -55,6 +54,23 @@ $(document).ready(function(){
 		judgeQueue('CU ' + $(this).serialize());
 		return false;
 	});
+
+	//------------ User Groups --------------
+	var _groupList = $('#grouplist');
+	judge.msgHandler['UGL'] = function(msg) {
+		if (msg.usergroups.length == 0)
+			return;
+		var h = '';
+		for (var a = 0; a < msg.usergroups.length; ++a) {
+			h += '<li><a href="/usergroup/'
+				+ msg.usergroups[a].i
+				+ '" onmouseenter="jUserGroupMouseEnter(this)"'
+				+ ' onmouseleave="jUserGroupMouseLeave()"'
+				+ 'i="' + msg.usergroups[a].i
+				+ '">' + msg.usergroups[a].n + '</a></li>';
+		}
+		_groupList.html(h);
+	};
 
 	//TODO: Make this work for onClick for mobile
 	var jUserGroupMouseTimeout = "";

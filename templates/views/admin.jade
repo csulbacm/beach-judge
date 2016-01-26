@@ -15,10 +15,7 @@ block users
 		.block
 			p.header User Groups
 			.list
-				ul
-					li: a(href="/usergroup/1", onmouseenter="jUserGroupMouseEnter(this)", onmouseleave="jUserGroupMouseLeave()", i="1") admin
-					li: a(href="/usergroup/2", onmouseenter="jUserGroupMouseEnter(this)", onmouseleave="jUserGroupMouseLeave()", i="2") judge1
-					li: a(href="/usergroup/3", onmouseenter="jUserGroupMouseEnter(this)", onmouseleave="jUserGroupMouseLeave()", i="3") acm123
+				ul#grouplist
 					li: p There are no user groups.
 		.block
 			.createGroup
