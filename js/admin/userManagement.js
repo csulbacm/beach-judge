@@ -13,15 +13,16 @@ $(document).ready(function(){
 	judge.msgHandler['CU'] = function(msg) {
 		if (typeof msg.err != 'undefined') {
 			var errBox = _createUserForm.find('.form-error');
+			var parent = errBox.parent();
 			if (msg.err === 'I') {
 				errBox.html('Error: Form data is invalid.');
-				errBox.show();
+				parent.show();
 			} else if (msg.err === 'P') {
 				errBox.html('Error: The passwords do not match.');
-				errBox.show();
+				parent.show();
 			} else if (msg.err === 'N') {
 				errBox.html('Error: A user exists with that name.');
-				errBox.show();
+				parent.show();
 			}
 		} else {
 			_userList.children().each(function() {
@@ -56,10 +57,21 @@ $(document).ready(function(){
 	});
 
 	//------------ User Groups --------------
+	
+	// Creation
+	$('#jfug-cr-ca').click(function() { this.parentNode.parentNode.reset(); nav('/usergroups'); });
+	$('#jfug-cr-cl').click(function() { this.parentNode.parentNode.reset(); });
+	$('#jfug-cr-cr').click(function() {
+		console.log("Create");
+		//	judgeGroupCreate(form)
+	});
+
 	var _groupList = $('#grouplist');
 	judge.msgHandler['UGL'] = function(msg) {
-		if (msg.usergroups.length == 0)
+		if (msg.usergroups.length == 0) {
+			_groupList.html("<p>There are no user groups.</p>");
 			return;
+		}
 		var h = '';
 		for (var a = 0; a < msg.usergroups.length; ++a) {
 			h += '<li><a href="/usergroup/'

@@ -126,6 +126,8 @@ int ws_http(libwebsocket_context *context,
 //		if (lws_is_ssl(wsi) == 0) {
 //			strcat(buf,"/nonssl.html");
 		//} else if (strstr((char *)in, ".") == NULL) {
+		
+		// Routing
 		if (strstr((char *)in, ".") == NULL) {
 			if (pss->user == 0)
 				strcat(buf, "/login");

@@ -242,7 +242,6 @@ struct User
 		for (u16 a = 0; a < SHA256_DIGEST_LENGTH; ++a)
 			sprintf(buffer + (a << 1), "%02x", hash[a]);
 		buffer[len] = 0;
-
 		return password.compare(buffer) == 0;
 	}
 

@@ -149,7 +149,7 @@ function onNavigate(stateObj) {
 	if (judgeDebug )
 		console.log('Nav:' + JSON.stringify(stateObj));
 
-	if (stateObj.nav === '/users') {
+	if (stateObj.nav === '/usergroups') {
 		//TODO: Send unix timestamp for last received data
 		judgeQueue('UGL');
 		//judgeQueue('UL:');

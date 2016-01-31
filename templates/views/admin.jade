@@ -3,31 +3,34 @@ block root
 	p Root
 block scoreboard
 	p Scoreboard
-block users
-	//.mode
-		p
-			a(href="#") User Groups
-			span |
-			a(href="#") Users
-	#usergroup
+block usergroups
+	#usergroups
 		#usergroup-hover
 			p Edit
 		.block
 			p.header User Groups
 			.list
 				ul#grouplist
-					li: p There are no user groups.
+			p.center
+				a(href="javascript:nav('/usergroupcreate')") Create User Group
+block usergroupcreate
+	#usergroupcreate
 		.block
 			.createGroup
 				p.header Create User Group
-				form#user-groupCreate-form.judge-form(auto-complete="off")
-					input.judge-form-string(name="n", type="text", placeholder="Name", autocomplete="off")
-					input#chk-active(name="a", type="checkbox")
-					label(for="chk-active") Active
-					input.form-button(value="Clear", type="button", onclick="parentNode.reset()")
-					input.form-button(value="Create", type="button", onclick="judgeGroupCreate(form)")
-					p.form-error
-			.editGroup
+				form#jfug-cr.judge-form(auto-complete="off")
+					.row
+						input.judge-form-string(name="n", type="text", placeholder="Name", autocomplete="off")
+					.row
+						input#jfug-cr-a(name="a", type="checkbox", checked)
+						label(for="jfug-create-a") Active - Inactive groups cannot log in.
+					.row
+						input#jfug-cr-cl.form-button(value="Clear", type="button")
+						input#jfug-cr-cr.form-button(value="Create", type="button")
+						input#jfug-cr-ca.form-button(value="Cancel", type="button")
+					.row.hidden
+						p.form-error
+			//.editGroup
 				p.header Edit User Group
 				form#user-groupEdit-form.judge-form(auto-complete="off")
 					select#grouplist(onchange="jUserGroupSelect()")
@@ -43,7 +46,7 @@ block users
 					p.form-error
 	.block#users
 		.actions
-			.createUser
+			//.createUser
 				p.header Create User
 				form#create-user-form.judge-form(auto-complete="off")
 					input.judge-form-string(name="n", type="text", placeholder="Username", autocomplete="off", required)
@@ -52,7 +55,7 @@ block users
 					input.form-button(value="Create User", type="submit")
 					input.form-button(value="Clear", type="button", onclick="parentNode.reset()")
 					p.form-error
-			.editUser
+			//.editUser
 				p.header Edit User
 				form#user-user-form.judge-form(auto-complete="off")
 					select#userlist(onchange="jUserUserSelect()")
