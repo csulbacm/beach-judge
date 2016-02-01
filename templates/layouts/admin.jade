@@ -8,16 +8,16 @@ block head
 block header
 	header: .container
 		ul.mainNav
-			li: a(href="javascript:nav('/')") beachJudge
-			li: a(href="javascript:nav('/scoreboard')") Scoreboard
-			li: a(href="javascript:nav('/usergroups')") Users
-			li.logout: a(href="javascript:judgeLogout()") Logout
+			li: a(href="/") beachJudge
+			li: a(href="/scoreboard") Scoreboard
+			li: a(href="/usergroups") Users
+			li.logout: a(href="", onclick="judgeLogout()") Logout
 block body
 	.container
 		.hideall
-			#root
-				block root
-			#scoreboard
-				block scoreboard
+			#404
+				p.center 404
+			block root
+			block scoreboard
 			block usergroups
-			block usergroupcreate
+			block usergroup-create

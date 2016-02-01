@@ -1,8 +1,10 @@
 extends layouts/admin
 block root
-	p Root
+	#root
+		p Root
 block scoreboard
-	p Scoreboard
+	#scoreboard
+		p Scoreboard
 block usergroups
 	#usergroups
 		#usergroup-hover
@@ -10,26 +12,25 @@ block usergroups
 		.block
 			p.header User Groups
 			.list
-				ul#grouplist
+				ul#usergroup-list
 			p.center
-				a(href="javascript:nav('/usergroupcreate')") Create User Group
-block usergroupcreate
-	#usergroupcreate
+				a(href="/usergroup/create") Create User Group
+block usergroup-create
+	#usergroup-create
 		.block
-			.createGroup
-				p.header Create User Group
-				form#jfug-cr.judge-form(auto-complete="off")
-					.row
-						input.judge-form-string(name="n", type="text", placeholder="Name", autocomplete="off")
-					.row
-						input#jfug-cr-a(name="a", type="checkbox", checked)
-						label(for="jfug-create-a") Active - Inactive groups cannot log in.
-					.row
-						input#jfug-cr-cl.form-button(value="Clear", type="button")
-						input#jfug-cr-cr.form-button(value="Create", type="button")
-						input#jfug-cr-ca.form-button(value="Cancel", type="button")
-					.row.hidden
-						p.form-error
+			p.header Create User Group
+			form#jfug-cr.judge-form(auto-complete="off")
+				.row
+					input.judge-form-string(name="n", type="text", placeholder="Name", autocomplete="off")
+				.row
+					input#jfug-cr-a(name="a", type="checkbox", checked)
+					label(for="jfug-create-a") Active - Inactive groups cannot log in.
+				.row
+					input#jfug-cr-cl.form-button(value="Clear", type="button")
+					input#jfug-cr-cr.form-button(value="Create", type="button")
+					input#jfug-cr-ca.form-button(value="Cancel", type="button")
+				.row.hidden
+					p.form-error
 			//.editGroup
 				p.header Edit User Group
 				form#user-groupEdit-form.judge-form(auto-complete="off")

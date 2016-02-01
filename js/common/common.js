@@ -131,34 +131,88 @@ function judgePopulate() {
 // Navigation
 var judgeLastState;
 function onNavigate(stateObj) {
-	//TODO: Don't reload if data hasn't changed
-	var container;
+	//TODO: Handle 404
+	var target;
+
+	// Hide last state data
 	if (judgeLastState) {
-		container = judgeLastState.nav.substr(1);
-		if (container.length)
-			$('#' + container).hide();
-		else
+		target = judgeLastState.nav.split('/');
+		if (target.length == 2)
+			target = target[1];
+		else if (target.length > 2) {
+			var arr = target;
+			var len = target.length;
+			target = "";
+			for (var a = 1; a < len; ++a) {
+				if (isNaN(arr[a]) == false)
+					break;
+				if (target.length)
+					target += '-' + arr[a];
+				else
+					target += arr[a];
+			}
+		} else
+			target = '';
+		if (target.length) {
+			target = $('#' + target);
+			if (target.length) {
+				target.hide();
+			} else
+				$('#404').hide();
+		} else
 			$('#root').hide();
 	}
-	container = stateObj.nav.substr(1);
-	if (container.length)
-		$('#' + container).show();
-	else
-		$('#root').show();
-	judgeLastState = stateObj;
-	if (judgeDebug )
-		console.log('Nav:' + JSON.stringify(stateObj));
 
-	if (stateObj.nav === '/usergroups') {
+	// Show new state and parse arguments
+	target = stateObj.nav.split('/');
+	var args = new Array();
+	if (target.length == 2)
+		target = target[1];
+	else if (target.length > 2) {
+		var arr = target;
+		var len = target.length;
+		target = "";
+		var isArgs = false;
+		for (var a = 1; a < len; ++a) {
+			if (isNaN(arr[a]) == false)
+				isArgs = true;
+			if (isArgs) {
+				args.push(arr[a]);
+				continue;
+			}
+			if (target.length)
+				target += '-' + arr[a];
+			else
+				target += arr[a];
+		}
+	} else
+		target = '';
+	console.log(args);
+	if (target === 'usergroups') {
 		//TODO: Send unix timestamp for last received data
 		judgeQueue('UGL');
 		//judgeQueue('UL:');
 	}
+	if (target.length) {
+		target = $('#' + target);
+		if (target.length) {
+			target.show();
+		} else
+			$('#404').show();
+	} else
+		$('#root').show();
+	judgeLastState = stateObj;
+	if (judgeDebug)
+		console.log('Nav:' + JSON.stringify(stateObj));
 }
 window.onpopstate = function(evt) {
 	onNavigate(evt.state);
 };
-function nav(target) {
+function nav(target, force) {
+	// Don't send request if data hasn't changed
+	if (judgeLastState)
+		if (judgeLastState.nav === target && force == false)
+			return;
 	var stateObj = { nav: target };
 	history.pushState(stateObj, 'beachJudge', stateObj.nav);
 	onNavigate(stateObj);
@@ -171,6 +225,11 @@ $(document).ready(function(){
 	var stateObj = { nav: window.location.pathname };
 	history.replaceState(stateObj, 'beachJudge', stateObj.nav);
 	onNavigate(stateObj);
+
+	$(document).on('click', 'a', function() {
+		nav(this.getAttribute('href'));
+		return false;
+	});
 });
 
 // Cleanup

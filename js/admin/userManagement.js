@@ -2,7 +2,7 @@ $(document).ready(function(){
 	var _userList = $('#userlist');
 	var _createUserForm = $('#create-user-form');
 
-	var _groupList = $('#grouplist');
+	var _groupList = $('#usergroup-list');
 	jUserGroupSelect = function() {
 		console.log(_groupList[0].selectedIndex);
 	}
@@ -57,38 +57,17 @@ $(document).ready(function(){
 	});
 
 	//------------ User Groups --------------
-	
-	// Creation
-	$('#jfug-cr-ca').click(function() { this.parentNode.parentNode.reset(); nav('/usergroups'); });
-	$('#jfug-cr-cl').click(function() { this.parentNode.parentNode.reset(); });
-	$('#jfug-cr-cr').click(function() {
-		console.log("Create");
-		//	judgeGroupCreate(form)
+	/*$('#usergroup-list li').click(function() {
+		console.log(this.getAttribute("i"));
+		return false;
 	});
-
-	var _groupList = $('#grouplist');
-	judge.msgHandler['UGL'] = function(msg) {
-		if (msg.usergroups.length == 0) {
-			_groupList.html("<p>There are no user groups.</p>");
-			return;
-		}
-		var h = '';
-		for (var a = 0; a < msg.usergroups.length; ++a) {
-			h += '<li><a href="/usergroup/'
-				+ msg.usergroups[a].i
-				+ '" onmouseenter="jUserGroupMouseEnter(this)"'
-				+ ' onmouseleave="jUserGroupMouseLeave()"'
-				+ 'i="' + msg.usergroups[a].i
-				+ '">' + msg.usergroups[a].n + '</a></li>';
-		}
-		_groupList.html(h);
-	};
-
+	*/
 	//TODO: Make this work for onClick for mobile
 	var jUserGroupMouseTimeout = "";
 	var _groupHover = $('#usergroup-hover');
 	var _groupHoverTarget = "";
-	jUserGroupMouseEnter = function(e) {
+	$('#usergroup-list a').mouseenter(function() {
+		console.log("ENTER");
 		clearTimeout(jUserGroupMouseTimeout);
 		var rect = e.getBoundingClientRect();
 		//jUserGroupTarget = e.getAttribute("i");
@@ -97,13 +76,37 @@ $(document).ready(function(){
 	//	_groupHoverTarget.addClass('hover');
 		_groupHover.css({top: rect.top, left: rect.left, width: rect.right - rect.left});
 		_groupHover.show();
-	}
-	jUserGroupMouseLeave = function() {
+	}).mouseleave(function() {
+		console.log("LEAVE");
 	//	_groupHoverTarget.removeClass('hover');
 		jUserGroupMouseTimeout = setTimeout(function() {
 			_groupHover.hide();
 		}, 100);
-	}
+	});
+
+	// Creation
+	$('#jfug-cr-ca').click(function() { this.parentNode.parentNode.reset(); nav('/usergroups'); });
+	$('#jfug-cr-cl').click(function() { this.parentNode.parentNode.reset(); });
+	$('#jfug-cr-cr').click(function() {
+		console.log("Create");
+		//	judgeGroupCreate(form)
+	});
+
+	var _groupList = $('#usergroup-list');
+	judge.msgHandler['UGL'] = function(msg) {
+		if (msg.usergroups.length == 0) {
+			_groupList.html("<p>There are no user groups.</p>");
+			return;
+		}
+		var h = '';
+		for (var a = 0; a < msg.usergroups.length; ++a) {
+			h += '<li><a href="/usergroupedit/'
+				+ msg.usergroups[a].i
+				+ '" i="' + msg.usergroups[a].i
+				+ '">' + msg.usergroups[a].n + '</a></li>';
+		}
+		_groupList.html(h);
+	};
 
 });
 
