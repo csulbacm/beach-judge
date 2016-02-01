@@ -31,19 +31,22 @@ block usergroup-create
 					input#jfug-cr-ca.form-button(value="Cancel", type="button")
 				.row.hidden
 					p.form-error
-			//.editGroup
-				p.header Edit User Group
-				form#user-groupEdit-form.judge-form(auto-complete="off")
-					select#grouplist(onchange="jUserGroupSelect()")
-						option admin
-						option judge1
-						option acm123
+block usergroup-edit
+	#usergroup-edit
+		.block
+			p.header Edit User Group
+			form#jfug-ed.judge-form(auto-complete="off")
+				.row
 					input.judge-form-string(name="n", type="text", placeholder="Name", autocomplete="off")
-					input#chk-active(name="a", type="checkbox")
-					label(for="chk-active") Active
-					input.form-button(value="Clear", type="button", onclick="parentNode.reset()")
-					input.form-button(value="Edit", type="button", onclick="judgeGroupUpdate(form)")
-					input.form-button(value="Delete", type="button", onclick="judgeGroupDelete(form)")
+				.row
+					input#jfug-ed-a(name="a", type="checkbox")
+					label(for="jfug-ed-a") Active - Inactive groups cannot log in.
+				.row
+					input#jfug-ed-cl.form-button(value="Clear", type="button")
+					input#jfug-ed-up.form-button(value="Update", type="button")
+					input#jfug-ed-dl.form-button(value="Delete", type="button")
+					input#jfug-ed-ca.form-button(value="Cancel", type="button")
+				.row.hidden
 					p.form-error
 	.block#users
 		.actions

@@ -66,30 +66,20 @@ $(document).ready(function(){
 	var jUserGroupMouseTimeout = "";
 	var _groupHover = $('#usergroup-hover');
 	var _groupHoverTarget = "";
-	$('#usergroup-list a').mouseenter(function() {
-		console.log("ENTER");
+	$('#usergroup-list').on('mouseenter', 'a', function() {
 		clearTimeout(jUserGroupMouseTimeout);
-		var rect = e.getBoundingClientRect();
+		var rect = this.getBoundingClientRect();
 		//jUserGroupTarget = e.getAttribute("i");
 		//_groupHover.setAttribute("href", "#" + e.getAttribute("i"));
-		_groupHoverTarget = $(e);
+		_groupHoverTarget = $(this);
 	//	_groupHoverTarget.addClass('hover');
 		_groupHover.css({top: rect.top, left: rect.left, width: rect.right - rect.left});
 		_groupHover.show();
-	}).mouseleave(function() {
-		console.log("LEAVE");
+	}).on('mouseleave', 'a', function() {
 	//	_groupHoverTarget.removeClass('hover');
 		jUserGroupMouseTimeout = setTimeout(function() {
 			_groupHover.hide();
 		}, 100);
-	});
-
-	// Creation
-	$('#jfug-cr-ca').click(function() { this.parentNode.parentNode.reset(); nav('/usergroups'); });
-	$('#jfug-cr-cl').click(function() { this.parentNode.parentNode.reset(); });
-	$('#jfug-cr-cr').click(function() {
-		console.log("Create");
-		//	judgeGroupCreate(form)
 	});
 
 	var _groupList = $('#usergroup-list');
@@ -100,13 +90,34 @@ $(document).ready(function(){
 		}
 		var h = '';
 		for (var a = 0; a < msg.usergroups.length; ++a) {
-			h += '<li><a href="/usergroupedit/'
+			h += '<li><a href="/usergroup/edit/'
 				+ msg.usergroups[a].i
 				+ '" i="' + msg.usergroups[a].i
 				+ '">' + msg.usergroups[a].n + '</a></li>';
 		}
 		_groupList.html(h);
 	};
+
+	// Creation
+	$('#jfug-cr-ca').click(function() { this.parentNode.parentNode.reset(); nav('/usergroups'); });
+	$('#jfug-cr-cl').click(function() { this.parentNode.parentNode.reset(); });
+	$('#jfug-cr-cr').click(function() {
+		console.log($(this.parentNode.parentNode).serialize());
+	//	$(this).find('.form-error').hide();
+	//	judgeQueue('CU ' + $(this).serialize());
+		console.log("Create");
+		//	judgeGroupCreate(form)
+	});
+
+	// Editing
+	$('#jfug-ed-ca').click(function() { this.parentNode.parentNode.reset(); nav('/usergroups'); });
+	$('#jfug-ed-cl').click(function() { this.parentNode.parentNode.reset(); });
+	$('#jfug-ed-up').click(function() {
+		console.log("Update");
+	});
+	$('#jfug-ed-dl').click(function() {
+		console.log("Delete");
+	});
 
 });
 

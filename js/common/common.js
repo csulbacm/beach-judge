@@ -187,7 +187,6 @@ function onNavigate(stateObj) {
 		}
 	} else
 		target = '';
-	console.log(args);
 	if (target === 'usergroups') {
 		//TODO: Send unix timestamp for last received data
 		judgeQueue('UGL');
