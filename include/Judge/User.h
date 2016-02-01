@@ -31,28 +31,32 @@ struct UserGroup
 	// Users
 
 	static std::map<u16, UserGroup *> s_groupsByID;
+	static std::map<std::string, UserGroup *> s_groupsByName;
 
 	UserGroup()
 	{
 	}
 
-	UserGroup(const char *name, u16 id = 65535, bool isActive = true) :
+	UserGroup(const char *name, u16 id = 0xFFFF, bool isActive = true) :
 		name(name),
-		id(id),
 		isActive(isActive),
 		users(std::vector<User *>())
 	{
-		if (id == 65535) {
+		if (id == 0xFFFF) {
 			id = 0;
 			do ++id;
 			while (s_groupsByID.count(id));
 		}
+		this->id = id;
 		s_groupsByID[id] = this;
+		s_groupsByName[name] = this;
 	}
 
 	~UserGroup()
 	{
+		//TODO: Verify this is necessary, might have to explicity remove
 		s_groupsByID[id] = 0;
+		s_groupsByName[name] = 0;
 	}
 
 
@@ -176,8 +180,7 @@ struct User
 		name(name),
 		display(display),
 		level(level),
-		groupID(groupID),
-		id(id)
+		groupID(groupID)
 	{
 		SetPassword(pw);
 
@@ -187,6 +190,7 @@ struct User
 			do id = rand() % 0x100000000;
 			while (s_usersByID.count(id));
 		}
+		this->id = id;
 		s_usersByID[id] = this;
 		UserGroup::s_groupsByID[groupID]->users.push_back(this);
 	}

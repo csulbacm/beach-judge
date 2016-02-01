@@ -11,6 +11,7 @@ namespace judge {
 //------------- Message Map ---------------
 
 void msg_createUser(libwebsocket *w, psd_judge *p, char *m);
+void msg_createUserGroup(libwebsocket *w, psd_judge *p, char *m);
 void msg_populate(libwebsocket *w, psd_judge *p, char *m);
 void msg_userList(libwebsocket *w, psd_judge *p, char *m);
 void msg_userGroupList(libwebsocket *w, psd_judge *p, char *m);
@@ -20,8 +21,9 @@ map<string, func_judge> createMsgMap()
 	map<string, func_judge> m = map<string, func_judge>();
 	m["POP"] = msg_populate;
 	m["UL"] = msg_userList;
-	m["UGL"] = msg_userGroupList;
 	m["CU"] = msg_createUser;
+	m["UGL"] = msg_userGroupList;
+	m["CUG"] = msg_createUserGroup;
 	return m;
 }
 map<string, func_judge> g_msgMap =
@@ -48,12 +50,12 @@ void msg_userList(libwebsocket *w, psd_judge *p, char *m)
 	map<string, User *>::iterator end = User::s_usersByName.end();
 	char entry[64];
 	while (it != end) {
-		sprintf(entry, "{\"i\":\"%04x\",\"n\":\"%s\"}",
+		sprintf(entry, "{\"i\":\"%x\",\"n\":\"%s\"}",
 			it->second->id, it->second->name.c_str());
 		users << entry;
 		++it;
 		if (it != end)
-			users << "\",\"";
+			users << ",";
 	}
 	sprintf(p->msg, ""
 		"\"msg\":\"UL\","
@@ -68,12 +70,12 @@ void msg_userGroupList(libwebsocket *w, psd_judge *p, char *m)
 	map<u16, UserGroup *>::iterator end = UserGroup::s_groupsByID.end();
 	char entry[64];
 	while (it != end) {
-		sprintf(entry, "{\"i\":\"%04x\",\"n\":\"%s\"}",
-			it->second->id, it->second->name.c_str());
+		sprintf(entry, "{\"i\":\"%x\",\"n\":\"%s\",\"a\":\"%d\"}",
+			it->second->id, it->second->name.c_str(), it->second->isActive);
 		str << entry;
 		++it;
 		if (it != end)
-			str << "\",\"";
+			str << ",";
 	}
 	sprintf(p->msg, ""
 		"\"msg\":\"UGL\","
@@ -95,14 +97,14 @@ void msg_createUser(libwebsocket *w, psd_judge *p, char *m)
 	i16 r = sscanf(m, "n=%[a-zA-Z0-9]&p1=%[a-zA-Z0-9]&p2=%[a-zA-Z0-9]", name, p1, p2);
 	if (r != 3) {
 		sprintf(p->msg, ""
-			"\"msg\":\"CT\","
+			"\"msg\":\"CU\","
 			"\"err\":\"I\"");
 		return;
 	}
 	if (strcmp(p1, p2) != 0) {
 		//TODO: memcpy prebuilt errors
 		sprintf(p->msg, ""
-			"\"msg\":\"CT\","
+			"\"msg\":\"CU\","
 			"\"err\":\"P\"");
 		return;
 	}
@@ -116,7 +118,7 @@ void msg_createUser(libwebsocket *w, psd_judge *p, char *m)
 
 	if (User::s_usersByName.count(name) != 0) {
 		sprintf(p->msg, ""
-			"\"msg\":\"CT\","
+			"\"msg\":\"CU\","
 			"\"err\":\"N\"");
 		return;
 	}
@@ -133,6 +135,56 @@ void msg_createUser(libwebsocket *w, psd_judge *p, char *m)
 		*/
 }
 
+void msg_createUserGroup(libwebsocket *w, psd_judge *p, char *m)
+{
+	// Restrict action to judge
+	if (p->user->level < User::Admin) {
+		sprintf(p->msg, "\"msg\": \"ERR\"");
+		return;
+	}
+
+	//TODO: Define name length requirement
+	bool isActive = false;
+	char name[16], active[16];
+	i16 r = sscanf(m, "n=%[a-zA-Z0-9]&a=%[a-zA-Z0-9]", name, active);
+	if (r != 2) {
+		r = sscanf(m, "n=%[a-zA-Z0-9]", name);
+		if (r != 1) {
+			sprintf(p->msg, ""
+				"\"msg\":\"CUG\","
+				"\"err\":\"I\"");
+			return;
+		}
+	} else
+		isActive = strcmp(active, "on") == 0;
+
+	// Set name to lower case
+	{
+		i16 l = strlen(name);
+		for (i16 a = 0; a < l; ++a)
+			name[a] = tolower(name[a]);
+	}
+
+
+	if (UserGroup::s_groupsByName.count(name) != 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"CUG\","
+			"\"err\":\"N\"");
+		return;
+	}
+
+	//TODO: Debug text
+	UserGroup *group = new UserGroup(name, 0xFFFF, false);
+	group->SQL_Insert();
+	sprintf(p->msg, ""
+		"\"msg\":\"CUG\","
+		"\"i\":\"%04x\","
+		"\"n\":\"%s\","
+		"\"a\":\"%d\"",
+		group->id,
+		group->name.c_str(),
+		group->isActive);
+}
 
 //----------------------------------------------
 //------------ WebSocket Protocol --------------
@@ -220,6 +272,7 @@ int ws_judge(libwebsocket_context *context,
 			char msgType[5];
 			msgType[4] = 0;
 			sscanf(msgIn, "%4[a-zA-Z]:", msgType);
+			memset(pss->msg, 0, JUDGE_MAX_RESPONSE);
 			if (g_msgMap.count(msgType))
 				(*g_msgMap[msgType])(wsi, pss, msgIn + strlen(msgType) + 1);
 			else

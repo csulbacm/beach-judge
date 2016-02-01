@@ -1,4 +1,15 @@
 extends layouts/admin
+mixin loading(id)
+	.loading(id=id)
+		.l
+			.l1
+			.l2
+			.l3
+			.l4
+			.l5
+			.l6
+			.l7
+			.l8
 block root
 	#root
 		p Root
@@ -12,6 +23,8 @@ block usergroups
 		.block
 			p.header User Groups
 			.list
+				.placeholder.hidden
+					+loading("usergroup-loading")
 				ul#usergroup-list
 			p.center
 				a(href="/usergroup/create") Create User Group
@@ -30,7 +43,7 @@ block usergroup-create
 					input#jfug-cr-cr.form-button(value="Create", type="button")
 					input#jfug-cr-ca.form-button(value="Cancel", type="button")
 				.row.hidden
-					p.form-error
+					p#jfug-cr-er.form-error
 block usergroup-edit
 	#usergroup-edit
 		.block

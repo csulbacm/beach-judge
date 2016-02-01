@@ -189,7 +189,11 @@ function onNavigate(stateObj) {
 		target = '';
 	if (target === 'usergroups') {
 		//TODO: Send unix timestamp for last received data
-		judgeQueue('UGL');
+		$('#usergroup-list').html('');
+		$('#usergroups .placeholder').show(1, function() {
+			$('#usergroup-loading').css(this.getBoundingClientRect());
+			judgeQueue('UGL');
+		});
 		//judgeQueue('UL:');
 	}
 	if (target.length) {

@@ -19,7 +19,7 @@ void loadJudgeData()
 	// Default User Data
 	if (UserGroup::s_groupsByID.count(0) == 0) {
 		printf("Creating global user group...\n");
-		(new UserGroup("Global", 0))->SQL_Insert();
+		(new UserGroup("global", 0))->SQL_Insert();
 	}
 	if (User::s_usersByName.count("admin") == 0) {
 		printf("Creating admin user...\n");

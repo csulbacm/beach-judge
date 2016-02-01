@@ -1,6 +1,8 @@
 $(document).ready(function(){
 	var _userList = $('#userlist');
 	var _createUserForm = $('#create-user-form');
+	var _createUserGroupForm = $('#jfug-cr');
+	var _createUserGroupFormError = $('#jfug-cr-er');
 
 	var _groupList = $('#usergroup-list');
 	jUserGroupSelect = function() {
@@ -82,31 +84,37 @@ $(document).ready(function(){
 		}, 100);
 	});
 
-	var _groupList = $('#usergroup-list');
+	var _userGroupList = $('#usergroup-list');
 	judge.msgHandler['UGL'] = function(msg) {
+		// Hide placeholder
+		$('#usergroups .placeholder').hide();
 		if (msg.usergroups.length == 0) {
 			_groupList.html("<p>There are no user groups.</p>");
 			return;
 		}
 		var h = '';
 		for (var a = 0; a < msg.usergroups.length; ++a) {
-			h += '<li><a href="/usergroup/edit/'
-				+ msg.usergroups[a].i
-				+ '" i="' + msg.usergroups[a].i
-				+ '">' + msg.usergroups[a].n + '</a></li>';
+			h += '<li><a href="/usergroup/edit/' + msg.usergroups[a].i + '" i="' + msg.usergroups[a].i
+				+ '">' + msg.usergroups[a].n;
+			if (msg.usergroups[a].a == false)
+				h += '<span class="ia"> - Inactive</span>';
+			h += '</a></li>';
 		}
-		_groupList.html(h);
+		_userGroupList.html(h);
 	};
 
 	// Creation
-	$('#jfug-cr-ca').click(function() { this.parentNode.parentNode.reset(); nav('/usergroups'); });
-	$('#jfug-cr-cl').click(function() { this.parentNode.parentNode.reset(); });
+	$('#jfug-cr-ca').click(function() {
+		_createUserGroupFormError.parent().hide();
+		_createUserGroupForm[0].reset();
+		nav('/usergroups');
+	});
+	$('#jfug-cr-cl').click(function() {
+		_createUserGroupForm[0].reset();
+	});
 	$('#jfug-cr-cr').click(function() {
-		console.log($(this.parentNode.parentNode).serialize());
-	//	$(this).find('.form-error').hide();
-	//	judgeQueue('CU ' + $(this).serialize());
-		console.log("Create");
-		//	judgeGroupCreate(form)
+		_createUserGroupFormError.parent().hide();
+		judgeQueue('CUG ' + _createUserGroupForm.serialize());
 	});
 
 	// Editing
@@ -119,5 +127,38 @@ $(document).ready(function(){
 		console.log("Delete");
 	});
 
+	judge.msgHandler['CUG'] = function(msg) {
+		if (typeof msg.err != 'undefined') {
+			var errBox = _createUserGroupFormError;
+			var parent = errBox.parent();
+			if (msg.err === 'I') {
+				errBox.html('Error: Form data is invalid.');
+				parent.show();
+			} else if (msg.err === 'N') {
+				errBox.html('Error: A usergroup exists with that name.');
+				parent.show();
+			}
+		} else {
+			nav('/usergroups');
+			return;
+			//TODO: Revisit this or remove
+			_userGroupList.children().each(function() {
+				if (this.firstChild.innerHTML.toLowerCase().localeCompare(msg.n.toLowerCase()) > 0) {
+					$(this).before('<li><a href="/usergroup/edit/'
+						+ msg.i
+						+ '" i="' + msg.i
+						+ '">' + msg.n + '</a></li>');
+					return false;
+				}
+				if (this.parentNode.lastChild === this) {
+					$(this).before('<li><a href="/usergroup/edit/'
+						+ msg.i
+						+ '" i="' + msg.i
+						+ '">' + msg.n + '</a></li>');
+					return false;
+				}
+			});
+		}
+	};
 });
 
