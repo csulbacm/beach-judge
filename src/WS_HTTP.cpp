@@ -73,12 +73,9 @@ int ws_http(libwebsocket_context *context,
 			goto try_to_reuse;
 		}
 
-		/* this server has no concept of directories */
-		if (strchr((const char *)in + 1, '/')) {
-			libwebsockets_return_http_status(context, wsi,
-						HTTP_STATUS_FORBIDDEN, NULL);
-			goto try_to_reuse;
-		}
+		bool hasSlash = false;
+		if (strchr((const char *)in + 1, '/'))
+			hasSlash = true;
 
 		/* if a legal POST URL, let it continue and accept data */
 		if (lws_hdr_total_length(wsi, WSI_TOKEN_POST_URI)) {
@@ -128,6 +125,7 @@ int ws_http(libwebsocket_context *context,
 		//} else if (strstr((char *)in, ".") == NULL) {
 		
 		// Routing
+		// TODO: Check if file, otherwise send appropriate package
 		if (strstr((char *)in, ".") == NULL) {
 			if (pss->user == 0)
 				strcat(buf, "/login");
@@ -141,6 +139,12 @@ int ws_http(libwebsocket_context *context,
 		} else if (strcmp((const char *)in, "/")) {
 			if (*((const char *)in) != '/')
 				strcat(buf, "/");
+			/* this server has no concept of directories */
+			if (hasSlash) {
+				libwebsockets_return_http_status(context, wsi,
+							HTTP_STATUS_FORBIDDEN, NULL);
+				goto try_to_reuse;
+			}
 			strncat(buf, (const char *)in, sizeof(buf) - strlen(g_resourcePath));
 		}
 
@@ -204,6 +208,7 @@ int ws_http(libwebsocket_context *context,
 				string name(nameBuff);
 				if (User::s_usersByName.count(name) != 0) {
 					User *user = User::s_usersByName[name];
+					printf("U: %p\n", user);
 					if (user->TestPassword(pwBuff)) {
 						// Generate Session Key
 						u16 l = SHA256_DIGEST_LENGTH * 2;
