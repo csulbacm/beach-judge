@@ -139,6 +139,7 @@ $(document).ready(function(){
 				parent.show();
 			}
 		} else {
+			_createUserGroupForm[0].reset();
 			nav('/usergroups');
 			return;
 			//TODO: Revisit this or remove

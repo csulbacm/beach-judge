@@ -174,7 +174,7 @@ void msg_createUserGroup(libwebsocket *w, psd_judge *p, char *m)
 	}
 
 	//TODO: Debug text
-	UserGroup *group = new UserGroup(name, 0xFFFF, false);
+	UserGroup *group = new UserGroup(name, 0xFFFF, isActive);
 	group->SQL_Insert();
 	sprintf(p->msg, ""
 		"\"msg\":\"CUG\","
