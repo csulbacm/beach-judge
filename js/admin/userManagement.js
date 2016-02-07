@@ -187,6 +187,9 @@ $(document).ready(function(){
 			if (msg.err === 'I') {
 				errBox.html('Error: Form data is invalid.');
 				parent.show();
+			} else if (msg.err === 'G') {
+				errBox.html('Error: You cannot delete the global user group.');
+				parent.show();
 			} else if (msg.err === 'U') {
 				errBox.html('Error: A usergroup does not exist with that id.');
 				parent.show();
@@ -213,14 +216,17 @@ $(document).ready(function(){
 			if (msg.err === 'I') {
 				errBox.html('Error: Form data is invalid.');
 				parent.show();
-			} else if (msg.err === 'U') {
-				errBox.html('Error: A usergroup exists with that id.');
+			} else if (msg.err === 'G') {
+				errBox.html('Error: You cannot alter the global user group.');
 				parent.show();
 			} else if (msg.err === 'N') {
 				errBox.html('Error: A usergroup exists with that name.');
 				parent.show();
 			} else if (msg.err === 'S') {
 				errBox.html('Error: There are no changes to be made.');
+				parent.show();
+			} else if (msg.err === 'U') {
+				errBox.html('Error: A usergroup exists with that id.');
 				parent.show();
 			}
 		} else {

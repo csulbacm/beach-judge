@@ -210,6 +210,13 @@ void msg_userGroupDelete(libwebsocket *w, psd_judge *p, char *m)
 
 	u16 id = atoi(idStr);
 
+	if (id == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UGD\","
+			"\"err\":\"G\"");
+		return;
+	}
+
 	if (UserGroup::s_groupsByID.count(id) == 0) {
 		sprintf(p->msg, ""
 			"\"msg\":\"UGD\","
@@ -291,6 +298,13 @@ void msg_userGroupUpdate(libwebsocket *w, psd_judge *p, char *m)
 
 	u16 id = atoi(idStr);
 
+	if (id == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UGU\","
+			"\"err\":\"G\"");
+		return;
+	}
+
 	if (UserGroup::s_groupsByID.count(id) == 0) {
 		sprintf(p->msg, ""
 			"\"msg\":\"UGU\","
@@ -299,6 +313,7 @@ void msg_userGroupUpdate(libwebsocket *w, psd_judge *p, char *m)
 	}
 
 	UserGroup *group = UserGroup::s_groupsByID[id];
+
 
 	// Set name to lower case
 	{
