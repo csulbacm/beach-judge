@@ -55,8 +55,18 @@ struct UserGroup
 	~UserGroup()
 	{
 		//TODO: Verify this is necessary, might have to explicity remove
-		s_groupsByID[id] = 0;
-		s_groupsByName[name] = 0;
+		if (s_groupsByID.count(id))
+			s_groupsByID[id] = 0;
+		if (s_groupsByName.count(name))
+			s_groupsByName[name] = 0;
+	}
+
+	void Purge()
+	{
+		if (s_groupsByID.count(id))
+			s_groupsByID.erase(id);
+		if (s_groupsByName.count(name))
+			s_groupsByName.erase(name);
 	}
 
 

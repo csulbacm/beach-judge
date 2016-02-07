@@ -195,6 +195,8 @@ function onNavigate(stateObj) {
 			judgeQueue('UGL');
 		});
 		//judgeQueue('UL:');
+	} else if (target === 'usergroup-edit') {
+		$('#jfug-ed-i').val(args[0]);
 	}
 	if (target.length) {
 		target = $('#' + target);

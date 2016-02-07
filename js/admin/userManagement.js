@@ -1,8 +1,10 @@
 $(document).ready(function(){
 	var _userList = $('#userlist');
-	var _createUserForm = $('#create-user-form');
-	var _createUserGroupForm = $('#jfug-cr');
-	var _createUserGroupFormError = $('#jfug-cr-er');
+	var _userCreateForm = $('#create-user-form');
+	var _userGroupCreateForm = $('#jfug-cr');
+	var _userGroupCreateFormError = $('#jfug-cr-er');
+	var _userGroupEditForm = $('#jfug-ed');
+	var _userGroupEditFormError = $('#jfug-ed-er');
 
 	var _groupList = $('#usergroup-list');
 	jUserGroupSelect = function() {
@@ -14,7 +16,7 @@ $(document).ready(function(){
 
 	judge.msgHandler['CU'] = function(msg) {
 		if (typeof msg.err != 'undefined') {
-			var errBox = _createUserForm.find('.form-error');
+			var errBox = _userCreateForm.find('.form-error');
 			var parent = errBox.parent();
 			if (msg.err === 'I') {
 				errBox.html('Error: Form data is invalid.');
@@ -52,7 +54,7 @@ $(document).ready(function(){
 		_userList.html(h);
 	};
 
-	_createUserForm.submit(function(evt) {
+	_userCreateForm.submit(function(evt) {
 		$(this).find('.form-error').hide();
 		judgeQueue('CU ' + $(this).serialize());
 		return false;
@@ -105,31 +107,45 @@ $(document).ready(function(){
 
 	// Creation
 	$('#jfug-cr-ca').click(function() {
-		_createUserGroupFormError.parent().hide();
-		_createUserGroupForm[0].reset();
+		_userGroupCreateFormError.parent().hide();
+		_userGroupCreateForm[0].reset();
 		nav('/usergroups');
 	});
 	$('#jfug-cr-cl').click(function() {
-		_createUserGroupForm[0].reset();
+		_userGroupCreateForm[0].reset();
 	});
 	$('#jfug-cr-cr').click(function() {
-		_createUserGroupFormError.parent().hide();
-		judgeQueue('CUG ' + _createUserGroupForm.serialize());
+		if (confirm("Are you sure you want to create this user group?") == 0)
+			return;
+		_userGroupCreateFormError.parent().hide();
+		judgeQueue('CUG ' + _userGroupCreateForm.serialize());
 	});
 
 	// Editing
-	$('#jfug-ed-ca').click(function() { this.parentNode.parentNode.reset(); nav('/usergroups'); });
-	$('#jfug-ed-cl').click(function() { this.parentNode.parentNode.reset(); });
+	$('#jfug-ed-ca').click(function() {
+		_userGroupEditFormError.parent().hide();
+		_userGroupEditForm[0].reset();
+		nav('/usergroups');
+	});
+	$('#jfug-ed-cl').click(function() {
+		_userGroupEditForm[0].reset();
+	});
 	$('#jfug-ed-up').click(function() {
-		console.log("Update");
+		if (confirm("Are you sure you want to update this user group?") == 0)
+			return;
+		_userGroupEditFormError.parent().hide();
+		console.log('Update');
 	});
 	$('#jfug-ed-dl').click(function() {
-		console.log("Delete");
+		if (confirm("Are you sure you want to delete this user group?") == 0)
+			return;
+		console.log('DUG ' + $('#jfug-ed-i').serialize());
+		judgeQueue('DUG ' + $('#jfug-ed-i').serialize());
 	});
 
 	judge.msgHandler['CUG'] = function(msg) {
 		if (typeof msg.err != 'undefined') {
-			var errBox = _createUserGroupFormError;
+			var errBox = _userGroupCreateFormError;
 			var parent = errBox.parent();
 			if (msg.err === 'I') {
 				errBox.html('Error: Form data is invalid.');
@@ -139,10 +155,11 @@ $(document).ready(function(){
 				parent.show();
 			}
 		} else {
-			_createUserGroupForm[0].reset();
+			_userGroupCreateForm[0].reset();
 			nav('/usergroups');
 			return;
 			//TODO: Revisit this or remove
+			/*
 			_userGroupList.children().each(function() {
 				if (this.firstChild.innerHTML.toLowerCase().localeCompare(msg.n.toLowerCase()) > 0) {
 					$(this).before('<li><a href="/usergroup/edit/'
@@ -159,6 +176,23 @@ $(document).ready(function(){
 					return false;
 				}
 			});
+			*/
+		}
+	};
+	judge.msgHandler['DUG'] = function(msg) {
+		if (typeof msg.err != 'undefined') {
+			var errBox = _userGroupEditFormError;
+			var parent = errBox.parent();
+			if (msg.err === 'I') {
+				errBox.html('Error: Form data is invalid.');
+				parent.show();
+			} else if (msg.err === 'D') {
+				errBox.html('Error: A usergroup does not exist with that id.');
+				parent.show();
+			}
+		} else {
+			_userGroupEditForm[0].reset();
+			nav('/usergroups');
 		}
 	};
 });

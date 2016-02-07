@@ -10,8 +10,9 @@ namespace judge {
 //-----------------------------------------
 //------------- Message Map ---------------
 
-void msg_createUser(libwebsocket *w, psd_judge *p, char *m);
-void msg_createUserGroup(libwebsocket *w, psd_judge *p, char *m);
+void msg_userCreate(libwebsocket *w, psd_judge *p, char *m);
+void msg_userGroupCreate(libwebsocket *w, psd_judge *p, char *m);
+void msg_userGroupDelete(libwebsocket *w, psd_judge *p, char *m);
 void msg_populate(libwebsocket *w, psd_judge *p, char *m);
 void msg_userList(libwebsocket *w, psd_judge *p, char *m);
 void msg_userGroupList(libwebsocket *w, psd_judge *p, char *m);
@@ -21,9 +22,10 @@ map<string, func_judge> createMsgMap()
 	map<string, func_judge> m = map<string, func_judge>();
 	m["POP"] = msg_populate;
 	m["UL"] = msg_userList;
-	m["CU"] = msg_createUser;
+	m["CU"] = msg_userCreate;
 	m["UGL"] = msg_userGroupList;
-	m["CUG"] = msg_createUserGroup;
+	m["CUG"] = msg_userGroupCreate;
+	m["DUG"] = msg_userGroupDelete;
 	return m;
 }
 map<string, func_judge> g_msgMap =
@@ -83,7 +85,7 @@ void msg_userGroupList(libwebsocket *w, psd_judge *p, char *m)
 		str.str().c_str());
 }
 
-void msg_createUser(libwebsocket *w, psd_judge *p, char *m)
+void msg_userCreate(libwebsocket *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
 	if (p->user->level < User::Admin) {
@@ -135,7 +137,7 @@ void msg_createUser(libwebsocket *w, psd_judge *p, char *m)
 		*/
 }
 
-void msg_createUserGroup(libwebsocket *w, psd_judge *p, char *m)
+void msg_userGroupCreate(libwebsocket *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
 	if (p->user->level < User::Admin) {
@@ -165,7 +167,6 @@ void msg_createUserGroup(libwebsocket *w, psd_judge *p, char *m)
 			name[a] = tolower(name[a]);
 	}
 
-
 	if (UserGroup::s_groupsByName.count(name) != 0) {
 		sprintf(p->msg, ""
 			"\"msg\":\"CUG\","
@@ -184,6 +185,44 @@ void msg_createUserGroup(libwebsocket *w, psd_judge *p, char *m)
 		group->id,
 		group->name.c_str(),
 		group->isActive);
+}
+
+void msg_userGroupDelete(libwebsocket *w, psd_judge *p, char *m)
+{
+	// Restrict action to judge
+	if (p->user->level < User::Admin) {
+		sprintf(p->msg, "\"msg\": \"ERR\"");
+		return;
+	}
+
+	//TODO: Define name length requirement
+	char idStr[16];
+	i16 r = sscanf(m, "i=%[0-9]", idStr);
+	if (r != 1) {
+		sprintf(p->msg, ""
+			"\"msg\":\"DUG\","
+			"\"err\":\"I\"");
+		return;
+	}
+
+	u16 id = atoi(idStr);
+
+	if (UserGroup::s_groupsByID.count(id) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"DUG\","
+			"\"err\":\"U\"");
+		return;
+	}
+
+	//TODO: Debug text
+	UserGroup *group = UserGroup::s_groupsByID[id];
+	group->SQL_Delete();
+	sprintf(p->msg, ""
+		"\"msg\":\"DUG\","
+		"\"i\":\"%d\"",
+		id);
+	group->Purge();
+	delete group;
 }
 
 //----------------------------------------------
