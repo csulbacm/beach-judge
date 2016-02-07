@@ -50,7 +50,7 @@ void msg_userList(libwebsocket *w, psd_judge *p, char *m)
 	map<string, User *>::iterator end = User::s_usersByName.end();
 	char entry[64];
 	while (it != end) {
-		sprintf(entry, "{\"i\":\"%x\",\"n\":\"%s\"}",
+		sprintf(entry, "{\"i\":\"%d\",\"n\":\"%s\"}",
 			it->second->id, it->second->name.c_str());
 		users << entry;
 		++it;
@@ -70,7 +70,7 @@ void msg_userGroupList(libwebsocket *w, psd_judge *p, char *m)
 	map<u16, UserGroup *>::iterator end = UserGroup::s_groupsByID.end();
 	char entry[64];
 	while (it != end) {
-		sprintf(entry, "{\"i\":\"%x\",\"n\":\"%s\",\"a\":\"%d\"}",
+		sprintf(entry, "{\"i\":\"%d\",\"n\":\"%s\",\"a\":\"%d\"}",
 			it->second->id, it->second->name.c_str(), it->second->isActive);
 		str << entry;
 		++it;
@@ -128,7 +128,7 @@ void msg_createUser(libwebsocket *w, psd_judge *p, char *m)
 	User *newUser = new User(name, p1, 0, false);
 	sprintf(p->msg, ""
 		"\"msg\":\"CT\","
-		"\"i\":\"%04x\","
+		"\"i\":\"%d\","
 		"\"n\":\"%s\"",
 		newUser->id,
 		newUser->name.c_str());
@@ -178,7 +178,7 @@ void msg_createUserGroup(libwebsocket *w, psd_judge *p, char *m)
 	group->SQL_Insert();
 	sprintf(p->msg, ""
 		"\"msg\":\"CUG\","
-		"\"i\":\"%04x\","
+		"\"i\":\"%d\","
 		"\"n\":\"%s\","
 		"\"a\":\"%d\"",
 		group->id,
