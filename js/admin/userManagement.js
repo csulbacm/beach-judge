@@ -1,5 +1,5 @@
 $(document).ready(function(){
-	var _userList = $('#userlist');
+	var _userList = $('#user-list');
 	var _userCreateForm = $('#create-user-form');
 	var _userGroupCreateForm = $('#jfug-cr');
 	var _userGroupCreateFormError = $('#jfug-cr-er');
@@ -45,11 +45,16 @@ $(document).ready(function(){
 	};
 
 	judge.msgHandler['UL'] = function(msg) {
-		var h = '<option>Select User</option>';
-		//TODO: Use User ID
+		$('#usergroup-edit .placeholder').hide();
+		if (msg.users.length == 0) {
+			_userList.html("<p>There are no users in this group.</p>");
+			return;
+		}
+		var h = '';
 		for (var a = 0; a < msg.users.length; ++a) {
-			h += '<option id=\'' + msg.users[a].i
-				+ '\'>' + msg.users[a].n + '</option>';
+			h += '<li><a href="/user/edit/' + msg.users[a].i + '" i="' + msg.users[a].i
+				+ '">' + msg.users[a].n
+				+ '</a></li>';
 		}
 		_userList.html(h);
 	};
@@ -88,7 +93,6 @@ $(document).ready(function(){
 
 	var _userGroupList = $('#usergroup-list');
 	judge.msgHandler['UGL'] = function(msg) {
-		// Hide placeholder
 		$('#usergroups .placeholder').hide();
 		if (msg.usergroups.length == 0) {
 			_groupList.html("<p>There are no user groups.</p>");

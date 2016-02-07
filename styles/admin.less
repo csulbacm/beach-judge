@@ -2,6 +2,24 @@
 @import "common/layout";
 @import "common/form";
 
+#user-hover,
+#usergroup-hover {
+	display: none;
+	position: fixed;
+	text-align: right;
+	margin-top: 8px;
+	//padding: 8px 16px 8px 16px;
+	top: 0px;
+	left: 0px;
+	pointer-events: none;
+
+	p {
+		padding: 0;
+		margin: 0 auto;
+		margin-right: 16px;
+	}
+}
+
 #usergroups,
 #usergroup-create,
 #usergroup-edit {
@@ -51,6 +69,12 @@
 				padding-left: 0px;
 				list-style-type: none;
 				
+				> p {
+					color: rgb(127, 127, 127);
+					margin: 0 auto;
+					padding: 8px 16px 8px 16px;
+				}
+
 				> li {
 					display: block;
 					color: rgb(127, 127, 127);
@@ -86,22 +110,6 @@
 		}
 	}
 
-	#usergroup-hover {
-		display: none;
-		position: fixed;
-		text-align: right;
-		margin-top: 8px;
-		//padding: 8px 16px 8px 16px;
-		top: 0px;
-		left: 0px;
-		pointer-events: none;
-
-		p {
-			padding: 0;
-			margin: 0 auto;
-			margin-right: 16px;
-		}
-	}
 
 	//-------- Old -----------
 	> .mode {

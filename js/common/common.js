@@ -125,7 +125,7 @@ function judgeLogout() {
 }
 
 function judgePopulate() {
-	judgeQueue('POP:');
+	judgeQueue('POP');
 }
 
 // Navigation
@@ -136,6 +136,10 @@ function onNavigate(stateObj) {
 
 	// Hide last state data
 	if (judgeLastState) {
+		// Don't do anything if the state hasn't changed
+		if (stateObj.nav === judgeLastState.nav)
+			return;
+
 		target = judgeLastState.nav.split('/');
 		if (target.length == 2)
 			target = target[1];
@@ -191,12 +195,23 @@ function onNavigate(stateObj) {
 		//TODO: Send unix timestamp for last received data
 		$('#usergroup-list').html('');
 		$('#usergroups .placeholder').show(1, function() {
-			$('#usergroup-loading').css(this.getBoundingClientRect());
+			var t = this;
+			setTimeout(function() {
+				$('#usergroup-loading').css(t.getBoundingClientRect());
+			}, 0);
 			judgeQueue('UGL');
 		});
 		//judgeQueue('UL:');
 	} else if (target === 'usergroup-edit') {
 		judgeQueue('UGI i=' + args[0]);
+		$('#user-create-lnk').prop('href', '/user/create/' + args[0]);
+		$('#usergroup-edit .placeholder').show(1, function() {
+			var t = this;
+			setTimeout(function() {
+				$('#user-loading').css(t.getBoundingClientRect());
+			}, 0);
+			judgeQueue('UL i=' + args[0]);
+		});
 	}
 	if (target.length) {
 		target = $('#' + target);

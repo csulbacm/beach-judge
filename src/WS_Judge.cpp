@@ -50,23 +50,44 @@ void msg_populate(libwebsocket *w, psd_judge *p, char *m)
 
 void msg_userList(libwebsocket *w, psd_judge *p, char *m)
 {
+	char idStr[16];
+	i16 r = sscanf(m, "i=%[0-9]", idStr);
+	if (r != 1) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UL\","
+			"\"err\":\"I\"");
+		return;
+	}
+
+	u16 id = atoi(idStr);
+	if (UserGroup::s_groupsByID.count(id) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UL\","
+			"\"err\":\"U\"");
+		return;
+	}
+	
+	UserGroup *group = UserGroup::s_groupsByID[id];
+
 	// Populate User Data
-	stringstream users;
-	map<string, User *>::iterator it = User::s_usersByName.begin();
-	map<string, User *>::iterator end = User::s_usersByName.end();
+	stringstream str;
+	vector<User *>::iterator it = group->users.begin();
+	vector<User *>::iterator end = group->users.end();
 	char entry[64];
+	User *u;
 	while (it != end) {
+		u = *it;
 		sprintf(entry, "{\"i\":\"%d\",\"n\":\"%s\"}",
-			it->second->id, it->second->name.c_str());
-		users << entry;
+			u->id, u->name.c_str());
+		str << entry;
 		++it;
 		if (it != end)
-			users << ",";
+			str << ",";
 	}
 	sprintf(p->msg, ""
 		"\"msg\":\"UL\","
 		"\"users\":[%s]",
-		users.str().c_str());
+		str.str().c_str());
 }
 void msg_userGroupList(libwebsocket *w, psd_judge *p, char *m)
 {
@@ -209,7 +230,6 @@ void msg_userGroupDelete(libwebsocket *w, psd_judge *p, char *m)
 	}
 
 	u16 id = atoi(idStr);
-
 	if (id == 0) {
 		sprintf(p->msg, ""
 			"\"msg\":\"UGD\","
@@ -253,7 +273,6 @@ void msg_userGroupInfo(libwebsocket *w, psd_judge *p, char *m)
 	}
 
 	u16 id = atoi(idStr);
-
 	if (UserGroup::s_groupsByID.count(id) == 0) {
 		sprintf(p->msg, ""
 			"\"msg\":\"UGI\","
@@ -297,7 +316,6 @@ void msg_userGroupUpdate(libwebsocket *w, psd_judge *p, char *m)
 		isActive = strcmp(active, "on") == 0;
 
 	u16 id = atoi(idStr);
-
 	if (id == 0) {
 		sprintf(p->msg, ""
 			"\"msg\":\"UGU\","
@@ -313,7 +331,6 @@ void msg_userGroupUpdate(libwebsocket *w, psd_judge *p, char *m)
 	}
 
 	UserGroup *group = UserGroup::s_groupsByID[id];
-
 
 	// Set name to lower case
 	{
@@ -447,7 +464,7 @@ int ws_judge(libwebsocket_context *context,
 			char *msgIn = (char *)pss->ringbuffer[pss->ringbuffer_tail].payload + LWS_SEND_BUFFER_PRE_PADDING;
 			char msgType[5];
 			msgType[4] = 0;
-			sscanf(msgIn, "%4[a-zA-Z]:", msgType);
+			sscanf(msgIn, "%4[a-zA-Z]", msgType);
 			memset(pss->msg, 0, JUDGE_MAX_RESPONSE);
 			if (g_msgMap.count(msgType))
 				(*g_msgMap[msgType])(wsi, pss, msgIn + strlen(msgType) + 1);

@@ -11,10 +11,10 @@ NodeJS
 
 x	Default Admin & Global User Group
 x	User & User Group Storage
-	UserGroup Management
+x	UserGroup Management
 x	Show UserGroups
-	Create/Manage UserGroups
-		Toggle Activity
+x	Create/Manage UserGroups
+x		Toggle Activity
 	Show Users in Group
 	Create/Manage Users
 	Move User to Group

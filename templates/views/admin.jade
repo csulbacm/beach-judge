@@ -62,6 +62,16 @@ block usergroup-edit
 					input#jfug-ed-ca.form-button(value="Cancel", type="button")
 				.row.hidden
 					p#jfug-ed-er.form-error
+		#user-hover
+			p Edit
+		.block
+			p.header Users
+			.list
+				.placeholder.hidden
+					+loading("user-loading")
+				ul#user-list
+			p.center
+				a#user-create-lnk(href="/user/create") Create User
 	.block#users
 		.actions
 			//.createUser
