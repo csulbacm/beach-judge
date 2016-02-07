@@ -14,7 +14,7 @@ $(document).ready(function(){
 		console.log(_userList[0].selectedIndex);
 	}
 
-	judge.msgHandler['CU'] = function(msg) {
+	judge.msgHandler['UC'] = function(msg) {
 		if (typeof msg.err != 'undefined') {
 			var errBox = _userCreateForm.find('.form-error');
 			var parent = errBox.parent();
@@ -112,13 +112,14 @@ $(document).ready(function(){
 		nav('/usergroups');
 	});
 	$('#jfug-cr-cl').click(function() {
+		_userGroupCreateFormError.parent().hide();
 		_userGroupCreateForm[0].reset();
 	});
 	$('#jfug-cr-cr').click(function() {
 		if (confirm("Are you sure you want to create this user group?") == 0)
 			return;
 		_userGroupCreateFormError.parent().hide();
-		judgeQueue('CUG ' + _userGroupCreateForm.serialize());
+		judgeQueue('UGC ' + _userGroupCreateForm.serialize());
 	});
 
 	// Editing
@@ -128,22 +129,22 @@ $(document).ready(function(){
 		nav('/usergroups');
 	});
 	$('#jfug-ed-cl').click(function() {
+		_userGroupEditFormError.parent().hide();
 		_userGroupEditForm[0].reset();
 	});
 	$('#jfug-ed-up').click(function() {
 		if (confirm("Are you sure you want to update this user group?") == 0)
 			return;
 		_userGroupEditFormError.parent().hide();
-		console.log('Update');
+		judgeQueue('UGU ' + _userGroupEditForm.serialize());
 	});
 	$('#jfug-ed-dl').click(function() {
 		if (confirm("Are you sure you want to delete this user group?") == 0)
 			return;
-		console.log('DUG ' + $('#jfug-ed-i').serialize());
-		judgeQueue('DUG ' + $('#jfug-ed-i').serialize());
+		judgeQueue('UGD ' + $('#jfug-ed-i').serialize());
 	});
 
-	judge.msgHandler['CUG'] = function(msg) {
+	judge.msgHandler['UGC'] = function(msg) {
 		if (typeof msg.err != 'undefined') {
 			var errBox = _userGroupCreateFormError;
 			var parent = errBox.parent();
@@ -179,15 +180,47 @@ $(document).ready(function(){
 			*/
 		}
 	};
-	judge.msgHandler['DUG'] = function(msg) {
+	judge.msgHandler['UGD'] = function(msg) {
 		if (typeof msg.err != 'undefined') {
 			var errBox = _userGroupEditFormError;
 			var parent = errBox.parent();
 			if (msg.err === 'I') {
 				errBox.html('Error: Form data is invalid.');
 				parent.show();
-			} else if (msg.err === 'D') {
+			} else if (msg.err === 'U') {
 				errBox.html('Error: A usergroup does not exist with that id.');
+				parent.show();
+			}
+		} else {
+			_userGroupEditForm[0].reset();
+			nav('/usergroups');
+		}
+	};
+	judge.msgHandler['UGI'] = function(msg) {
+		if (typeof msg.err != 'undefined') {
+			//TODO: Determine if any other error handling is necessary
+			nav('/usergroups');
+		} else {
+			$('#jfug-ed-i').val(msg.i);
+			$('#jfug-ed-n').val(msg.n);
+			$('#jfug-ed-a').prop('checked', msg.a == 1);
+		}
+	};
+	judge.msgHandler['UGU'] = function(msg) {
+		if (typeof msg.err != 'undefined') {
+			var errBox = _userGroupEditFormError;
+			var parent = errBox.parent();
+			if (msg.err === 'I') {
+				errBox.html('Error: Form data is invalid.');
+				parent.show();
+			} else if (msg.err === 'U') {
+				errBox.html('Error: A usergroup exists with that id.');
+				parent.show();
+			} else if (msg.err === 'N') {
+				errBox.html('Error: A usergroup exists with that name.');
+				parent.show();
+			} else if (msg.err === 'S') {
+				errBox.html('Error: There are no changes to be made.');
 				parent.show();
 			}
 		} else {

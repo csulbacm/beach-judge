@@ -13,6 +13,8 @@ namespace judge {
 void msg_userCreate(libwebsocket *w, psd_judge *p, char *m);
 void msg_userGroupCreate(libwebsocket *w, psd_judge *p, char *m);
 void msg_userGroupDelete(libwebsocket *w, psd_judge *p, char *m);
+void msg_userGroupInfo(libwebsocket *w, psd_judge *p, char *m);
+void msg_userGroupUpdate(libwebsocket *w, psd_judge *p, char *m);
 void msg_populate(libwebsocket *w, psd_judge *p, char *m);
 void msg_userList(libwebsocket *w, psd_judge *p, char *m);
 void msg_userGroupList(libwebsocket *w, psd_judge *p, char *m);
@@ -22,10 +24,12 @@ map<string, func_judge> createMsgMap()
 	map<string, func_judge> m = map<string, func_judge>();
 	m["POP"] = msg_populate;
 	m["UL"] = msg_userList;
-	m["CU"] = msg_userCreate;
+	m["UC"] = msg_userCreate;
 	m["UGL"] = msg_userGroupList;
-	m["CUG"] = msg_userGroupCreate;
-	m["DUG"] = msg_userGroupDelete;
+	m["UGC"] = msg_userGroupCreate;
+	m["UGD"] = msg_userGroupDelete;
+	m["UGI"] = msg_userGroupInfo;
+	m["UGU"] = msg_userGroupUpdate;
 	return m;
 }
 map<string, func_judge> g_msgMap =
@@ -99,14 +103,14 @@ void msg_userCreate(libwebsocket *w, psd_judge *p, char *m)
 	i16 r = sscanf(m, "n=%[a-zA-Z0-9]&p1=%[a-zA-Z0-9]&p2=%[a-zA-Z0-9]", name, p1, p2);
 	if (r != 3) {
 		sprintf(p->msg, ""
-			"\"msg\":\"CU\","
+			"\"msg\":\"UC\","
 			"\"err\":\"I\"");
 		return;
 	}
 	if (strcmp(p1, p2) != 0) {
 		//TODO: memcpy prebuilt errors
 		sprintf(p->msg, ""
-			"\"msg\":\"CU\","
+			"\"msg\":\"UC\","
 			"\"err\":\"P\"");
 		return;
 	}
@@ -120,7 +124,7 @@ void msg_userCreate(libwebsocket *w, psd_judge *p, char *m)
 
 	if (User::s_usersByName.count(name) != 0) {
 		sprintf(p->msg, ""
-			"\"msg\":\"CU\","
+			"\"msg\":\"UC\","
 			"\"err\":\"N\"");
 		return;
 	}
@@ -153,7 +157,7 @@ void msg_userGroupCreate(libwebsocket *w, psd_judge *p, char *m)
 		r = sscanf(m, "n=%[a-zA-Z0-9]", name);
 		if (r != 1) {
 			sprintf(p->msg, ""
-				"\"msg\":\"CUG\","
+				"\"msg\":\"UGC\","
 				"\"err\":\"I\"");
 			return;
 		}
@@ -169,7 +173,7 @@ void msg_userGroupCreate(libwebsocket *w, psd_judge *p, char *m)
 
 	if (UserGroup::s_groupsByName.count(name) != 0) {
 		sprintf(p->msg, ""
-			"\"msg\":\"CUG\","
+			"\"msg\":\"UGC\","
 			"\"err\":\"N\"");
 		return;
 	}
@@ -178,7 +182,7 @@ void msg_userGroupCreate(libwebsocket *w, psd_judge *p, char *m)
 	UserGroup *group = new UserGroup(name, 0xFFFF, isActive);
 	group->SQL_Insert();
 	sprintf(p->msg, ""
-		"\"msg\":\"CUG\","
+		"\"msg\":\"UGC\","
 		"\"i\":\"%d\","
 		"\"n\":\"%s\","
 		"\"a\":\"%d\"",
@@ -195,12 +199,11 @@ void msg_userGroupDelete(libwebsocket *w, psd_judge *p, char *m)
 		return;
 	}
 
-	//TODO: Define name length requirement
 	char idStr[16];
 	i16 r = sscanf(m, "i=%[0-9]", idStr);
 	if (r != 1) {
 		sprintf(p->msg, ""
-			"\"msg\":\"DUG\","
+			"\"msg\":\"UGD\","
 			"\"err\":\"I\"");
 		return;
 	}
@@ -209,7 +212,7 @@ void msg_userGroupDelete(libwebsocket *w, psd_judge *p, char *m)
 
 	if (UserGroup::s_groupsByID.count(id) == 0) {
 		sprintf(p->msg, ""
-			"\"msg\":\"DUG\","
+			"\"msg\":\"UGD\","
 			"\"err\":\"U\"");
 		return;
 	}
@@ -218,11 +221,130 @@ void msg_userGroupDelete(libwebsocket *w, psd_judge *p, char *m)
 	UserGroup *group = UserGroup::s_groupsByID[id];
 	group->SQL_Delete();
 	sprintf(p->msg, ""
-		"\"msg\":\"DUG\","
+		"\"msg\":\"UGD\","
 		"\"i\":\"%d\"",
 		id);
 	group->Purge();
 	delete group;
+}
+
+void msg_userGroupInfo(libwebsocket *w, psd_judge *p, char *m)
+{
+	// Restrict action to judge
+	if (p->user->level < User::Admin) {
+		sprintf(p->msg, "\"msg\": \"ERR\"");
+		return;
+	}
+
+	char idStr[16];
+	i16 r = sscanf(m, "i=%[0-9]", idStr);
+	if (r != 1) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UGI\","
+			"\"err\":\"I\"");
+		return;
+	}
+
+	u16 id = atoi(idStr);
+
+	if (UserGroup::s_groupsByID.count(id) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UGI\","
+			"\"err\":\"U\"");
+		return;
+	}
+
+	//TODO: Debug text
+	UserGroup *group = UserGroup::s_groupsByID[id];
+	sprintf(p->msg, ""
+		"\"msg\":\"UGI\","
+		"\"i\":\"%d\","
+		"\"n\":\"%s\","
+		"\"a\":\"%d\"",
+		id,
+		group->name.c_str(),
+		group->isActive);
+}
+
+void msg_userGroupUpdate(libwebsocket *w, psd_judge *p, char *m)
+{
+	// Restrict action to judge
+	if (p->user->level < User::Admin) {
+		sprintf(p->msg, "\"msg\": \"ERR\"");
+		return;
+	}
+
+	//TODO: Define name length requirement
+	bool isActive = false;
+	char name[16], active[16], idStr[16];
+	i16 r = sscanf(m, "i=%[0-9]&n=%[a-zA-Z0-9]&a=%[a-zA-Z0-9]", idStr, name, active);
+	if (r != 3) {
+		r = sscanf(m, "i=%[0-9]&n=%[a-zA-Z0-9]", idStr, name);
+		if (r != 2) {
+			sprintf(p->msg, ""
+				"\"msg\":\"UGU\","
+				"\"err\":\"I\"");
+			return;
+		}
+	} else
+		isActive = strcmp(active, "on") == 0;
+
+	u16 id = atoi(idStr);
+
+	if (UserGroup::s_groupsByID.count(id) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UGU\","
+			"\"err\":\"U\"");
+		return;
+	}
+
+	UserGroup *group = UserGroup::s_groupsByID[id];
+
+	// Set name to lower case
+	{
+		i16 l = strlen(name);
+		for (i16 a = 0; a < l; ++a)
+			name[a] = tolower(name[a]);
+	}
+
+	if (UserGroup::s_groupsByName.count(name) != 0)
+		if (UserGroup::s_groupsByName[name] != group) { //TODO: Handle 0 case?
+			sprintf(p->msg, ""
+				"\"msg\":\"UGU\","
+				"\"err\":\"N\"");
+			return;
+		}
+
+	int changes = 0;
+	if (group->name.compare(name) != 0) {
+		UserGroup::s_groupsByName.erase(group->name);
+		UserGroup::s_groupsByName[name] = group;
+		group->name = name;
+		++changes;
+	}
+	if (group->isActive != isActive) {
+		group->isActive = isActive;
+		++changes;
+	}
+	
+	if (changes == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UGU\","
+			"\"err\":\"S\"");
+		return;
+	}
+
+	group->SQL_Sync();
+
+	//TODO: Debug text
+	sprintf(p->msg, ""
+		"\"msg\":\"UGU\","
+		"\"i\":\"%d\","
+		"\"n\":\"%s\","
+		"\"a\":\"%d\"",
+		id,
+		group->name.c_str(),
+		group->isActive);
 }
 
 //----------------------------------------------

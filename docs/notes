@@ -12,7 +12,7 @@ NodeJS
 x	Default Admin & Global User Group
 x	User & User Group Storage
 	UserGroup Management
-	Show UserGroups
+x	Show UserGroups
 	Create/Manage UserGroups
 		Toggle Activity
 	Show Users in Group
@@ -24,6 +24,7 @@ x	User & User Group Storage
 	Create/Manage ProblemSets
 	Show Problems in Set
 	Create/Manage Problems
+	Pop-Up Confirm Dialog
 
 
 Team Management

@@ -34,7 +34,7 @@ block usergroup-create
 			p.header Create User Group
 			form#jfug-cr.judge-form(auto-complete="off")
 				.row
-					input.judge-form-string(name="n", type="text", placeholder="Name", autocomplete="off")
+					input#jfug-cr-n.judge-form-string(name="n", type="text", placeholder="Name", autocomplete="off")
 				.row
 					input#jfug-cr-a(name="a", type="checkbox", checked)
 					label(for="jfug-create-a") Active - Inactive groups cannot log in.
@@ -51,7 +51,7 @@ block usergroup-edit
 			form#jfug-ed.judge-form(auto-complete="off")
 				input#jfug-ed-i(name="i", type="hidden")
 				.row
-					input.judge-form-string(name="n", type="text", placeholder="Name", autocomplete="off")
+					input#jfug-ed-n.judge-form-string(name="n", type="text", placeholder="Name", autocomplete="off")
 				.row
 					input#jfug-ed-a(name="a", type="checkbox")
 					label(for="jfug-ed-a") Active - Inactive groups cannot log in.
@@ -61,7 +61,7 @@ block usergroup-edit
 					input#jfug-ed-dl.form-button(value="Delete", type="button")
 					input#jfug-ed-ca.form-button(value="Cancel", type="button")
 				.row.hidden
-					p.form-error
+					p#jfug-ed-er.form-error
 	.block#users
 		.actions
 			//.createUser
