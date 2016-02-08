@@ -93,10 +93,11 @@ block user-create
 				.row.hidden
 					p#jfu-cr-er.form-error
 block user-edit
+	#user-edit
 		.block
 			p.header Edit User
 			form#jfu-ed.judge-form(auto-complete="off")
-				input#jfu-ed-g(name="i", type="hidden")
+				input#jfu-ed-i(name="i", type="hidden")
 				.row
 					input#jfu-ed-n.judge-form-string(name="n", type="text", placeholder="Username", autocomplete="off")
 				.row

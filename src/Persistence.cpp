@@ -24,7 +24,7 @@ void loadJudgeData()
 	//TODO: Refer to global name map
 	if (User::s_usersByName.count("admin") == 0) {
 		printf("Creating admin user...\n");
-		(new User("admin", "test", "admin", User::Admin, 0))->SQL_Insert();
+		(new User("admin", "test", "admin", User::Admin, 0, 0))->SQL_Insert();
 	}
 
 	printf("Restoring sessions...\n");

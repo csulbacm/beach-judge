@@ -215,6 +215,7 @@ function onNavigate(stateObj) {
 		});
 	} else if (target === 'user-edit') {
 		judgeQueue('UI i=' + args[0]);
+		$('#jfu-ed-i').val(args[0]);
 	} else if (target === 'user-create') {
 		$('#jfu-cr-g').val(args[0]);
 	}

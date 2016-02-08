@@ -8,6 +8,7 @@
 #include <map>
 #include <openssl/sha.h>
 #include <vector>
+#include <algorithm>
 
 // beachJudge
 #include <Judge/Types.h>
@@ -209,9 +210,20 @@ struct User
 	{
 		// Keep an entry in the user map so we can reload the user later
 		if (name.length())
-			s_usersByName[name] = 0;
-		s_usersByID[id] = 0;
-		//TODO: Remove user from userGroup
+			if (s_usersByName.count(name))
+				s_usersByName[name] = 0;
+		UserGroup *group = UserGroup::s_groupsByID[groupID];
+		group->users.erase(std::remove(group->users.begin(), group->users.end(), this), group->users.end());
+		if (s_usersByID.count(id))
+			s_usersByID[id] = 0;
+	}
+
+	void Purge()
+	{
+		if (s_usersByID.count(id))
+			s_usersByID.erase(id);
+		if (s_usersByName.count(name))
+			s_usersByName.erase(name);
 	}
 
 	u32 id;
@@ -314,6 +326,7 @@ struct User
 
 	inline void SQL_Delete()
 	{
+		printf("DL: %ld\n", id);
 		sqlite3_bind_int(SQL::user_delete,
 			1, id);
 		sqlite3_step(SQL::user_delete);
@@ -323,7 +336,8 @@ struct User
 	static inline void SQL_LoadAll()
 	{
 		const char *_name, *_pw, *_display;
-		u16 _id, _groupID;
+		u32 _id;
+		u16 _groupID;
 		u8 _level;
 		while (sqlite3_step(SQL::user_selectAll)
 				!= SQLITE_DONE) {

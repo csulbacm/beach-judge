@@ -19,7 +19,7 @@ $(document).ready(function(){
 
 	judge.msgHandler['UC'] = function(msg) {
 		if (typeof msg.err != 'undefined') {
-			var errBox = _userCreateForm.find('.form-error');
+			var errBox = _userCreateFormError;
 			var parent = errBox.parent();
 			if (msg.err === 'I') {
 				errBox.html('Error: Form data is invalid.');
@@ -38,6 +38,26 @@ $(document).ready(function(){
 			_userCreateForm[0].reset();
 			window.history.back();
 			//TODO: Go back to usergroup edit
+		}
+	};
+	judge.msgHandler['UD'] = function(msg) {
+		if (typeof msg.err != 'undefined') {
+			var errBox = _userEditFormError;
+			var parent = errBox.parent();
+			if (msg.err === 'I') {
+				errBox.html('Error: Form data is invalid.');
+				parent.show();
+			} else if (msg.err === 'A') {
+				errBox.html('Error: You cannot delete the admin user.');
+				parent.show();
+			} else if (msg.err === 'U') {
+				errBox.html('Error: A user does not exist with that id.');
+				parent.show();
+			}
+		} else {
+			_userGroupEditForm[0].reset();
+			//TODO: Go to usergroup edit
+			nav('/usergroups');
 		}
 	};
 
@@ -79,10 +99,34 @@ $(document).ready(function(){
 		_userCreateForm[0].reset();
 	});
 	$('#jfu-cr-cr').click(function() {
+		_userCreateFormError.parent().hide();
 		if (confirm("Are you sure you want to create this user?") == 0)
 			return;
-		_userCreateFormError.parent().hide();
 		judgeQueue('UC ' + _userCreateForm.serialize());
+	});
+
+	// Editing
+	$('#jfu-ed-ca').click(function() {
+		_userEditFormError.parent().hide();
+		_userEditForm[0].reset();
+		//TODO: Go to usergroup edit
+		nav('/usergroups');
+	});
+	$('#jfu-ed-cl').click(function() {
+		_userEditFormError.parent().hide();
+		_userEditForm[0].reset();
+	});
+	$('#jfu-ed-up').click(function() {
+		_userEditFormError.parent().hide();
+		if (confirm("Are you sure you want to update this user?") == 0)
+			return;
+		judgeQueue('UGU ' + _userEditForm.serialize());
+	});
+	$('#jfu-ed-dl').click(function() {
+		_userEditFormError.parent().hide();
+		if (confirm("Are you sure you want to delete this user?") == 0)
+			return;
+		judgeQueue('UD ' + $('#jfu-ed-i').serialize());
 	});
 
 
@@ -141,9 +185,9 @@ $(document).ready(function(){
 		_userGroupCreateForm[0].reset();
 	});
 	$('#jfug-cr-cr').click(function() {
+		_userGroupCreateFormError.parent().hide();
 		if (confirm("Are you sure you want to create this user group?") == 0)
 			return;
-		_userGroupCreateFormError.parent().hide();
 		judgeQueue('UGC ' + _userGroupCreateForm.serialize());
 	});
 
@@ -158,12 +202,13 @@ $(document).ready(function(){
 		_userGroupEditForm[0].reset();
 	});
 	$('#jfug-ed-up').click(function() {
+		_userGroupEditFormError.parent().hide();
 		if (confirm("Are you sure you want to update this user group?") == 0)
 			return;
-		_userGroupEditFormError.parent().hide();
 		judgeQueue('UGU ' + _userGroupEditForm.serialize());
 	});
 	$('#jfug-ed-dl').click(function() {
+		_userGroupEditFormError.parent().hide();
 		if (confirm("Are you sure you want to delete this user group?") == 0)
 			return;
 		judgeQueue('UGD ' + $('#jfug-ed-i').serialize());

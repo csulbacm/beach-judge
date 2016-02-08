@@ -98,7 +98,6 @@ void msg_userList(libwebsocket *w, psd_judge *p, char *m)
 
 void msg_userCreate(libwebsocket *w, psd_judge *p, char *m)
 {
-	printf("|%s|\n", m);
 	// Restrict action to judge
 	if (p->user->level < User::Admin) {
 		sprintf(p->msg, "\"msg\": \"ERR\"");
@@ -160,9 +159,46 @@ void msg_userCreate(libwebsocket *w, psd_judge *p, char *m)
 		user->name.c_str());
 }
 
-
 void msg_userDelete(libwebsocket *w, psd_judge *p, char *m)
 {
+	// Restrict action to judge
+	if (p->user->level < User::Admin) {
+		sprintf(p->msg, "\"msg\": \"ERR\"");
+		return;
+	}
+
+	char idStr[16];
+	i16 r = sscanf(m, "i=%[0-9]", idStr);
+	if (r != 1) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UD\","
+			"\"err\":\"I\"");
+		return;
+	}
+
+	u16 id = atoi(idStr);
+	if (id == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UD\","
+			"\"err\":\"A\"");
+		return;
+	}
+
+	if (User::s_usersByID.count(id) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UD\","
+			"\"err\":\"U\"");
+		return;
+	}
+
+	User *user = User::s_usersByID[id];
+	user->SQL_Delete();
+	sprintf(p->msg, ""
+		"\"msg\":\"UD\","
+		"\"i\":\"%d\"",
+		id);
+	user->Purge();
+	delete user;
 }
 
 void msg_userInfo(libwebsocket *w, psd_judge *p, char *m)
