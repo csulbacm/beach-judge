@@ -51,11 +51,14 @@ bool SQL::Init()
 	
 	sqlite3_stmt *stmt = 0;
 	
-	// UserGroup
+	// ProblemSet
 	SQL_STMT(stmt, 
 		"CREATE TABLE IF NOT EXISTS jd_problemSet(\n"
 			"ID INT,\n"
 			"Name VARCHAR,\n"
+			"Status INT,\n"
+			"StartTime DATETIME,\n"
+			"Duration INT,\n"
 			"PRIMARY KEY(ID)\n"
 		")", s);
 	sqlite3_step(stmt);
@@ -104,9 +107,9 @@ bool SQL::Init()
 	SQL_STMT(problemSet_selectAll, 
 		"SELECT * FROM jd_problemSet", s);
 	SQL_STMT(problemSet_insert,
-		"INSERT INTO jd_problemSet VALUES (?,?)", s);
+		"INSERT INTO jd_problemSet VALUES (?,?,?,?,?)", s);
 	SQL_STMT(problemSet_update,
-		"UPDATE jd_problemSet SET Name=? WHERE ID=?", s);
+		"UPDATE jd_problemSet SET Name=?, Status=?, StartTime=?, Duration=? WHERE ID=?", s);
 	SQL_STMT(problemSet_delete,
 		"DELETE FROM jd_problemSet WHERE ID=?", s);
 

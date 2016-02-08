@@ -122,8 +122,6 @@ int main(int argc, char *argv[])
 	//TODO: Debug seg fault on from this line
 	printf("Server is shutting down...\n");
 	libwebsocket_context_destroy(context);
-	printf("Saving beachJudge data...\n");
-//	saveJudgeData();
 	User::Cleanup();
 	SQL::Cleanup();
 

@@ -2,6 +2,7 @@
 
 // beachJudge
 #include <Judge/WS_Judge.h>
+#include <Judge/Problem.h>
 
 using namespace std;
 
@@ -12,11 +13,11 @@ namespace judge {
 
 void msg_populate(libwebsocket *w, psd_judge *p, char *m);
 
-void msg_problemCreate(libwebsocket *w, psd_judge *p, char *m);
-void msg_problemDelete(libwebsocket *w, psd_judge *p, char *m);
-void msg_problemInfo(libwebsocket *w, psd_judge *p, char *m);
-void msg_problemList(libwebsocket *w, psd_judge *p, char *m);
-void msg_problemUpdate(libwebsocket *w, psd_judge *p, char *m);
+void msg_problemSetCreate(libwebsocket *w, psd_judge *p, char *m);
+void msg_problemSetDelete(libwebsocket *w, psd_judge *p, char *m);
+void msg_problemSetInfo(libwebsocket *w, psd_judge *p, char *m);
+void msg_problemSetList(libwebsocket *w, psd_judge *p, char *m);
+void msg_problemSetUpdate(libwebsocket *w, psd_judge *p, char *m);
 
 void msg_userCreate(libwebsocket *w, psd_judge *p, char *m);
 void msg_userDelete(libwebsocket *w, psd_judge *p, char *m);
@@ -35,11 +36,11 @@ map<string, func_judge> createMsgMap()
 	map<string, func_judge> m = map<string, func_judge>();
 	m["POP"] = msg_populate;
 
-	m["PC"] = msg_problemCreate;
-	m["PD"] = msg_problemDelete;
-	m["PI"] = msg_problemInfo;
-	m["PL"] = msg_problemList;
-	m["PU"] = msg_problemUpdate;
+	m["PSC"] = msg_problemSetCreate;
+	m["PSD"] = msg_problemSetDelete;
+	m["PSI"] = msg_problemSetInfo;
+	m["PSL"] = msg_problemSetList;
+	m["PSU"] = msg_problemSetUpdate;
 
 	m["UC"] = msg_userCreate;
 	m["UD"] = msg_userDelete;
@@ -70,42 +71,49 @@ void msg_populate(libwebsocket *w, psd_judge *p, char *m)
 		p->user->name.c_str());
 }
 
-void msg_problemCreate(libwebsocket *w, psd_judge *p, char *m)
+void msg_problemSetCreate(libwebsocket *w, psd_judge *p, char *m)
 {
 }
 
-void msg_problemDelete(libwebsocket *w, psd_judge *p, char *m)
+void msg_problemSetDelete(libwebsocket *w, psd_judge *p, char *m)
 {
 }
 
-void msg_problemInfo(libwebsocket *w, psd_judge *p, char *m)
+void msg_problemSetInfo(libwebsocket *w, psd_judge *p, char *m)
 {
 }
 
-void msg_problemList(libwebsocket *w, psd_judge *p, char *m)
+void msg_problemSetList(libwebsocket *w, psd_judge *p, char *m)
 {
 	// Populate Problem Data
-	/*
 	stringstream str;
-	map<u16, UserGroup *>::iterator it = UserGroup::s_byID.begin();
-	map<u16, UserGroup *>::iterator end = UserGroup::s_byID.end();
-	char entry[64];
+	map<u16, ProblemSet *>::iterator it = ProblemSet::s_byID.begin();
+	map<u16, ProblemSet *>::iterator end = ProblemSet::s_byID.end();
+	char entry[128];
 	while (it != end) {
-		sprintf(entry, "{\"i\":\"%d\",\"n\":\"%s\",\"a\":\"%d\"}",
-			it->second->id, it->second->name.c_str(), it->second->isActive);
+		sprintf(entry, ""
+			"{\"i\":\"%d\","
+			"\"n\":\"%s\","
+			"\"s\":\"%d\","
+			"\"t\":\"%lld\","
+			"\"d\":\"%d\"}",
+			it->second->id,
+			it->second->name.c_str(),
+			it->second->status,
+			it->second->startTime,
+			it->second->duration);
 		str << entry;
 		++it;
 		if (it != end)
 			str << ",";
 	}
 	sprintf(p->msg, ""
-		"\"msg\":\"UGL\","
-		"\"usergroups\":[%s]",
+		"\"msg\":\"PSL\","
+		"\"problemsets\":[%s]",
 		str.str().c_str());
-		*/
 }
 
-void msg_problemUpdate(libwebsocket *w, psd_judge *p, char *m)
+void msg_problemSetUpdate(libwebsocket *w, psd_judge *p, char *m)
 {
 }
 

@@ -16,7 +16,7 @@ judge.onEnter['problemsets'] = function(state) {
 		setTimeout(function() {
 			$('#problemset-loading').css(t.getBoundingClientRect());
 		}, 0);
-		judgeQueue('PL');
+		judgeQueue('PSL');
 	});
 };
 /*
