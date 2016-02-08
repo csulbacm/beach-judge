@@ -21,7 +21,7 @@ $(document).ready(function() {
 				else {
 					sessionStorage.setItem('JUDGESESSID', result);
 					setCookie('JUDGESESSID', result, 1);
-					window.location = window.location.origin;
+					window.location = window.location;
 				}
 			}
 		});
