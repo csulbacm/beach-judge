@@ -33,6 +33,156 @@ var _formatDate = function(d)
 		+ ' ' + hours.substr(-2) + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
 }
 
+
+//------------- Problems ----------------
+
+// Navigation
+judge.onEnter['problem-create'] = function(state) {
+	$('#jfp-cr-s').val(state.args[0]);
+};
+judge.onLeave['problem-create'] = function(state) {
+	_problemCreateFormError.parent().hide();
+	_problemCreateForm[0].reset();
+};
+judge.onEnter['problem-edit'] = function(state) {
+	judgeQueue('PI s=' + state.args[0] + '&i=' + state.args[1]);
+	//TODO: Confirm this redudancy is necessary
+	$('#jfp-ed-s').val(state.args[0]);
+	$('#jfp-ed-i').val(state.args[1]);
+};
+judge.onLeave['problem-edit'] = function(state) {
+	_problemEditFormError.parent().hide();
+	_problemEditForm[0].reset();
+};
+
+// Effects
+//TODO: Make this work for onClick for mobile
+$('#problem-list').on('mouseenter', 'a', function() {
+	clearTimeout(_problemHoverTimeout);
+	var rect = this.getBoundingClientRect();
+	_problemHoverTarget = $(this);
+	_problemHover.css({top: rect.top, left: rect.left, width: rect.right - rect.left});
+	_problemHover.show();
+}).on('mouseleave', 'a', function() {
+	_problemHoverTimeout = setTimeout(function() {
+		_problemHover.hide();
+	}, 100);
+});
+
+
+// Messages
+judge.onMsg['PC'] = function(msg) {
+	if (typeof msg.err != 'undefined') {
+		var errBox = _problemCreateFormError;
+		errBox.parent().show();
+		if (msg.err === 'I') {
+			errBox.html('Error: Form data is invalid.');
+		} else if (msg.err === 'N') {
+			errBox.html('Error: A problem exists with that name.');
+		} else if (msg.err === 'U') {
+			errBox.html('Error: A problem set does not exist with that set id.');
+		}
+	} else {
+		_problemCreateForm[0].reset();
+		nav('/problemset/edit/' + $('#jfp-cr-s').val());
+	}
+};
+judge.onMsg['PD'] = function(msg) {
+	if (typeof msg.err != 'undefined') {
+		var errBox = _problemEditFormError;
+		errBox.parent().show();
+		if (msg.err === 'I') {
+			errBox.html('Error: Form data is invalid.');
+		} else if (msg.err === 'U') {
+			errBox.html('Error: A problem does not exist with that id.');
+		}
+	} else {
+		_problemEditForm[0].reset();
+		nav('/problemset/edit/' + $('#jfp-ed-s').val());
+	}
+};
+judge.onMsg['PI'] = function(msg) {
+	if (typeof msg.err != 'undefined') {
+		//TODO: Determine if any other error handling is necessary
+		nav('/problemsets');
+	} else {
+		$('#jfp-ed-s').val(msg.s);
+		$('#jfp-ed-i').val(msg.i);
+		$('#jfp-ed-n').val(msg.n);
+	}
+};
+judge.onMsg['PL'] = function(msg) {
+	$('#problemset-edit .placeholder').hide();
+	if (msg.data.length == 0) {
+		_problemList.html("<p>There are no problems in this set.</p>");
+		return;
+	}
+	var h = '';
+	for (var a = 0; a < msg.data.length; ++a) {
+		h += '<li><a href="/problem/edit/' + $('#jfps-ed-i').val() + '/' + msg.data[a].i + '" i="' + msg.data[a].i
+			+ '">' + msg.data[a].n
+			+ '</a></li>';
+	}
+	_problemList.html(h);
+};
+judge.onMsg['PU'] = function(msg) {
+	if (typeof msg.err != 'undefined') {
+		var errBox = _problemEditFormError;
+		errBox.parent().show();
+		if (msg.err === 'I') {
+			errBox.html('Error: Form data is invalid.');
+		} else if (msg.err === 'S') {
+			errBox.html('Error: A problem set does not exist with that id.');
+		} else if (msg.err === 'N') {
+			errBox.html('Error: A problem exists with that name.');
+		} else if (msg.err === 'C') {
+			errBox.html('Error: There are no changes to be made.');
+		} else if (msg.err === 'U') {
+			errBox.html('Error: A problem does not exist with that id.');
+		}
+	} else {
+		_problemEditForm[0].reset();
+		nav('/problemset/edit/' + $('#jfp-ed-s').val());
+	}
+};
+
+// Creation
+$('#jfp-cr-ca').click(function() {
+	nav('/problemset-edit/' + $('#jfp-cr-s').val());
+});
+$('#jfp-cr-cl').click(function() {
+	_problemCreateFormError.parent().hide();
+	_problemCreateForm[0].reset();
+});
+$('#jfp-cr-cr').click(function() {
+	_problemCreateFormError.parent().hide();
+	if (confirm("Are you sure you want to create this problem?") == 0)
+		return;
+	judgeQueue('PC ' + _problemCreateForm.serialize());
+});
+
+// Editing
+$('#jfp-ed-ca').click(function() {
+	nav('/problemset-edit/' + $('#jfp-ed-s').val());
+});
+$('#jfp-ed-cl').click(function() {
+	_problemEditFormError.parent().hide();
+	_problemEditForm[0].reset();
+});
+$('#jfp-ed-up').click(function() {
+	_problemEditFormError.parent().hide();
+	if (confirm("Are you sure you want to update this problem?") == 0)
+		return;
+	judgeQueue('PU ' + _problemEditForm.serialize());
+});
+$('#jfp-ed-dl').click(function() {
+	_problemEditFormError.parent().hide();
+	if (confirm("Are you sure you want to delete this problem?") == 0)
+		return;
+	judgeQueue('PD ' + $('#jfp-ed-s').serialize() + '&' + $('#jfp-ed-i').serialize());
+});
+
+
 //----------- Problem Sets --------------
 
 // Navigation
@@ -147,17 +297,17 @@ judge.onMsg['PSI'] = function(msg) {
 };
 judge.onMsg['PSL'] = function(msg) {
 	$('#problemsets .placeholder').hide();
-	if (msg.problemsets.length == 0) {
+	if (msg.data.length == 0) {
 		_problemSetList.html("<p>There are no problem sets.</p>");
 		return;
 	}
 	var h = '';
-	for (var a = 0; a < msg.problemsets.length; ++a) {
+	for (var a = 0; a < msg.data.length; ++a) {
 		//TODO: Optimize this as much as possible
 		//TODO: Show duration and status
-		var date = new Date(msg.problemsets[a].t * 1000);
-		h += '<li><a href="/problemset/edit/' + msg.problemsets[a].i + '" i="' + msg.problemsets[a].i
-			+ '">' + msg.problemsets[a].n;
+		var date = new Date(msg.data[a].t * 1000);
+		h += '<li><a href="/problemset/edit/' + msg.data[a].i + '" i="' + msg.data[a].i
+			+ '">' + msg.data[a].n;
 		h += ' <span class="dt">' + _formatDate(date) + '</span>';
 		h += '</a></li>';
 	}

@@ -41,10 +41,10 @@ x		Create ProblemSet
 x		Delete ProblemSet
 x		Modify ProblemSet
 	Problems
-		Show Problems
-		Create Problem
-		Delete Problem
-		Modify Problem
+x		Show Problems
+x		Create Problem
+x		Delete Problem
+x		Modify Problem
 		Order Problems
 		Upload PDF
 		Upload Sample Data

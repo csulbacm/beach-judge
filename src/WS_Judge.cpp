@@ -86,22 +86,262 @@ void msg_populate(libwebsocket *w, psd_judge *p, char *m)
 
 void msg_problemCreate(libwebsocket *w, psd_judge *p, char *m)
 {
+	// Restrict action to judge
+	if (p->user->level < User::Admin) {
+		sprintf(p->msg, "\"msg\":\"ERR\"");
+		return;
+	}
+
+	//TODO: Allow for spaces and some style characters in name
+	char setIDStr[16], name[16];
+	i16 r = sscanf(m, "s=%[0-9]&n=%[a-zA-Z0-9]", setIDStr, name);
+	printf("|%s|\n", m);
+	if (r != 2) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PC\","
+			"\"err\":\"I\"");
+		return;
+	}
+
+	u16 sid = atoi(setIDStr);
+	if (ProblemSet::s_byID.count(sid) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PC\","
+			"\"err\":\"U\"");
+		return;
+	}
+
+	ProblemSet *ps = ProblemSet::s_byID[sid];
+
+	// Set name to lower case
+	{
+		i16 l = strlen(name);
+		for (i16 a = 0; a < l; ++a)
+			name[a] = tolower(name[a]);
+	}
+
+	if (ps->problemsByName.count(name) != 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PC\","
+			"\"err\":\"N\"");
+		return;
+	}
+
+	Problem *pr = new Problem(name, sid, 0xFFFF);
+	pr->SQL_Insert();
+	sprintf(p->msg, ""
+		"\"msg\":\"PC\","
+		"\"i\":\"%d\","
+		"\"n\":\"%s\"",
+		pr->id,
+		pr->name.c_str());
 }
 
 void msg_problemDelete(libwebsocket *w, psd_judge *p, char *m)
 {
+	// Restrict action to judge
+	if (p->user->level < User::Admin) {
+		sprintf(p->msg, "\"msg\":\"ERR\"");
+		return;
+	}
+
+	char setIDStr[16], idStr[16];
+	i16 r = sscanf(m, "s=%[0-9]&i=%[0-9]", setIDStr, idStr);
+	if (r != 2) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PD\","
+			"\"err\":\"I\"");
+		return;
+	}
+
+	u32 sid = atoi(setIDStr);
+	if (ProblemSet::s_byID.count(sid) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PD\","
+			"\"err\":\"S\"");
+		return;
+	}
+	ProblemSet *ps = ProblemSet::s_byID[sid];
+
+	u32 id = atoi(idStr);
+	if (ps->problemsByID.count(id) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PD\","
+			"\"err\":\"U\"");
+		return;
+	}
+
+	Problem *pr = ps->problemsByID[id];
+	pr->SQL_Delete();
+	sprintf(p->msg, ""
+		"\"msg\":\"PD\","
+		"\"s\":\"%d\","
+		"\"i\":\"%d\"",
+		sid,
+		id);
+	pr->Purge();
+	delete pr;
 }
 
 void msg_problemInfo(libwebsocket *w, psd_judge *p, char *m)
 {
+	// Restrict action to judge
+	if (p->user->level < User::Admin) {
+		sprintf(p->msg, "\"msg\":\"ERR\"");
+		return;
+	}
+
+	char setIDStr[16], idStr[16];
+	i16 r = sscanf(m, "s=%[0-9]&i=%[0-9]", setIDStr, idStr);
+	if (r != 2) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PI\","
+			"\"err\":\"I\"");
+		return;
+	}
+
+	u32 sid = atoi(setIDStr);
+	if (ProblemSet::s_byID.count(sid) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PI\","
+			"\"err\":\"S\"");
+		return;
+	}
+	ProblemSet *ps = ProblemSet::s_byID[sid];
+
+	u32 id = atoi(idStr);
+	if (ps->problemsByID.count(id) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PI\","
+			"\"err\":\"U\"");
+		return;
+	}
+
+	Problem *pr = ps->problemsByID[id];
+	sprintf(p->msg, ""
+		"\"msg\":\"PI\","
+		"\"s\":\"%d\","
+		"\"i\":\"%d\","
+		"\"n\":\"%s\"",
+		sid,
+		id,
+		pr->name.c_str());
 }
 
 void msg_problemList(libwebsocket *w, psd_judge *p, char *m)
 {
+	char idStr[16];
+	i16 r = sscanf(m, "i=%[0-9]", idStr);
+	if (r != 1) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PL\","
+			"\"err\":\"I\"");
+		return;
+	}
+
+	u16 id = atoi(idStr);
+	if (ProblemSet::s_byID.count(id) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PL\","
+			"\"err\":\"U\"");
+		return;
+	}
+	
+	ProblemSet *ps = ProblemSet::s_byID[id];
+
+	// Populate Problem Data
+	stringstream str;
+	map<u16, Problem *>::iterator it = ps->problemsByID.begin();
+	map<u16, Problem *>::iterator end = ps->problemsByID.end();
+	char entry[64];
+	Problem *pr;
+	while (it != end) {
+		pr = it->second;
+		sprintf(entry, "{\"i\":\"%d\",\"n\":\"%s\"}",
+			pr->id, pr->name.c_str());
+		str << entry;
+		++it;
+		if (it != end)
+			str << ",";
+	}
+	sprintf(p->msg, ""
+		"\"msg\":\"PL\","
+		"\"data\":[%s]",
+		str.str().c_str());
 }
 
 void msg_problemUpdate(libwebsocket *w, psd_judge *p, char *m)
 {
+	// Restrict action to judge
+	if (p->user->level < User::Admin) {
+		sprintf(p->msg, "\"msg\":\"ERR\"");
+		return;
+	}
+
+	//TODO: Allow for spaces and some style characters in name
+	char setIDStr[16], idStr[16], name[16];
+	i16 r = sscanf(m, "s=%[0-9]&i=%[0-9]&n=%[a-zA-Z0-9]", setIDStr, idStr, name);
+	if (r != 3) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PU\","
+			"\"err\":\"I\"");
+		return;
+	}
+
+	u32 sid = atoi(setIDStr);
+	if (ProblemSet::s_byID.count(sid) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PU\","
+			"\"err\":\"S\"");
+		return;
+	}
+	ProblemSet *ps = ProblemSet::s_byID[sid];
+
+	u32 id = atoi(idStr);
+	if (ps->problemsByID.count(id) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PU\","
+			"\"err\":\"U\"");
+		return;
+	}
+
+	Problem *pr = ps->problemsByID[id];
+
+	// Set name to lower case
+	{
+		i16 l = strlen(name);
+		for (i16 a = 0; a < l; ++a)
+			name[a] = tolower(name[a]);
+	}
+
+	i16 changes = 0;
+	if (pr->name.compare(name) != 0) {
+		if (ps->problemsByName.count(name) != 0) {
+			sprintf(p->msg, ""
+				"\"msg\":\"PU\","
+				"\"err\":\"N\"");
+			return;
+		}
+		ps->problemsByName.erase(pr->name);
+		ps->problemsByName[name] = pr;
+		pr->name = name;
+		++changes;
+	}
+	if (changes == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PU\","
+			"\"err\":\"C\"");
+		return;
+	}
+	pr->SQL_Sync();
+	sprintf(p->msg, ""
+		"\"msg\":\"PU\","
+		"\"s\":\"%d\","
+		"\"i\":\"%d\","
+		"\"n\":\"%s\"",
+		sid,
+		pr->id,
+		pr->name.c_str());
 }
 
 void msg_problemSetCreate(libwebsocket *w, psd_judge *p, char *m)
@@ -298,7 +538,7 @@ void msg_problemSetList(libwebsocket *w, psd_judge *p, char *m)
 	}
 	sprintf(p->msg, ""
 		"\"msg\":\"PSL\","
-		"\"problemsets\":[%s]",
+		"\"data\":[%s]",
 		str.str().c_str());
 }
 
@@ -465,19 +705,19 @@ void msg_userCreate(libwebsocket *w, psd_judge *p, char *m)
 
 	UserGroup *group = UserGroup::s_byID[gid];
 
+	// Set name to lower case
+	{
+		i16 l = strlen(name);
+		for (i16 a = 0; a < l; ++a)
+			name[a] = tolower(name[a]);
+	}
+
 	//TODO: Check names for the group
 	if (User::s_byName.count(name) != 0) {
 		sprintf(p->msg, ""
 			"\"msg\":\"UC\","
 			"\"err\":\"N\"");
 		return;
-	}
-
-	// Set name to lower case
-	{
-		i16 l = strlen(name);
-		for (i16 a = 0; a < l; ++a)
-			name[a] = tolower(name[a]);
 	}
 
 	User *user = new User(name, p1, display, User::Default, gid);
@@ -608,7 +848,7 @@ void msg_userList(libwebsocket *w, psd_judge *p, char *m)
 	}
 	sprintf(p->msg, ""
 		"\"msg\":\"UL\","
-		"\"users\":[%s]",
+		"\"data\":[%s]",
 		str.str().c_str());
 }
 
@@ -852,7 +1092,7 @@ void msg_userGroupList(libwebsocket *w, psd_judge *p, char *m)
 	}
 	sprintf(p->msg, ""
 		"\"msg\":\"UGL\","
-		"\"usergroups\":[%s]",
+		"\"data\":[%s]",
 		str.str().c_str());
 }
 

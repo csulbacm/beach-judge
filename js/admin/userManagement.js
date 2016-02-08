@@ -55,19 +55,15 @@ _userList.on('mouseenter', 'a', function() {
 judge.onMsg['UC'] = function(msg) {
 	if (typeof msg.err != 'undefined') {
 		var errBox = _userCreateFormError;
-		var parent = errBox.parent();
+		errBox.parent().show();
 		if (msg.err === 'I') {
 			errBox.html('Error: Form data is invalid.');
-			parent.show();
 		} else if (msg.err === 'P') {
 			errBox.html('Error: The passwords do not match.');
-			parent.show();
 		} else if (msg.err === 'N') {
 			errBox.html('Error: A user exists with that name.');
-			parent.show();
 		} else if (msg.err === 'U') {
 			errBox.html('Error: A usergroup does not exist with that group id.');
-			parent.show();
 		}
 	} else {
 		_userCreateForm[0].reset();
@@ -77,19 +73,16 @@ judge.onMsg['UC'] = function(msg) {
 judge.onMsg['UD'] = function(msg) {
 	if (typeof msg.err != 'undefined') {
 		var errBox = _userEditFormError;
-		var parent = errBox.parent();
+		errBox.parent().show();
 		if (msg.err === 'I') {
 			errBox.html('Error: Form data is invalid.');
-			parent.show();
 		} else if (msg.err === 'A') {
 			errBox.html('Error: You cannot delete the admin user.');
-			parent.show();
 		} else if (msg.err === 'U') {
 			errBox.html('Error: A user does not exist with that id.');
-			parent.show();
 		}
 	} else {
-		_userGroupEditForm[0].reset();
+		_userEditForm[0].reset();
 		nav('/usergroup/edit/' + $('#jfu-ed-g').val());
 	}
 };
@@ -106,14 +99,14 @@ judge.onMsg['UI'] = function(msg) {
 };
 judge.onMsg['UL'] = function(msg) {
 	$('#usergroup-edit .placeholder').hide();
-	if (msg.users.length == 0) {
+	if (msg.data.length == 0) {
 		_userList.html("<p>There are no users in this group.</p>");
 		return;
 	}
 	var h = '';
-	for (var a = 0; a < msg.users.length; ++a) {
-		h += '<li><a href="/user/edit/' + msg.users[a].i + '" i="' + msg.users[a].i
-			+ '">' + msg.users[a].n
+	for (var a = 0; a < msg.data.length; ++a) {
+		h += '<li><a href="/user/edit/' + msg.data[a].i + '" i="' + msg.data[a].i
+			+ '">' + msg.data[a].n
 			+ '</a></li>';
 	}
 	_userList.html(h);
@@ -121,22 +114,17 @@ judge.onMsg['UL'] = function(msg) {
 judge.onMsg['UU'] = function(msg) {
 	if (typeof msg.err != 'undefined') {
 		var errBox = _userEditFormError;
-		var parent = errBox.parent();
+		errBox.parent().show();
 		if (msg.err === 'I') {
 			errBox.html('Error: Form data is invalid.');
-			parent.show();
 		} else if (msg.err === 'G') {
 			errBox.html('Error: A usergroup does not exist with that id.');
-			parent.show();
 		} else if (msg.err === 'N') {
 			errBox.html('Error: A user exists with that name.');
-			parent.show();
 		} else if (msg.err === 'S') {
 			errBox.html('Error: There are no changes to be made.');
-			parent.show();
 		} else if (msg.err === 'U') {
 			errBox.html('Error: A user does not exist with that id.');
-			parent.show();
 		}
 	} else {
 		_userEditForm[0].reset();
@@ -279,15 +267,15 @@ judge.onMsg['UGI'] = function(msg) {
 };
 judge.onMsg['UGL'] = function(msg) {
 	$('#usergroups .placeholder').hide();
-	if (msg.usergroups.length == 0) {
+	if (msg.data.length == 0) {
 		_userGroupList.html("<p>There are no user groups.</p>");
 		return;
 	}
 	var h = '';
-	for (var a = 0; a < msg.usergroups.length; ++a) {
-		h += '<li><a href="/usergroup/edit/' + msg.usergroups[a].i + '" i="' + msg.usergroups[a].i
-			+ '">' + msg.usergroups[a].n;
-		if (msg.usergroups[a].a == false)
+	for (var a = 0; a < msg.data.length; ++a) {
+		h += '<li><a href="/usergroup/edit/' + msg.data[a].i + '" i="' + msg.data[a].i
+			+ '">' + msg.data[a].n;
+		if (msg.data[a].a == false)
 			h += ' <span class="ia">- Inactive</span>';
 		h += '</a></li>';
 	}

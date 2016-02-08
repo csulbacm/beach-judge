@@ -200,7 +200,7 @@ struct Problem
 	{
 		ps = ProblemSet::s_byID[sid];
 		if (id == 0xFFFF) {
-			id = 0;
+			id = -1;
 			do ++id;
 			while (ps->problemsByID.count(id));
 		}
@@ -271,7 +271,7 @@ struct Problem
 		sqlite3_bind_int(SQL::problem_delete,
 			1, setID);
 		sqlite3_bind_int(SQL::problem_delete,
-			1, id);
+			2, id);
 		sqlite3_step(SQL::problem_delete);
 		sqlite3_reset(SQL::problem_delete);
 	}

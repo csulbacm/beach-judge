@@ -15,6 +15,7 @@ void loadJudgeData()
 	// Load Problem Data
 	printf("Loading problem data...\n");
 	ProblemSet::SQL_LoadAll();
+	Problem::SQL_LoadAll();
 
 	// Load Users & Groups
 	printf("Loading user data...\n");

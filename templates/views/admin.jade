@@ -178,6 +178,36 @@ block problemset-edit
 				ul#problem-list
 			p.center
 				a#problem-create-lnk(href="/user/problem") Create Problem
+block problem-create
+	#problem-create
+		.block
+			p.header Create Problem
+			form#jfp-cr.judge-form(auto-complete="off")
+				input#jfp-cr-s(name="s", type="hidden")
+				.row
+					input#jfp-cr-n.judge-form-string(name="n", type="text", placeholder="Name", autocomplete="off")
+				.row
+					input#jfp-cr-cl.form-button(value="Clear", type="button")
+					input#jfp-cr-cr.form-button(value="Create", type="button")
+					input#jfp-cr-ca.form-button(value="Cancel", type="button")
+				.row.hidden
+					p#jfp-cr-er.form-error
+block problem-edit
+	#problem-edit
+		.block
+			p.header Edit Problem
+			form#jfp-ed.judge-form(auto-complete="off")
+				input#jfp-ed-s(name="s", type="hidden")
+				input#jfp-ed-i(name="i", type="hidden")
+				.row
+					input#jfp-ed-n.judge-form-string(name="n", type="text", placeholder="Name", autocomplete="off")
+				.row
+					input#jfp-ed-cl.form-button(value="Clear", type="button")
+					input#jfp-ed-up.form-button(value="Update", type="button")
+					input#jfp-ed-dl.form-button(value="Delete", type="button")
+					input#jfp-ed-ca.form-button(value="Cancel", type="button")
+				.row.hidden
+					p#jfp-ed-er.form-error
 block content
 	block root
 	block scoreboard
@@ -189,3 +219,5 @@ block content
 	block problemsets
 	block problemset-create
 	block problemset-edit
+	block problem-create
+	block problem-edit
