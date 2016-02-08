@@ -105,6 +105,13 @@ struct ProblemSet
 	u32 duration;
 
 
+	//----------------- Problems -------------------
+	
+	std::map<u16, Problem *> problemsByID;
+
+	std::map<std::string, Problem *> problemsByName;
+
+
 	//------------------- SQL ----------------------
 
 	inline void SQL_Insert()
@@ -176,14 +183,112 @@ struct Problem
 {
 	// ID
 	// Name
-	// Description
-	// SampleTests
 	// ProblemSet
 	//
+	// SampleTests
 	// Submissions
 	// Scores
 	// TestCases
 
+	Problem()
+	{
+	}
+
+	Problem(const char *name, u16 sid, u16 id) :
+		name(name),
+		setID(sid)
+	{
+		ps = ProblemSet::s_byID[sid];
+		if (id == 0xFFFF) {
+			id = 0;
+			do ++id;
+			while (ps->problemsByID.count(id));
+		}
+		this->id = id;
+		ps->problemsByID[id] = this;
+		ps->problemsByName[name] = this;
+	}
+
+	~Problem()
+	{
+	}
+
+	void Purge()
+	{
+		if (ps->problemsByID.count(id))
+			ps->problemsByID.erase(id);
+		if (ps->problemsByName.count(name))
+			ps->problemsByName.erase(name);
+	}
+
+
+	//---------------- ProblemSet ------------------
+
+	ProblemSet *ps;
+
+	u16 setID;
+
+
+	//-------------------- ID ----------------------
+
+	u16 id;
+
+
+	//------------------- Name ---------------------
+
+	std::string name;
+
+
+	//------------------- SQL ----------------------
+
+	inline void SQL_Insert()
+	{
+		sqlite3_bind_int(SQL::problem_insert,
+			1, setID);
+		sqlite3_bind_int(SQL::problem_insert,
+			2, id);
+		sqlite3_bind_text(SQL::problem_insert,
+			3, name.c_str(), name.length(), 0);
+		sqlite3_step(SQL::problem_insert);
+		sqlite3_reset(SQL::problem_insert);
+	}
+
+	inline void SQL_Sync()
+	{
+		sqlite3_bind_text(SQL::problem_update,
+			1, name.c_str(), name.length(), 0);
+		sqlite3_bind_int(SQL::problem_update,
+			2, setID);
+		sqlite3_bind_int(SQL::problem_update,
+			3, id);
+		sqlite3_step(SQL::problem_update);
+		sqlite3_reset(SQL::problem_update);
+	}
+
+	inline void SQL_Delete()
+	{
+		//TODO: Delete all associated test sets and submissions
+		sqlite3_bind_int(SQL::problem_delete,
+			1, setID);
+		sqlite3_bind_int(SQL::problem_delete,
+			1, id);
+		sqlite3_step(SQL::problem_delete);
+		sqlite3_reset(SQL::problem_delete);
+	}
+
+	static inline void SQL_LoadAll()
+	{
+		const char *_name;
+		i16 _sid, _id;
+		while (sqlite3_step(SQL::problem_selectAll)
+				!= SQLITE_DONE) {
+			_sid = sqlite3_column_int(SQL::problem_selectAll, 0);
+			_id = sqlite3_column_int(SQL::problem_selectAll, 1);
+			_name = (const char *)sqlite3_column_text(SQL::problem_selectAll, 2);
+			new Problem(_name, _sid, _id);
+		}
+		sqlite3_reset(SQL::problem_selectAll);
+	}
 };
 
 

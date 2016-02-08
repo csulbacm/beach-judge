@@ -6,10 +6,18 @@ var _problemSetCreateForm = $('#jfps-cr');
 var _problemSetCreateFormError = $('#jfps-cr-er');
 var _problemSetEditForm = $('#jfps-ed');
 var _problemSetEditFormError = $('#jfps-ed-er');
+var _problemList = $('#problem-list');
+var _problemCreateForm = $('#jfp-cr');
+var _problemCreateFormError = $('#jfp-cr-er');
+var _problemEditForm = $('#jfp-ed');
+var _problemEditFormError = $('#jfp-ed-er');
 
 var _problemSetHover = $('#problemset-hover');
 var _problemSetHoverTarget = '';
 var _problemSetHoverTimeout = '';
+var _problemHover = $('#problem-hover');
+var _problemHoverTarget = '';
+var _problemHoverTimeout = '';
 
 var _formatDate = function(d)
 {
@@ -61,6 +69,15 @@ judge.onEnter['problemset-edit'] = function(state) {
 	//TODO: Confirm this redudancy is necessary
 	$('#jfps-ed-i').val(state.args[0]);
 	$('#jfps-ed-o').val((new Date()).getTimezoneOffset()/-60);
+	_problemList.html('');
+	$('#problem-create-lnk').prop('href', '/problem/create/' + state.args[0]);
+	$('#problemset-edit .placeholder').show(1, function() {
+		var t = this;
+		setTimeout(function() {
+			$('#problem-loading').css(t.getBoundingClientRect());
+		}, 0);
+		judgeQueue('PL i=' + state.args[0]);
+	});
 };
 judge.onLeave['problemset-edit'] = function(state) {
 	_problemSetEditFormError.parent().hide();

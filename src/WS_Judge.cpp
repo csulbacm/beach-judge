@@ -14,6 +14,12 @@ namespace judge {
 
 void msg_populate(libwebsocket *w, psd_judge *p, char *m);
 
+void msg_problemCreate(libwebsocket *w, psd_judge *p, char *m);
+void msg_problemDelete(libwebsocket *w, psd_judge *p, char *m);
+void msg_problemInfo(libwebsocket *w, psd_judge *p, char *m);
+void msg_problemList(libwebsocket *w, psd_judge *p, char *m);
+void msg_problemUpdate(libwebsocket *w, psd_judge *p, char *m);
+
 void msg_problemSetCreate(libwebsocket *w, psd_judge *p, char *m);
 void msg_problemSetDelete(libwebsocket *w, psd_judge *p, char *m);
 void msg_problemSetInfo(libwebsocket *w, psd_judge *p, char *m);
@@ -36,6 +42,12 @@ map<string, func_judge> createMsgMap()
 {
 	map<string, func_judge> m = map<string, func_judge>();
 	m["POP"] = msg_populate;
+
+	m["PC"] = msg_problemCreate;
+	m["PD"] = msg_problemDelete;
+	m["PI"] = msg_problemInfo;
+	m["PL"] = msg_problemList;
+	m["PU"] = msg_problemUpdate;
 
 	m["PSC"] = msg_problemSetCreate;
 	m["PSD"] = msg_problemSetDelete;
@@ -70,6 +82,26 @@ void msg_populate(libwebsocket *w, psd_judge *p, char *m)
 		"\"msg\":\"POP\","
 		"\"name\":\"%s\"",
 		p->user->name.c_str());
+}
+
+void msg_problemCreate(libwebsocket *w, psd_judge *p, char *m)
+{
+}
+
+void msg_problemDelete(libwebsocket *w, psd_judge *p, char *m)
+{
+}
+
+void msg_problemInfo(libwebsocket *w, psd_judge *p, char *m)
+{
+}
+
+void msg_problemList(libwebsocket *w, psd_judge *p, char *m)
+{
+}
+
+void msg_problemUpdate(libwebsocket *w, psd_judge *p, char *m)
+{
 }
 
 void msg_problemSetCreate(libwebsocket *w, psd_judge *p, char *m)

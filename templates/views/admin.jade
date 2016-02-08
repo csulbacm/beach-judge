@@ -168,6 +168,16 @@ block problemset-edit
 				.row.hidden
 					p#jfps-ed-er.form-error
 				input#jfps-ed-o(name="o", type="hidden")
+		#problem-hover
+			p Edit
+		.block
+			p.header Problems
+			.list
+				.placeholder.hidden
+					+loading("problem-loading")
+				ul#problem-list
+			p.center
+				a#problem-create-lnk(href="/user/problem") Create Problem
 block content
 	block root
 	block scoreboard

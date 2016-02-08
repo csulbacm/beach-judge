@@ -15,6 +15,10 @@ namespace judge {
 sqlite3 *g_sql = 0;
 
 sqlite3_stmt
+	*SQL::problem_selectAll = 0,
+	*SQL::problem_insert = 0,
+	*SQL::problem_update = 0,
+	*SQL::problem_delete = 0,
 	*SQL::problemSet_selectAll = 0,
 	*SQL::problemSet_insert = 0,
 	*SQL::problemSet_update = 0,
@@ -60,6 +64,17 @@ bool SQL::Init()
 			"StartTime DATETIME,\n"
 			"Duration INT,\n"
 			"PRIMARY KEY(ID)\n"
+		")", s);
+	sqlite3_step(stmt);
+	sqlite3_finalize(stmt);
+
+	// Problem
+	SQL_STMT(stmt, 
+		"CREATE TABLE IF NOT EXISTS jd_problem(\n"
+			"SID INT,\n"
+			"ID INT,\n"
+			"Name VARCHAR,\n"
+			"PRIMARY KEY(SID, ID)\n"
 		")", s);
 	sqlite3_step(stmt);
 	sqlite3_finalize(stmt);
@@ -112,6 +127,19 @@ bool SQL::Init()
 		"UPDATE jd_problemSet SET Name=?, Status=?, StartTime=?, Duration=? WHERE ID=?", s);
 	SQL_STMT(problemSet_delete,
 		"DELETE FROM jd_problemSet WHERE ID=?", s);
+
+
+	//--------------- Problem -----------------
+	//TODO: Split update
+	
+	SQL_STMT(problem_selectAll, 
+		"SELECT * FROM jd_problem", s);
+	SQL_STMT(problem_insert,
+		"INSERT INTO jd_problem VALUES (?,?,?)", s);
+	SQL_STMT(problem_update,
+		"UPDATE jd_problem SET Name=? WHERE SID=? AND ID=?", s);
+	SQL_STMT(problem_delete,
+		"DELETE FROM jd_problem WHERE SID=? AND ID=?", s);
 
 
 	//-------------- UserGroup ----------------

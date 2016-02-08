@@ -75,6 +75,10 @@ typedef struct SQL
 
 	// SQL Statements
 	static sqlite3_stmt
+		*problem_selectAll,
+		*problem_insert,
+		*problem_update,
+		*problem_delete,
 		*problemSet_selectAll,
 		*problemSet_insert,
 		*problemSet_update,
