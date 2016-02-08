@@ -54,8 +54,8 @@ function wsOnMessage(evt) {
 	var data = JSON.parse('{' + evt.data + '}');
 	if (data.msg === 'POP') {
 		$('.user').html(data.name);
-	} else if (typeof(judge.msgHandler[data.msg] !== 'undefined')) {
-		judge.msgHandler[data.msg](data);
+	} else if (typeof(judge.onMsg[data.msg] !== 'undefined')) {
+		judge.onMsg[data.msg](data);
 	}
 }
 function wsOnError(evt) {
@@ -64,7 +64,9 @@ function wsOnError(evt) {
 }
 
 var judge = [];
-judge.msgHandler = [];
+judge.onEnter = [];
+judge.onLeave = [];
+judge.onMsg = [];
 judge.sendQueue = [];
 var judgeDebug = false;
 var judgeReloadOnReconnect = true;
@@ -138,6 +140,7 @@ function onNavigate(stateObj) {
 	// Hide last state data
 	if (judgeLastState) {
 		// Don't do anything if the state hasn't changed
+		//TODO: Determine if we should compare arguments
 		if (stateObj.nav === judgeLastState.nav)
 			return;
 
@@ -158,6 +161,8 @@ function onNavigate(stateObj) {
 			}
 		} else
 			target = '';
+		if (judge.onLeave[target] != undefined)
+			judge.onLeave[target](judgeLastState);
 		if (target.length) {
 			target = $('#' + target);
 			if (target.length) {
@@ -192,33 +197,9 @@ function onNavigate(stateObj) {
 		}
 	} else
 		target = '';
-	if (target === 'usergroups') {
-		//TODO: Send unix timestamp for last received data
-		$('#usergroup-list').html('');
-		$('#usergroups .placeholder').show(1, function() {
-			var t = this;
-			setTimeout(function() {
-				$('#usergroup-loading').css(t.getBoundingClientRect());
-			}, 0);
-			judgeQueue('UGL');
-		});
-		//judgeQueue('UL:');
-	} else if (target === 'usergroup-edit') {
-		judgeQueue('UGI i=' + args[0]);
-		$('#user-create-lnk').prop('href', '/user/create/' + args[0]);
-		$('#usergroup-edit .placeholder').show(1, function() {
-			var t = this;
-			setTimeout(function() {
-				$('#user-loading').css(t.getBoundingClientRect());
-			}, 0);
-			judgeQueue('UL i=' + args[0]);
-		});
-	} else if (target === 'user-edit') {
-		judgeQueue('UI i=' + args[0]);
-		$('#jfu-ed-i').val(args[0]);
-	} else if (target === 'user-create') {
-		$('#jfu-cr-g').val(args[0]);
-	}
+	stateObj.args = args;
+	if (judge.onEnter[target] != undefined)
+		judge.onEnter[target](stateObj);
 	if (target.length) {
 		target = $('#' + target);
 		if (target.length) {
@@ -250,7 +231,7 @@ $(document).ready(function(){
 	judgePopulate();
 	var stateObj = { nav: window.location.pathname };
 	history.replaceState(stateObj, 'beachJudge', stateObj.nav);
-	onNavigate(stateObj);
+	setTimeout(function() { onNavigate(stateObj); }, 0);
 
 	$(document).on('click', 'a', function() {
 		nav(this.getAttribute('href'));
