@@ -1,4 +1,4 @@
-$(document).ready(function(){
+$(document).ready(function() {
 
 var _userList = $('#user-list');
 var _userCreateForm = $('#jfu-cr');
@@ -11,12 +11,12 @@ var _userGroupCreateFormError = $('#jfug-cr-er');
 var _userGroupEditForm = $('#jfug-ed');
 var _userGroupEditFormError = $('#jfug-ed-er');
 
-var jUserMouseTimeout = '';
-var jUserGroupMouseTimeout = '';
 var _userHover = $('#user-hover');
 var _userHoverTarget = '';
+var _userHoverTimeout = '';
 var _userGroupHover = $('#usergroup-hover');
 var _userGroupHoverTarget = '';
+var _userGroupHoverTimeout = '';
 
 //--------------- Users -----------------
 
@@ -39,14 +39,14 @@ judge.onLeave['user-edit'] = function(state) {
 
 // Effects
 //TODO: Make this work for onClick for mobile
-$('#user-list').on('mouseenter', 'a', function() {
-	clearTimeout(jUserHoverTimeout);
+_userList.on('mouseenter', 'a', function() {
+	clearTimeout(_userHoverTimeout);
 	var rect = this.getBoundingClientRect();
 	_userHoverTarget = $(this);
 	_userHover.css({top: rect.top, left: rect.left, width: rect.right - rect.left});
 	_userHover.show();
 }).on('mouseleave', 'a', function() {
-	jUserHoverTimeout = setTimeout(function() {
+	_userHoverTimeout = setTimeout(function() {
 		_userHover.hide();
 	}, 100);
 });
@@ -190,7 +190,7 @@ $('#jfu-ed-dl').click(function() {
 // Navigation
 judge.onEnter['usergroups'] = function(state) {
 	//TODO: Send unix timestamp for last received data
-	$('#usergroup-list').html('');
+	_userGroupList.html('');
 	$('#usergroups .placeholder').show(1, function() {
 		var t = this;
 		setTimeout(function() {
@@ -200,6 +200,7 @@ judge.onEnter['usergroups'] = function(state) {
 	});
 };
 judge.onEnter['usergroup-edit'] = function(state) {
+	_userList.html('');
 	judgeQueue('UGI i=' + state.args[0]);
 	$('#user-create-lnk').prop('href', '/user/create/' + state.args[0]);
 	$('#usergroup-edit .placeholder').show(1, function() {
@@ -221,14 +222,14 @@ judge.onLeave['usergroup-edit'] = function(state) {
 
 // Effects
 //TODO: Make this work for onClick for mobile
-$('#usergroup-list').on('mouseenter', 'a', function() {
-	clearTimeout(jUserGroupHoverTimeout);
+_userGroupList.on('mouseenter', 'a', function() {
+	clearTimeout(_userGroupHoverTimeout);
 	var rect = this.getBoundingClientRect();
 	_userGroupHoverTarget = $(this);
 	_userGroupHover.css({top: rect.top, left: rect.left, width: rect.right - rect.left});
 	_userGroupHover.show();
 }).on('mouseleave', 'a', function() {
-	jUserGroupHoverTimeout = setTimeout(function() {
+	_userGroupHoverTimeout = setTimeout(function() {
 		_userGroupHover.hide();
 	}, 100);
 });

@@ -114,3 +114,24 @@ block user-edit
 					input#jfu-ed-ca.form-button(value="Cancel", type="button")
 				.row.hidden
 					p#jfu-ed-er.form-error
+block problems
+	#problems
+		#problem-hover
+			p Edit
+		.block
+			p.header Problems
+			.list
+				.placeholder.hidden
+					+loading("problem-loading")
+				ul#problem-list
+			p.center
+				a#problem-create-lnk(href="/problem/create") Create Problem
+block content
+	block root
+	block scoreboard
+	block usergroups
+	block usergroup-create
+	block usergroup-edit
+	block user-create
+	block user-edit
+	block problems

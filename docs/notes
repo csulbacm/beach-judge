@@ -9,30 +9,27 @@ NodeJS
 
 === TODO ===
 
-x	Default Admin & Global User Group
-x	User & User Group Storage
-x	UserGroup Management
-x	Show UserGroups
-x	Create/Manage UserGroups
-x		Toggle Activity
-	Show Users in Group
-	Create/Manage Users
-	Move User to Group
-	Delete User
-	Set User Level
 	Show ProblemSets
 	Create/Manage ProblemSets
 	Show Problems in Set
 	Create/Manage Problems
 	Pop-Up Confirm Dialog
+	Realtime Subscriptions
 
 
-Team Management
-	Show Teams
-	Create Team
-	Delete Team
-	Modify Team
-	Generate Teams
+User Management
+x	UserGroups
+x		Show UserGroups
+x		Create UserGroup
+x		Delete UserGroup
+x		Modify UserGroup
+	Users
+x		Show Users
+x		Create User
+x		Delete User
+x		Modify User
+		Change User Level
+		Generate Users
 
 Scoreboard
 	Show Grid

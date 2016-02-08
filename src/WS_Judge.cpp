@@ -10,31 +10,31 @@ namespace judge {
 //-----------------------------------------
 //------------- Message Map ---------------
 
+void msg_populate(libwebsocket *w, psd_judge *p, char *m);
 void msg_userCreate(libwebsocket *w, psd_judge *p, char *m);
 void msg_userDelete(libwebsocket *w, psd_judge *p, char *m);
 void msg_userInfo(libwebsocket *w, psd_judge *p, char *m);
+void msg_userList(libwebsocket *w, psd_judge *p, char *m);
 void msg_userUpdate(libwebsocket *w, psd_judge *p, char *m);
 void msg_userGroupCreate(libwebsocket *w, psd_judge *p, char *m);
 void msg_userGroupDelete(libwebsocket *w, psd_judge *p, char *m);
 void msg_userGroupInfo(libwebsocket *w, psd_judge *p, char *m);
-void msg_userGroupUpdate(libwebsocket *w, psd_judge *p, char *m);
-void msg_populate(libwebsocket *w, psd_judge *p, char *m);
-void msg_userList(libwebsocket *w, psd_judge *p, char *m);
 void msg_userGroupList(libwebsocket *w, psd_judge *p, char *m);
+void msg_userGroupUpdate(libwebsocket *w, psd_judge *p, char *m);
 
 map<string, func_judge> createMsgMap()
 {
 	map<string, func_judge> m = map<string, func_judge>();
 	m["POP"] = msg_populate;
-	m["UL"] = msg_userList;
 	m["UC"] = msg_userCreate;
 	m["UD"] = msg_userDelete;
 	m["UI"] = msg_userInfo;
+	m["UL"] = msg_userList;
 	m["UU"] = msg_userUpdate;
-	m["UGL"] = msg_userGroupList;
 	m["UGC"] = msg_userGroupCreate;
 	m["UGD"] = msg_userGroupDelete;
 	m["UGI"] = msg_userGroupInfo;
+	m["UGL"] = msg_userGroupList;
 	m["UGU"] = msg_userGroupUpdate;
 	return m;
 }
@@ -52,48 +52,6 @@ void msg_populate(libwebsocket *w, psd_judge *p, char *m)
 		"\"msg\":\"POP\","
 		"\"name\":\"%s\"",
 		p->user->name.c_str());
-}
-
-void msg_userList(libwebsocket *w, psd_judge *p, char *m)
-{
-	char idStr[16];
-	i16 r = sscanf(m, "i=%[0-9]", idStr);
-	if (r != 1) {
-		sprintf(p->msg, ""
-			"\"msg\":\"UL\","
-			"\"err\":\"I\"");
-		return;
-	}
-
-	u16 id = atoi(idStr);
-	if (UserGroup::s_groupsByID.count(id) == 0) {
-		sprintf(p->msg, ""
-			"\"msg\":\"UL\","
-			"\"err\":\"U\"");
-		return;
-	}
-	
-	UserGroup *group = UserGroup::s_groupsByID[id];
-
-	// Populate User Data
-	stringstream str;
-	vector<User *>::iterator it = group->users.begin();
-	vector<User *>::iterator end = group->users.end();
-	char entry[64];
-	User *u;
-	while (it != end) {
-		u = *it;
-		sprintf(entry, "{\"i\":\"%d\",\"n\":\"%s\"}",
-			u->id, u->name.c_str());
-		str << entry;
-		++it;
-		if (it != end)
-			str << ",";
-	}
-	sprintf(p->msg, ""
-		"\"msg\":\"UL\","
-		"\"users\":[%s]",
-		str.str().c_str());
 }
 
 void msg_userCreate(libwebsocket *w, psd_judge *p, char *m)
@@ -238,6 +196,48 @@ void msg_userInfo(libwebsocket *w, psd_judge *p, char *m)
 		user->display.c_str());
 }
 
+void msg_userList(libwebsocket *w, psd_judge *p, char *m)
+{
+	char idStr[16];
+	i16 r = sscanf(m, "i=%[0-9]", idStr);
+	if (r != 1) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UL\","
+			"\"err\":\"I\"");
+		return;
+	}
+
+	u16 id = atoi(idStr);
+	if (UserGroup::s_groupsByID.count(id) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UL\","
+			"\"err\":\"U\"");
+		return;
+	}
+	
+	UserGroup *group = UserGroup::s_groupsByID[id];
+
+	// Populate User Data
+	stringstream str;
+	vector<User *>::iterator it = group->users.begin();
+	vector<User *>::iterator end = group->users.end();
+	char entry[64];
+	User *u;
+	while (it != end) {
+		u = *it;
+		sprintf(entry, "{\"i\":\"%d\",\"n\":\"%s\"}",
+			u->id, u->name.c_str());
+		str << entry;
+		++it;
+		if (it != end)
+			str << ",";
+	}
+	sprintf(p->msg, ""
+		"\"msg\":\"UL\","
+		"\"users\":[%s]",
+		str.str().c_str());
+}
+
 void msg_userUpdate(libwebsocket *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
@@ -329,27 +329,6 @@ void msg_userUpdate(libwebsocket *w, psd_judge *p, char *m)
 		"\"n\":\"%s\"",
 		user->id,
 		user->name.c_str());
-}
-
-void msg_userGroupList(libwebsocket *w, psd_judge *p, char *m)
-{
-	// Populate User Group Data
-	stringstream str;
-	map<u16, UserGroup *>::iterator it = UserGroup::s_groupsByID.begin();
-	map<u16, UserGroup *>::iterator end = UserGroup::s_groupsByID.end();
-	char entry[64];
-	while (it != end) {
-		sprintf(entry, "{\"i\":\"%d\",\"n\":\"%s\",\"a\":\"%d\"}",
-			it->second->id, it->second->name.c_str(), it->second->isActive);
-		str << entry;
-		++it;
-		if (it != end)
-			str << ",";
-	}
-	sprintf(p->msg, ""
-		"\"msg\":\"UGL\","
-		"\"usergroups\":[%s]",
-		str.str().c_str());
 }
 
 void msg_userGroupCreate(libwebsocket *w, psd_judge *p, char *m)
@@ -480,6 +459,27 @@ void msg_userGroupInfo(libwebsocket *w, psd_judge *p, char *m)
 		id,
 		group->name.c_str(),
 		group->isActive);
+}
+
+void msg_userGroupList(libwebsocket *w, psd_judge *p, char *m)
+{
+	// Populate User Group Data
+	stringstream str;
+	map<u16, UserGroup *>::iterator it = UserGroup::s_groupsByID.begin();
+	map<u16, UserGroup *>::iterator end = UserGroup::s_groupsByID.end();
+	char entry[64];
+	while (it != end) {
+		sprintf(entry, "{\"i\":\"%d\",\"n\":\"%s\",\"a\":\"%d\"}",
+			it->second->id, it->second->name.c_str(), it->second->isActive);
+		str << entry;
+		++it;
+		if (it != end)
+			str << ",";
+	}
+	sprintf(p->msg, ""
+		"\"msg\":\"UGL\","
+		"\"usergroups\":[%s]",
+		str.str().c_str());
 }
 
 void msg_userGroupUpdate(libwebsocket *w, psd_judge *p, char *m)

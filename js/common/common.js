@@ -226,7 +226,7 @@ function nav(target, force) {
 }
 
 // Initialization
-$(document).ready(function(){
+$(document).ready(function() {
 	var stateObj = { nav: window.location.pathname };
 	history.replaceState(stateObj, 'beachJudge', stateObj.nav);
 
