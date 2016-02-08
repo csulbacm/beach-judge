@@ -17,12 +17,12 @@ void loadJudgeData()
 	User::SQL_LoadAll();
 
 	// Default User Data
-	if (UserGroup::s_groupsByID.count(0) == 0) {
+	if (UserGroup::s_byID.count(0) == 0) {
 		printf("Creating global user group...\n");
 		(new UserGroup("global", 0))->SQL_Insert();
 	}
 	//TODO: Refer to global name map
-	if (User::s_usersByName.count("admin") == 0) {
+	if (User::s_byName.count("admin") == 0) {
 		printf("Creating admin user...\n");
 		(new User("admin", "test", "admin", User::Admin, 0, 0))->SQL_Insert();
 	}
@@ -36,9 +36,9 @@ void loadJudgeData()
 			string sessID, name;
 			u64 expireTimeMS;
 			while (file >> sessID >> name >> expireTimeMS) {
-				if (User::s_usersByName.count(name) == 0)
+				if (User::s_byName.count(name) == 0)
 					continue;
-				Session::s_sessionMap[sessID] = Session(sessID.c_str(), User::s_usersByName[name], expireTimeMS);
+				Session::s_sessionMap[sessID] = Session(sessID.c_str(), User::s_byName[name], expireTimeMS);
 			}
 			file.close();
 		}

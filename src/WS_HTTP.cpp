@@ -206,8 +206,8 @@ int ws_http(libwebsocket_context *context,
 				// Login Attempt
 				printf("  %p: Login %s\n", pss, nameBuff);
 				string name(nameBuff);
-				if (User::s_usersByName.count(name) != 0) {
-					User *user = User::s_usersByName[name];
+				if (User::s_byName.count(name) != 0) {
+					User *user = User::s_byName[name];
 					printf("U: %p\n", user);
 					if (user->TestPassword(pwBuff)) {
 						// Generate Session Key

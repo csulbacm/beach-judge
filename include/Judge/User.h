@@ -31,8 +31,8 @@ struct UserGroup
 	//
 	// Users
 
-	static std::map<u16, UserGroup *> s_groupsByID;
-	static std::map<std::string, UserGroup *> s_groupsByName;
+	static std::map<u16, UserGroup *> s_byID;
+	static std::map<std::string, UserGroup *> s_byName;
 
 	UserGroup()
 	{
@@ -46,28 +46,28 @@ struct UserGroup
 		if (id == 0xFFFF) {
 			id = 0;
 			do ++id;
-			while (s_groupsByID.count(id));
+			while (s_byID.count(id));
 		}
 		this->id = id;
-		s_groupsByID[id] = this;
-		s_groupsByName[name] = this;
+		s_byID[id] = this;
+		s_byName[name] = this;
 	}
 
 	~UserGroup()
 	{
 		//TODO: Verify this is necessary, might have to explicity remove
-		if (s_groupsByID.count(id))
-			s_groupsByID[id] = 0;
-		if (s_groupsByName.count(name))
-			s_groupsByName[name] = 0;
+		if (s_byID.count(id))
+			s_byID[id] = 0;
+		if (s_byName.count(name))
+			s_byName[name] = 0;
 	}
 
 	void Purge()
 	{
-		if (s_groupsByID.count(id))
-			s_groupsByID.erase(id);
-		if (s_groupsByName.count(name))
-			s_groupsByName.erase(name);
+		if (s_byID.count(id))
+			s_byID.erase(id);
+		if (s_byName.count(name))
+			s_byName.erase(name);
 	}
 
 
@@ -160,13 +160,13 @@ struct User
 	// Scores
 	// Messages
 
-	static std::map<std::string, User *> s_usersByName;
-	static std::map<u16, User *> s_usersByID;
+	static std::map<std::string, User *> s_byName;
+	static std::map<u16, User *> s_byID;
 
 	static inline void Cleanup()
 	{
-		std::map<std::string, User *>::iterator it = s_usersByName.begin();
-		std::map<std::string, User *>::iterator end = s_usersByName.end();
+		std::map<std::string, User *>::iterator it = s_byName.begin();
+		std::map<std::string, User *>::iterator end = s_byName.end();
 		while (it != end) {
 			delete it->second;
 			++it;
@@ -185,9 +185,9 @@ struct User
 		groupID(groupID),
 		id(id)
 	{
-		s_usersByName[name] = this;
-		s_usersByID[id] = this;
-		UserGroup::s_groupsByID[groupID]->users.push_back(this);
+		s_byName[name] = this;
+		s_byID[id] = this;
+		UserGroup::s_byID[groupID]->users.push_back(this);
 	}
 
 	User(const char *name, const char *pw, const char *display, u8 level, u16 groupID, u32 id = 0xFFFFFFFF) :
@@ -198,35 +198,35 @@ struct User
 	{
 		SetPassword(pw);
 
-		s_usersByName[name] = this;
+		s_byName[name] = this;
 
 		if (id == 0xFFFFFFFF) {
 			do id = rand() % 0x100000000;
-			while (s_usersByID.count(id));
+			while (s_byID.count(id));
 		}
 		this->id = id;
-		s_usersByID[id] = this;
-		UserGroup::s_groupsByID[groupID]->users.push_back(this);
+		s_byID[id] = this;
+		UserGroup::s_byID[groupID]->users.push_back(this);
 	}
 
 	~User()
 	{
 		// Keep an entry in the user map so we can reload the user later
 		if (name.length())
-			if (s_usersByName.count(name))
-				s_usersByName[name] = 0;
-		UserGroup *group = UserGroup::s_groupsByID[groupID];
+			if (s_byName.count(name))
+				s_byName[name] = 0;
+		UserGroup *group = UserGroup::s_byID[groupID];
 		group->users.erase(std::remove(group->users.begin(), group->users.end(), this), group->users.end());
-		if (s_usersByID.count(id))
-			s_usersByID[id] = 0;
+		if (s_byID.count(id))
+			s_byID[id] = 0;
 	}
 
 	void Purge()
 	{
-		if (s_usersByID.count(id))
-			s_usersByID.erase(id);
-		if (s_usersByName.count(name))
-			s_usersByName.erase(name);
+		if (s_byID.count(id))
+			s_byID.erase(id);
+		if (s_byName.count(name))
+			s_byName.erase(name);
 	}
 
 	u32 id;

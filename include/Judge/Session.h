@@ -100,12 +100,12 @@ typedef struct Session
 			expire = sqlite3_column_int64(SQL::session_selectAll, 2);
 			//TODO: Handle expiration
 
-			if (User::s_usersByID.count(userID) == 0) {
+			if (User::s_byID.count(userID) == 0) {
 				//TODO: Handle invalid user
 				continue;
 			}
 			k = std::string(key);
-			s_sessionMap[k] = Session(key, User::s_usersByID[userID], expire);
+			s_sessionMap[k] = Session(key, User::s_byID[userID], expire);
 		}
 		sqlite3_reset(SQL::session_selectAll);
 	}

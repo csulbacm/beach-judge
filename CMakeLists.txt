@@ -37,6 +37,7 @@ set(INC
 	${INC_DIR}/Judge/Base.h
 	${INC_DIR}/Judge/Judge.h
 	${INC_DIR}/Judge/Persistence.h
+	${INC_DIR}/Judge/Problem.h
 	${INC_DIR}/Judge/Session.h
 	${INC_DIR}/Judge/Types.h
 	${INC_DIR}/Judge/User.h
@@ -46,6 +47,7 @@ set(INC
 set(SRC
 	${SRC_DIR}/main.cpp
 	${SRC_DIR}/Persistence.cpp
+	${SRC_DIR}/Problem.cpp
 	${SRC_DIR}/SQL.cpp
 	${SRC_DIR}/User.cpp
 	${SRC_DIR}/WS_HTTP.cpp

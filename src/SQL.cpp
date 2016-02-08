@@ -15,6 +15,10 @@ namespace judge {
 sqlite3 *g_sql = 0;
 
 sqlite3_stmt
+	*SQL::problemSet_selectAll = 0,
+	*SQL::problemSet_insert = 0,
+	*SQL::problemSet_update = 0,
+	*SQL::problemSet_delete = 0,
 	*SQL::userGroup_selectAll = 0,
 	*SQL::userGroup_insert = 0,
 	*SQL::userGroup_update = 0,
@@ -47,6 +51,16 @@ bool SQL::Init()
 	
 	sqlite3_stmt *stmt = 0;
 	
+	// UserGroup
+	SQL_STMT(stmt, 
+		"CREATE TABLE IF NOT EXISTS jd_problemSet(\n"
+			"ID INT,\n"
+			"Name VARCHAR,\n"
+			"PRIMARY KEY(ID)\n"
+		")", s);
+	sqlite3_step(stmt);
+	sqlite3_finalize(stmt);
+
 	// UserGroup
 	SQL_STMT(stmt, 
 		"CREATE TABLE IF NOT EXISTS jd_userGroup(\n"
@@ -82,6 +96,19 @@ bool SQL::Init()
 		")", s);
 	sqlite3_step(stmt);
 	sqlite3_finalize(stmt);
+
+
+	//-------------- ProblemSet ---------------
+	//TODO: Split update
+	
+	SQL_STMT(problemSet_selectAll, 
+		"SELECT * FROM jd_problemSet", s);
+	SQL_STMT(problemSet_insert,
+		"INSERT INTO jd_problemSet VALUES (?,?)", s);
+	SQL_STMT(problemSet_update,
+		"UPDATE jd_problemSet SET Name=? WHERE ID=?", s);
+	SQL_STMT(problemSet_delete,
+		"DELETE FROM jd_problemSet WHERE ID=?", s);
 
 
 	//-------------- UserGroup ----------------

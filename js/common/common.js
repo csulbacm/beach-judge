@@ -54,7 +54,7 @@ function wsOnMessage(evt) {
 	var data = JSON.parse('{' + evt.data + '}');
 	if (data.msg === 'POP') {
 		$('.user').html(data.name);
-	} else if (typeof(judge.onMsg[data.msg] !== 'undefined')) {
+	} else if (judge.onMsg[data.msg] != undefined) {
 		judge.onMsg[data.msg](data);
 	}
 }

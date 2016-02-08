@@ -1,21 +1,20 @@
 $(document).ready(function() {
 
-var _problemList = $('#problem-list');
+var _problemSetList = $('#problemset-list');
 
-var _problemHover = $('#problem-hover');
-var _problemHoverTarget = '';
-var _problemHoverTimeout = '';
+var _problemSetHover = $('#problemset-hover');
+var _problemSetHoverTarget = '';
+var _problemSetHoverTimeout = '';
 
-//------------- Problems ----------------
+//----------- Problem Sets --------------
 
 // Navigation
-judge.onEnter['problems'] = function(state) {
-	console.log("HI");
-	_problemList.html('');
-	$('#problems .placeholder').show(1, function() {
+judge.onEnter['problemsets'] = function(state) {
+	_problemSetList.html('');
+	$('#problemsets .placeholder').show(1, function() {
 		var t = this;
 		setTimeout(function() {
-			$('#problem-loading').css(t.getBoundingClientRect());
+			$('#problemset-loading').css(t.getBoundingClientRect());
 		}, 0);
 		judgeQueue('PL');
 	});
