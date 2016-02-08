@@ -50,8 +50,7 @@ struct ProblemSet
 		duration(duration)
 	{
 		if (id == 0xFFFF) {
-			id = 0;
-			do ++id;
+			do id = rand() % 0x100000000;
 			while (s_byID.count(id));
 		}
 		this->id = id;

@@ -24,13 +24,13 @@ var _userGroupHoverTimeout = '';
 judge.onEnter['user-create'] = function(state) {
 	$('#jfu-cr-g').val(state.args[0]);
 };
-judge.onEnter['user-edit'] = function(state) {
-	judgeQueue('UI i=' + state.args[0]);
-	$('#jfu-ed-i').val(state.args[0]);
-};
 judge.onLeave['user-create'] = function(state) {
 	_userCreateFormError.parent().hide();
 	_userCreateForm[0].reset();
+};
+judge.onEnter['user-edit'] = function(state) {
+	judgeQueue('UI i=' + state.args[0]);
+	$('#jfu-ed-i').val(state.args[0]);
 };
 judge.onLeave['user-edit'] = function(state) {
 	_userEditFormError.parent().hide();
@@ -254,16 +254,13 @@ judge.onMsg['UGC'] = function(msg) {
 judge.onMsg['UGD'] = function(msg) {
 	if (typeof msg.err != 'undefined') {
 		var errBox = _userGroupEditFormError;
-		var parent = errBox.parent();
+		errBox.parent().show();
 		if (msg.err === 'I') {
 			errBox.html('Error: Form data is invalid.');
-			parent.show();
 		} else if (msg.err === 'G') {
 			errBox.html('Error: You cannot delete the global user group.');
-			parent.show();
 		} else if (msg.err === 'U') {
 			errBox.html('Error: A usergroup does not exist with that id.');
-			parent.show();
 		}
 	} else {
 		_userGroupEditForm[0].reset();
@@ -299,22 +296,17 @@ judge.onMsg['UGL'] = function(msg) {
 judge.onMsg['UGU'] = function(msg) {
 	if (typeof msg.err != 'undefined') {
 		var errBox = _userGroupEditFormError;
-		var parent = errBox.parent();
+		errBox.parent().show();
 		if (msg.err === 'I') {
 			errBox.html('Error: Form data is invalid.');
-			parent.show();
 		} else if (msg.err === 'G') {
 			errBox.html('Error: You cannot alter the global user group.');
-			parent.show();
 		} else if (msg.err === 'N') {
 			errBox.html('Error: A usergroup exists with that name.');
-			parent.show();
 		} else if (msg.err === 'S') {
 			errBox.html('Error: There are no changes to be made.');
-			parent.show();
 		} else if (msg.err === 'U') {
 			errBox.html('Error: A usergroup does not exist with that id.');
-			parent.show();
 		}
 	} else {
 		_userGroupEditForm[0].reset();

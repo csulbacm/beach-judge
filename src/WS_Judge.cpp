@@ -107,18 +107,24 @@ void msg_problemSetCreate(libwebsocket *w, psd_judge *p, char *m)
 		}
 	}
 
-	if (args[0].length() == 0) {
+	string &name = args[0];
+	if (name.length() == 0) {
 		sprintf(p->msg, ""
 			"\"msg\":\"PSC\","
 			"\"err\":\"N\"");
 		return;
 	}
-	transform(args[0].begin(), args[0].end(), args[0].begin(), ::tolower);
+	transform(name.begin(), name.end(), name.begin(), ::tolower);
 
-	string &name = args[0];
+	if (ProblemSet::s_byName.count(name) != 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PSC\","
+			"\"err\":\"N\"");
+		return;
+	}
+
 	i16 status;
 	string &startTimeStr = args[2];
-	printf("ST: %s\n", startTimeStr.c_str());
 	i32 duration, offset;
 
 	status = atoi(args[1].c_str());
@@ -159,10 +165,79 @@ void msg_problemSetCreate(libwebsocket *w, psd_judge *p, char *m)
 
 void msg_problemSetDelete(libwebsocket *w, psd_judge *p, char *m)
 {
+	// Restrict action to judge
+	if (p->user->level < User::Admin) {
+		sprintf(p->msg, "\"msg\":\"ERR\"");
+		return;
+	}
+
+	char idStr[16];
+	i16 r = sscanf(m, "i=%[0-9]", idStr);
+	if (r != 1) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PSD\","
+			"\"err\":\"I\"");
+		return;
+	}
+
+	u16 id = atoi(idStr);
+	if (ProblemSet::s_byID.count(id) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PSD\","
+			"\"err\":\"U\"");
+		return;
+	}
+
+	//TODO: Debug text
+	ProblemSet *ps = ProblemSet::s_byID[id];
+	ps->SQL_Delete();
+	sprintf(p->msg, ""
+		"\"msg\":\"PSD\","
+		"\"i\":\"%d\"",
+		id);
+	ps->Purge();
+	delete ps;
 }
 
 void msg_problemSetInfo(libwebsocket *w, psd_judge *p, char *m)
 {
+	// Restrict action to judge
+	if (p->user->level < User::Admin) {
+		sprintf(p->msg, "\"msg\":\"ERR\"");
+		return;
+	}
+
+	char idStr[16];
+	i16 r = sscanf(m, "i=%[0-9]", idStr);
+	if (r != 1) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PSI\","
+			"\"err\":\"I\"");
+		return;
+	}
+
+	u16 id = atoi(idStr);
+	if (ProblemSet::s_byID.count(id) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PSI\","
+			"\"err\":\"U\"");
+		return;
+	}
+
+	//TODO: Debug text
+	ProblemSet *ps = ProblemSet::s_byID[id];
+	sprintf(p->msg, ""
+		"\"msg\":\"PSI\","
+		"\"i\":\"%d\","
+		"\"n\":\"%s\","
+		"\"s\":\"%d\","
+		"\"t\":\"%lld\","
+		"\"d\":\"%d\"",
+		id,
+		ps->name.c_str(),
+		ps->status,
+		ps->startTime,
+		ps->duration);
 }
 
 void msg_problemSetList(libwebsocket *w, psd_judge *p, char *m)
@@ -197,6 +272,128 @@ void msg_problemSetList(libwebsocket *w, psd_judge *p, char *m)
 
 void msg_problemSetUpdate(libwebsocket *w, psd_judge *p, char *m)
 {
+	// Restrict action to judge
+	if (p->user->level < User::Admin) {
+		sprintf(p->msg, "\"msg\":\"ERR\"");
+		return;
+	}
+
+	//TODO: Define name length requirement
+	stringstream ss(m);
+	vector<string> args;
+	for (string e; getline(ss, e, '&'); args.push_back(e));
+
+	// Parse Arguments
+	{
+		const char *pat = "instdo";
+		i16 len = strlen(pat);
+		bool e = false, l = true;
+		while (true) {
+			if (args.size() != len) { e = true; break; }
+			for (i16 a = 0; a < len; ++a) {
+				if (args[a].length() < 2) { l = false; return; }
+				if (args[a][1] != '=' || args[a][0] != pat[a]) { l = false; return; }
+				args[a] = args[a].substr(2);
+			}
+			break;
+		}
+		if (e) {
+			sprintf(p->msg, ""
+				"\"msg\":\"PSU\","
+				"\"err\":\"I\"");
+			return;
+		}
+	}
+
+	i16 id = atoi(args[0].c_str());
+	if (ProblemSet::s_byID.count(id) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PSU\","
+			"\"err\":\"U\"");
+		return;
+	}
+	ProblemSet *ps = ProblemSet::s_byID[id];
+
+	string &name = args[1];
+	if (name.length() == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PSU\","
+			"\"err\":\"N\"");
+		return;
+	}
+	transform(name.begin(), name.end(), name.begin(), ::tolower);
+
+	if (ProblemSet::s_byName.count(name) != 0)
+		if (ProblemSet::s_byName[name] != ps) {
+			sprintf(p->msg, ""
+				"\"msg\":\"PSU\","
+				"\"err\":\"N\"");
+			return;
+		}
+
+	i16 status;
+	string &startTimeStr = args[3];
+	i32 duration, offset;
+
+	status = atoi(args[2].c_str());
+	if (status < 0 || status > 2) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PSU\","
+			"\"err\":\"A\"");
+		return;
+	}
+	duration = atoi(args[4].c_str());
+	if (duration < 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PSU\","
+			"\"err\":\"D\"");
+		return;
+	}
+	offset = atoi(args[5].c_str());
+	if (offset < -12 || offset > 14) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PSU\","
+			"\"err\":\"O\"");
+		return;
+	}
+
+	//TODO: Convert to regex matching
+	u64 startTime = DateTimeEscToTimeStamp(startTimeStr.c_str(), offset);
+
+	i16 changes = 0;
+	if (ps->name.compare(name) != 0) {
+		ProblemSet::s_byName.erase(ps->name);
+		ProblemSet::s_byName[name] = ps;
+		ps->name = name;
+		++changes;
+	}
+	if (ps->duration != duration) {
+		ps->duration = duration;
+		++changes;
+	}
+	if (ps->startTime != startTime) {
+		ps->startTime = startTime;
+		++changes;
+	}
+	if (ps->status != status) {
+		ps->status = status;
+		//TODO: Add to pending if pending
+		++changes;
+	}
+	if (changes == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PSU\","
+			"\"err\":\"S\"");
+		return;
+	}
+
+	ps->SQL_Sync();
+	sprintf(p->msg, ""
+		"\"msg\":\"PSU\","
+		"\"i\":\"%d\","
+		"\"n\":\"%s\"",
+		ps->id,
+		ps->name.c_str());
 }
 
 void msg_userCreate(libwebsocket *w, psd_judge *p, char *m)

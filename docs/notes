@@ -9,8 +9,6 @@ NodeJS
 
 === TODO ===
 
-	Show ProblemSets
-	Create/Manage ProblemSets
 	Show Problems in Set
 	Create/Manage Problems
 	Pop-Up Confirm Dialog
@@ -37,11 +35,19 @@ Scoreboard
 	Realtime Update
 
 Problem Management
-	Create Problems
-	Delete Problem
-	Order Problems
-	Upload PDF
-	Upload Sample Data
+x	ProblemSets
+x		Show ProblemSets
+x		Create ProblemSet
+x		Delete ProblemSet
+x		Modify ProblemSet
+	Problems
+		Show Problems
+		Create Problem
+		Delete Problem
+		Modify Problem
+		Order Problems
+		Upload PDF
+		Upload Sample Data
 
 Test Management
 	Create Test

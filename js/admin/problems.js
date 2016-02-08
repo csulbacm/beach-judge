@@ -56,6 +56,16 @@ judge.onLeave['problemset-create'] = function(state) {
 	_problemSetCreateFormError.parent().hide();
 	_problemSetCreateForm[0].reset();
 };
+judge.onEnter['problemset-edit'] = function(state) {
+	judgeQueue('PSI i=' + state.args[0]);
+	//TODO: Confirm this redudancy is necessary
+	$('#jfps-ed-i').val(state.args[0]);
+	$('#jfps-ed-o').val((new Date()).getTimezoneOffset()/-60);
+};
+judge.onLeave['problemset-edit'] = function(state) {
+	_problemSetEditFormError.parent().hide();
+	_problemSetEditForm[0].reset();
+};
 
 // Effects
 //TODO: Make this work for onClick for mobile
@@ -88,8 +98,34 @@ judge.onMsg['PSC'] = function(msg) {
 			errBox.html('Error: Invalid problem set offset.');
 		}
 	} else {
-		_userGroupCreateForm[0].reset();
-		nav('/usergroups');
+		_problemSetCreateForm[0].reset();
+		nav('/problemsets');
+	}
+};
+judge.onMsg['PSD'] = function(msg) {
+	if (typeof msg.err != 'undefined') {
+		var errBox = _problemSetEditFormError;
+		errBox.parent().show();
+		if (msg.err === 'I') {
+			errBox.html('Error: Form data is invalid.');
+		} else if (msg.err === 'U') {
+			errBox.html('Error: A problem set does not exist with that id.');
+		}
+	} else {
+		_problemSetEditForm[0].reset();
+		nav('/problemsets');
+	}
+};
+judge.onMsg['PSI'] = function(msg) {
+	if (typeof msg.err != 'undefined') {
+		//TODO: Determine if any other error handling is necessary
+		nav('/problemsets');
+	} else {
+		$('#jfps-ed-i').val(msg.i);
+		$('#jfps-ed-n').val(msg.n);
+		$('#jfps-ed-d').val(msg.d);
+		$('#jfps-ed-t').val(_formatDate(new Date(msg.t * 1000)));
+		$('#jfps-ed-s').val(msg.s);
 	}
 };
 judge.onMsg['PSL'] = function(msg) {
@@ -110,6 +146,30 @@ judge.onMsg['PSL'] = function(msg) {
 	}
 	_problemSetList.html(h);
 };
+judge.onMsg['PSU'] = function(msg) {
+	if (typeof msg.err != 'undefined') {
+		var errBox = _problemSetEditFormError;
+		errBox.parent().show();
+		if (msg.err === 'I') {
+			errBox.html('Error: Form data is invalid.');
+		} else if (msg.err === 'N') {
+			errBox.html('Error: Invalid problem set name.');
+		} else if (msg.err === 'D') {
+			errBox.html('Error: Invalid problem set duration.');
+		} else if (msg.err === 'T') {
+			errBox.html('Error: Invalid problem set start time.');
+		} else if (msg.err === 'A') {
+			errBox.html('Error: Invalid problem set status.');
+		} else if (msg.err === 'S') {
+			errBox.html('Error: There are no changes to be made.');
+		} else if (msg.err === 'U') {
+			errBox.html('Error: A problem set does not exist with that id.');
+		}
+	} else {
+		_problemSetEditForm[0].reset();
+		nav('/problemsets');
+	}
+};
 
 // Creation
 $('#jfps-cr-ca').click(function() {
@@ -126,5 +186,25 @@ $('#jfps-cr-cr').click(function() {
 	judgeQueue('PSC ' + _problemSetCreateForm.serialize());
 });
 
+// Editing
+$('#jfps-ed-ca').click(function() {
+	nav('/problemsets');
+});
+$('#jfps-ed-cl').click(function() {
+	_problemSetEditFormError.parent().hide();
+	_problemSetEditForm[0].reset();
+});
+$('#jfps-ed-up').click(function() {
+	_problemSetEditFormError.parent().hide();
+	if (confirm("Are you sure you want to update this problem set?") == 0)
+		return;
+	judgeQueue('PSU ' + _problemSetEditForm.serialize());
+});
+$('#jfps-ed-dl').click(function() {
+	_problemSetEditFormError.parent().hide();
+	if (confirm("Are you sure you want to delete this problem set?") == 0)
+		return;
+	judgeQueue('PSD ' + $('#jfps-ed-i').serialize());
+});
 
 });

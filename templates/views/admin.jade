@@ -146,6 +146,28 @@ block problemset-create
 				.row.hidden
 					p#jfps-cr-er.form-error
 				input#jfps-cr-o(name="o", type="hidden")
+block problemset-edit
+	#problemset-edit
+		.block
+			p.header Edit Problem Set
+			form#jfps-ed.judge-form(auto-complete="off")
+				input#jfps-ed-i(name="i", type="hidden")
+				.row
+					input#jfps-ed-n.judge-form-string(name="n", type="text", placeholder="Name", autocomplete="off")
+				.row
+					input#jfps-ed-s.judge-form-string(name="s", type="text", placeholder="Status", autocomplete="off")
+				.row
+					input#jfps-ed-t.judge-form-string(name="t", type="text", placeholder="Start Time", autocomplete="off")
+				.row
+					input#jfps-ed-d.judge-form-string(name="d", type="text", placeholder="Duration", autocomplete="off")
+				.row
+					input#jfps-ed-cl.form-button(value="Clear", type="button")
+					input#jfps-ed-up.form-button(value="Update", type="button")
+					input#jfps-ed-dl.form-button(value="Delete", type="button")
+					input#jfps-ed-ca.form-button(value="Cancel", type="button")
+				.row.hidden
+					p#jfps-ed-er.form-error
+				input#jfps-ed-o(name="o", type="hidden")
 block content
 	block root
 	block scoreboard
@@ -156,3 +178,4 @@ block content
 	block user-edit
 	block problemsets
 	block problemset-create
+	block problemset-edit
