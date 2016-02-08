@@ -11,9 +11,12 @@ var _userGroupCreateFormError = $('#jfug-cr-er');
 var _userGroupEditForm = $('#jfug-ed');
 var _userGroupEditFormError = $('#jfug-ed-er');
 
-var jUserGroupMouseTimeout = "";
-var _groupHover = $('#usergroup-hover');
-var _groupHoverTarget = "";
+var jUserMouseTimeout = '';
+var jUserGroupMouseTimeout = '';
+var _userHover = $('#user-hover');
+var _userHoverTarget = '';
+var _userGroupHover = $('#usergroup-hover');
+var _userGroupHoverTarget = '';
 
 //--------------- Users -----------------
 
@@ -33,6 +36,20 @@ judge.onLeave['user-edit'] = function(state) {
 	_userEditFormError.parent().hide();
 	_userEditForm[0].reset();
 };
+
+// Effects
+//TODO: Make this work for onClick for mobile
+$('#user-list').on('mouseenter', 'a', function() {
+	clearTimeout(jUserHoverTimeout);
+	var rect = this.getBoundingClientRect();
+	_userHoverTarget = $(this);
+	_userHover.css({top: rect.top, left: rect.left, width: rect.right - rect.left});
+	_userHover.show();
+}).on('mouseleave', 'a', function() {
+	jUserHoverTimeout = setTimeout(function() {
+		_userHover.hide();
+	}, 100);
+});
 
 // Messages
 judge.onMsg['UC'] = function(msg) {
@@ -54,8 +71,7 @@ judge.onMsg['UC'] = function(msg) {
 		}
 	} else {
 		_userCreateForm[0].reset();
-		window.history.back();
-		//TODO: Go back to usergroup edit
+		nav('/usergroup/edit/' + $('#jfu-cr-g').val());
 	}
 };
 judge.onMsg['UD'] = function(msg) {
@@ -74,12 +90,19 @@ judge.onMsg['UD'] = function(msg) {
 		}
 	} else {
 		_userGroupEditForm[0].reset();
-		//TODO: Go to usergroup edit
-		nav('/usergroups');
+		nav('/usergroup/edit/' + $('#jfu-ed-g').val());
 	}
 };
 judge.onMsg['UI'] = function(msg) {
-	//$('#jfu-ed-i').val(args[0]);
+	if (typeof msg.err != 'undefined') {
+		//TODO: Determine if any other error handling is necessary
+		nav('/usergroups');
+	} else {
+		$('#jfu-ed-g').val(msg.g);
+		$('#jfu-ed-i').val(msg.i);
+		$('#jfu-ed-n').val(msg.n);
+		$('#jfu-ed-d').val(msg.d);
+	}
 };
 judge.onMsg['UL'] = function(msg) {
 	$('#usergroup-edit .placeholder').hide();
@@ -95,14 +118,37 @@ judge.onMsg['UL'] = function(msg) {
 	}
 	_userList.html(h);
 };
+judge.onMsg['UU'] = function(msg) {
+	if (typeof msg.err != 'undefined') {
+		var errBox = _userEditFormError;
+		var parent = errBox.parent();
+		if (msg.err === 'I') {
+			errBox.html('Error: Form data is invalid.');
+			parent.show();
+		} else if (msg.err === 'G') {
+			errBox.html('Error: A usergroup does not exist with that id.');
+			parent.show();
+		} else if (msg.err === 'N') {
+			errBox.html('Error: A user exists with that name.');
+			parent.show();
+		} else if (msg.err === 'S') {
+			errBox.html('Error: There are no changes to be made.');
+			parent.show();
+		} else if (msg.err === 'U') {
+			errBox.html('Error: A user does not exist with that id.');
+			parent.show();
+		}
+	} else {
+		_userEditForm[0].reset();
+		nav('/usergroup/edit/' + $('#jfu-ed-g').val());
+	}
+};
 
 // Creation
 $('#jfu-cr-ca').click(function() {
 	_userCreateFormError.parent().hide();
 	_userCreateForm[0].reset();
-	//TODO: Go back to usergroup page
-	window.history.back();
-	//nav('/usergroups');
+	nav('/usergroup/edit/' + $('#jfu-cr-g').val());
 });
 $('#jfu-cr-cl').click(function() {
 	_userCreateFormError.parent().hide();
@@ -119,8 +165,7 @@ $('#jfu-cr-cr').click(function() {
 $('#jfu-ed-ca').click(function() {
 	_userEditFormError.parent().hide();
 	_userEditForm[0].reset();
-	//TODO: Go to usergroup edit
-	nav('/usergroups');
+	nav('/usergroup/edit/' + $('#jfu-ed-g').val());
 });
 $('#jfu-ed-cl').click(function() {
 	_userEditFormError.parent().hide();
@@ -130,7 +175,7 @@ $('#jfu-ed-up').click(function() {
 	_userEditFormError.parent().hide();
 	if (confirm("Are you sure you want to update this user?") == 0)
 		return;
-	judgeQueue('UGU ' + _userEditForm.serialize());
+	judgeQueue('UU ' + _userEditForm.serialize());
 });
 $('#jfu-ed-dl').click(function() {
 	_userEditFormError.parent().hide();
@@ -177,18 +222,14 @@ judge.onLeave['usergroup-edit'] = function(state) {
 // Effects
 //TODO: Make this work for onClick for mobile
 $('#usergroup-list').on('mouseenter', 'a', function() {
-	clearTimeout(jUserGroupMouseTimeout);
+	clearTimeout(jUserGroupHoverTimeout);
 	var rect = this.getBoundingClientRect();
-	//jUserGroupTarget = e.getAttribute("i");
-	//_groupHover.setAttribute("href", "#" + e.getAttribute("i"));
-	_groupHoverTarget = $(this);
-//	_groupHoverTarget.addClass('hover');
-	_groupHover.css({top: rect.top, left: rect.left, width: rect.right - rect.left});
-	_groupHover.show();
+	_userGroupHoverTarget = $(this);
+	_userGroupHover.css({top: rect.top, left: rect.left, width: rect.right - rect.left});
+	_userGroupHover.show();
 }).on('mouseleave', 'a', function() {
-//	_groupHoverTarget.removeClass('hover');
-	jUserGroupMouseTimeout = setTimeout(function() {
-		_groupHover.hide();
+	jUserGroupHoverTimeout = setTimeout(function() {
+		_userGroupHover.hide();
 	}, 100);
 });
 
@@ -271,7 +312,7 @@ judge.onMsg['UGU'] = function(msg) {
 			errBox.html('Error: There are no changes to be made.');
 			parent.show();
 		} else if (msg.err === 'U') {
-			errBox.html('Error: A usergroup exists with that id.');
+			errBox.html('Error: A usergroup does not exist with that id.');
 			parent.show();
 		}
 	} else {

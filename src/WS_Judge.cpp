@@ -105,7 +105,6 @@ void msg_userCreate(libwebsocket *w, psd_judge *p, char *m)
 	}
 
 	//TODO: Define name/password length requirements
-	//TODO: Split username and display name
 	//TODO: Allow for spaces and some style characters in display
 	char groupIDStr[16], name[16], p1[16], p2[16], display[16];
 	i16 r = sscanf(m, "g=%[0-9]&n=%[a-zA-Z0-9]&p1=%[a-zA-Z0-9]&p2=%[a-zA-Z0-9]&d=%[a-zA-Z0-9]", groupIDStr, name, p1, p2, display);
@@ -176,7 +175,7 @@ void msg_userDelete(libwebsocket *w, psd_judge *p, char *m)
 		return;
 	}
 
-	u16 id = atoi(idStr);
+	u32 id = atoi(idStr);
 	if (id == 0) {
 		sprintf(p->msg, ""
 			"\"msg\":\"UD\","
@@ -203,10 +202,133 @@ void msg_userDelete(libwebsocket *w, psd_judge *p, char *m)
 
 void msg_userInfo(libwebsocket *w, psd_judge *p, char *m)
 {
+	// Restrict action to judge
+	if (p->user->level < User::Admin) {
+		sprintf(p->msg, "\"msg\": \"ERR\"");
+		return;
+	}
+
+	char idStr[16];
+	i16 r = sscanf(m, "i=%[0-9]", idStr);
+	if (r != 1) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UI\","
+			"\"err\":\"I\"");
+		return;
+	}
+
+	u32 id = atoi(idStr);
+	if (User::s_usersByID.count(id) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UI\","
+			"\"err\":\"U\"");
+		return;
+	}
+
+	User *user = User::s_usersByID[id];
+	sprintf(p->msg, ""
+		"\"msg\":\"UI\","
+		"\"g\":\"%d\","
+		"\"i\":\"%d\","
+		"\"n\":\"%s\","
+		"\"d\":\"%s\"",
+		user->groupID,
+		id,
+		user->name.c_str(),
+		user->display.c_str());
 }
 
 void msg_userUpdate(libwebsocket *w, psd_judge *p, char *m)
 {
+	// Restrict action to judge
+	if (p->user->level < User::Admin) {
+		sprintf(p->msg, "\"msg\": \"ERR\"");
+		return;
+	}
+
+	//TODO: Define name/password length requirements
+	//TODO: Allow for spaces and some style characters in display
+	char groupIDStr[16], idStr[16], name[16], p1[16], p2[16], display[16];
+	i16 r = sscanf(m, "g=%[0-9]&i=%[0-9]&n=%[a-zA-Z0-9]&p1=%[a-zA-Z0-9]&p2=%[a-zA-Z0-9]&d=%[a-zA-Z0-9]", groupIDStr, idStr, name, p1, p2, display);
+	bool noPW = false;
+	if (r != 6) {
+		r = sscanf(m, "g=%[0-9]&i=%[0-9]&n=%[a-zA-Z0-9]&p1=&p2=&d=%[a-zA-Z0-9]", groupIDStr, idStr, name, display);
+		if (r != 4) {
+			sprintf(p->msg, ""
+				"\"msg\":\"UU\","
+				"\"err\":\"I\"");
+			return;
+		}
+		noPW = true;
+	}
+
+	u16 id = atoi(idStr);
+	if (User::s_usersByID.count(id) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UU\","
+			"\"err\":\"U\"");
+		return;
+	}
+
+	u16 gid = atoi(groupIDStr);
+	if (UserGroup::s_groupsByID.count(gid) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UU\","
+			"\"err\":\"G\"");
+		return;
+	}
+
+	if (noPW == false)
+		if (strcmp(p1, p2) != 0) {
+			//TODO: memcpy prebuilt errors
+			sprintf(p->msg, ""
+				"\"msg\":\"UU\","
+				"\"err\":\"P\"");
+			return;
+		}
+
+	User *user = User::s_usersByID[id];
+	UserGroup *group = UserGroup::s_groupsByID[gid];
+
+	//TODO: Check names for the group
+
+	// Set name to lower case
+	{
+		i16 l = strlen(name);
+		for (i16 a = 0; a < l; ++a)
+			name[a] = tolower(name[a]);
+	}
+
+	i16 changes = 0;
+	if (user->name.compare(name) != 0) {
+		User::s_usersByName.erase(user->name);
+		User::s_usersByName[name] = user;
+		user->name = name;
+		++changes;
+	}
+
+	if (noPW == false)
+		if (user->password.compare(p1) != 0) {
+			user->SetPassword(p1);
+			++changes;
+		}
+	if (user->display.compare(display) != 0) {
+		user->display = display;
+		++changes;
+	}
+	if (changes == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UU\","
+			"\"err\":\"S\"");
+		return;
+	}
+	user->SQL_Sync();
+	sprintf(p->msg, ""
+		"\"msg\":\"UU\","
+		"\"i\":\"%d\","
+		"\"n\":\"%s\"",
+		user->id,
+		user->name.c_str());
 }
 
 void msg_userGroupList(libwebsocket *w, psd_judge *p, char *m)
@@ -415,7 +537,7 @@ void msg_userGroupUpdate(libwebsocket *w, psd_judge *p, char *m)
 			return;
 		}
 
-	int changes = 0;
+	i16 changes = 0;
 	if (group->name.compare(name) != 0) {
 		UserGroup::s_groupsByName.erase(group->name);
 		UserGroup::s_groupsByName[name] = group;
@@ -426,16 +548,13 @@ void msg_userGroupUpdate(libwebsocket *w, psd_judge *p, char *m)
 		group->isActive = isActive;
 		++changes;
 	}
-	
 	if (changes == 0) {
 		sprintf(p->msg, ""
 			"\"msg\":\"UGU\","
 			"\"err\":\"S\"");
 		return;
 	}
-
 	group->SQL_Sync();
-
 	//TODO: Debug text
 	sprintf(p->msg, ""
 		"\"msg\":\"UGU\","

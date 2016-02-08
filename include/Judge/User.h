@@ -112,12 +112,15 @@ struct UserGroup
 			1, name.c_str(), name.length(), 0);
 		sqlite3_bind_int(SQL::userGroup_update,
 			2, isActive);
+		sqlite3_bind_int(SQL::userGroup_update,
+			3, id);
 		sqlite3_step(SQL::userGroup_update);
 		sqlite3_reset(SQL::userGroup_update);
 	}
 
 	inline void SQL_Delete()
 	{
+		//TODO: Delete all associated users
 		sqlite3_bind_int(SQL::userGroup_delete,
 			1, id);
 		sqlite3_step(SQL::userGroup_delete);
@@ -320,13 +323,15 @@ struct User
 			4, level);
 		sqlite3_bind_int(SQL::user_update,
 			5, groupID);
+		sqlite3_bind_int(SQL::user_update,
+			6, id);
 		sqlite3_step(SQL::user_update);
 		sqlite3_reset(SQL::user_update);
 	}
 
 	inline void SQL_Delete()
 	{
-		printf("DL: %ld\n", id);
+		//TODO: Delete all associated data
 		sqlite3_bind_int(SQL::user_delete,
 			1, id);
 		sqlite3_step(SQL::user_delete);

@@ -74,7 +74,7 @@ var judgeReconnect = false;
 
 var wsUrl = getWSURL();
 function judgeConnect() {
-	//TODO: Fix "The connection to wss:... was interrupted while the page was loading."
+	//TODO: Fix "The connection to wss:... was interrupted while the page was loading." for Firefox
 	if (typeof MozWebSocket != 'undefined') {
 		judge.ws = new MozWebSocket(wsUrl,
 			'judge-protocol');
@@ -227,19 +227,23 @@ function nav(target, force) {
 
 // Initialization
 $(document).ready(function(){
-	judgeConnect();
-	judgePopulate();
 	var stateObj = { nav: window.location.pathname };
 	history.replaceState(stateObj, 'beachJudge', stateObj.nav);
-	setTimeout(function() { onNavigate(stateObj); }, 0);
+
+	setTimeout(function() {
+		judgeConnect();
+		judgePopulate();
+		onNavigate(stateObj);
+	}, 0);
 
 	$(document).on('click', 'a', function() {
 		nav(this.getAttribute('href'));
 		return false;
 	});
+
+	window.onbeforeunload = function() {
+		judge.ws.onclose = function () {};
+		judge.ws.close()
+	};
 });
 
-// Cleanup
-$(window).on('beforeunload', function() {
-	judge.ws.close();
-});
