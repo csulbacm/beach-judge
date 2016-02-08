@@ -131,6 +131,7 @@ function judgePopulate() {
 // Navigation
 var judgeLastState;
 function onNavigate(stateObj) {
+	//TODO: Implement init and cleanup callbacks for pages
 	//TODO: Handle 404
 	var target;
 
@@ -212,6 +213,10 @@ function onNavigate(stateObj) {
 			}, 0);
 			judgeQueue('UL i=' + args[0]);
 		});
+	} else if (target === 'user-edit') {
+		judgeQueue('UI i=' + args[0]);
+	} else if (target === 'user-create') {
+		$('#jfu-cr-g').val(args[0]);
 	}
 	if (target.length) {
 		target = $('#' + target);

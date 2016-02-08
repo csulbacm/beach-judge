@@ -11,6 +11,9 @@ namespace judge {
 //------------- Message Map ---------------
 
 void msg_userCreate(libwebsocket *w, psd_judge *p, char *m);
+void msg_userDelete(libwebsocket *w, psd_judge *p, char *m);
+void msg_userInfo(libwebsocket *w, psd_judge *p, char *m);
+void msg_userUpdate(libwebsocket *w, psd_judge *p, char *m);
 void msg_userGroupCreate(libwebsocket *w, psd_judge *p, char *m);
 void msg_userGroupDelete(libwebsocket *w, psd_judge *p, char *m);
 void msg_userGroupInfo(libwebsocket *w, psd_judge *p, char *m);
@@ -25,6 +28,9 @@ map<string, func_judge> createMsgMap()
 	m["POP"] = msg_populate;
 	m["UL"] = msg_userList;
 	m["UC"] = msg_userCreate;
+	m["UD"] = msg_userDelete;
+	m["UI"] = msg_userInfo;
+	m["UU"] = msg_userUpdate;
 	m["UGL"] = msg_userGroupList;
 	m["UGC"] = msg_userGroupCreate;
 	m["UGD"] = msg_userGroupDelete;
@@ -89,6 +95,84 @@ void msg_userList(libwebsocket *w, psd_judge *p, char *m)
 		"\"users\":[%s]",
 		str.str().c_str());
 }
+
+void msg_userCreate(libwebsocket *w, psd_judge *p, char *m)
+{
+	printf("|%s|\n", m);
+	// Restrict action to judge
+	if (p->user->level < User::Admin) {
+		sprintf(p->msg, "\"msg\": \"ERR\"");
+		return;
+	}
+
+	//TODO: Define name/password length requirements
+	//TODO: Split username and display name
+	//TODO: Allow for spaces and some style characters in display
+	char groupIDStr[16], name[16], p1[16], p2[16], display[16];
+	i16 r = sscanf(m, "g=%[0-9]&n=%[a-zA-Z0-9]&p1=%[a-zA-Z0-9]&p2=%[a-zA-Z0-9]&d=%[a-zA-Z0-9]", groupIDStr, name, p1, p2, display);
+	if (r != 5) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UC\","
+			"\"err\":\"I\"");
+		return;
+	}
+
+	u16 gid = atoi(groupIDStr);
+	if (UserGroup::s_groupsByID.count(gid) == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UC\","
+			"\"err\":\"U\"");
+		return;
+	}
+
+	if (strcmp(p1, p2) != 0) {
+		//TODO: memcpy prebuilt errors
+		sprintf(p->msg, ""
+			"\"msg\":\"UC\","
+			"\"err\":\"P\"");
+		return;
+	}
+
+	UserGroup *group = UserGroup::s_groupsByID[gid];
+
+	//TODO: Check names for the group
+	if (User::s_usersByName.count(name) != 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"UC\","
+			"\"err\":\"N\"");
+		return;
+	}
+
+	// Set name to lower case
+	{
+		i16 l = strlen(name);
+		for (i16 a = 0; a < l; ++a)
+			name[a] = tolower(name[a]);
+	}
+
+	User *user = new User(name, p1, display, User::Default, gid);
+	user->SQL_Insert();
+	sprintf(p->msg, ""
+		"\"msg\":\"UC\","
+		"\"i\":\"%d\","
+		"\"n\":\"%s\"",
+		user->id,
+		user->name.c_str());
+}
+
+
+void msg_userDelete(libwebsocket *w, psd_judge *p, char *m)
+{
+}
+
+void msg_userInfo(libwebsocket *w, psd_judge *p, char *m)
+{
+}
+
+void msg_userUpdate(libwebsocket *w, psd_judge *p, char *m)
+{
+}
+
 void msg_userGroupList(libwebsocket *w, psd_judge *p, char *m)
 {
 	// Populate User Group Data
@@ -108,58 +192,6 @@ void msg_userGroupList(libwebsocket *w, psd_judge *p, char *m)
 		"\"msg\":\"UGL\","
 		"\"usergroups\":[%s]",
 		str.str().c_str());
-}
-
-void msg_userCreate(libwebsocket *w, psd_judge *p, char *m)
-{
-	// Restrict action to judge
-	if (p->user->level < User::Admin) {
-		sprintf(p->msg, "\"msg\": \"ERR\"");
-		return;
-	}
-
-	//TODO: Define name/password length requirements
-	//TODO: Split username and display name
-	char name[16], p1[16], p2[16];
-	i16 r = sscanf(m, "n=%[a-zA-Z0-9]&p1=%[a-zA-Z0-9]&p2=%[a-zA-Z0-9]", name, p1, p2);
-	if (r != 3) {
-		sprintf(p->msg, ""
-			"\"msg\":\"UC\","
-			"\"err\":\"I\"");
-		return;
-	}
-	if (strcmp(p1, p2) != 0) {
-		//TODO: memcpy prebuilt errors
-		sprintf(p->msg, ""
-			"\"msg\":\"UC\","
-			"\"err\":\"P\"");
-		return;
-	}
-
-	// Set name to lower case
-	{
-		i16 l = strlen(name);
-		for (i16 a = 0; a < l; ++a)
-			name[a] = tolower(name[a]);
-	}
-
-	if (User::s_usersByName.count(name) != 0) {
-		sprintf(p->msg, ""
-			"\"msg\":\"UC\","
-			"\"err\":\"N\"");
-		return;
-	}
-
-	//TODO: Get group id from selection
-	/*
-	User *newUser = new User(name, p1, 0, false);
-	sprintf(p->msg, ""
-		"\"msg\":\"CT\","
-		"\"i\":\"%d\","
-		"\"n\":\"%s\"",
-		newUser->id,
-		newUser->name.c_str());
-		*/
 }
 
 void msg_userGroupCreate(libwebsocket *w, psd_judge *p, char *m)

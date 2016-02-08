@@ -21,9 +21,10 @@ void loadJudgeData()
 		printf("Creating global user group...\n");
 		(new UserGroup("global", 0))->SQL_Insert();
 	}
+	//TODO: Refer to global name map
 	if (User::s_usersByName.count("admin") == 0) {
 		printf("Creating admin user...\n");
-		(new User("admin", "test", "admin", User::Admin, 0, 0))->SQL_Insert();
+		(new User("admin", "test", "admin", User::Admin, 0))->SQL_Insert();
 	}
 
 	printf("Restoring sessions...\n");

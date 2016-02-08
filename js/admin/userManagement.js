@@ -1,6 +1,9 @@
 $(document).ready(function(){
 	var _userList = $('#user-list');
-	var _userCreateForm = $('#create-user-form');
+	var _userCreateForm = $('#jfu-cr');
+	var _userCreateFormError = $('#jfu-cr-er');
+	var _userEditForm = $('#jfu-ed');
+	var _userEditFormError = $('#jfu-ed-er');
 	var _userGroupCreateForm = $('#jfug-cr');
 	var _userGroupCreateFormError = $('#jfug-cr-er');
 	var _userGroupEditForm = $('#jfug-ed');
@@ -27,21 +30,19 @@ $(document).ready(function(){
 			} else if (msg.err === 'N') {
 				errBox.html('Error: A user exists with that name.');
 				parent.show();
+			} else if (msg.err === 'U') {
+				errBox.html('Error: A usergroup does not exist with that group id.');
+				parent.show();
 			}
 		} else {
-			_userList.children().each(function() {
-				if (this.firstChild.innerHTML.toLowerCase().localeCompare(msg.n.toLowerCase()) > 0) {
-					$(this).before('<option id=\'' + msg.i
-						+ '\'>' + msg.n + '</option>');
-					return false;
-				}
-				if (this.parentNode.lastChild === this) {
-					$(this).before('<option id=\'' + msg.i
-						+ '\'>' + msg.n + '</option>');
-					return false;
-				}
-			});
+			_userCreateForm[0].reset();
+			window.history.back();
+			//TODO: Go back to usergroup edit
 		}
+	};
+
+	judge.msgHandler['UI'] = function(msg) {
+		//$('#jfu-ed-i').val(args[0]);
 	};
 
 	judge.msgHandler['UL'] = function(msg) {
@@ -64,6 +65,26 @@ $(document).ready(function(){
 		judgeQueue('CU ' + $(this).serialize());
 		return false;
 	});
+
+	// Creation
+	$('#jfu-cr-ca').click(function() {
+		_userCreateFormError.parent().hide();
+		_userCreateForm[0].reset();
+		//TODO: Go back to usergroup page
+		window.history.back();
+		//nav('/usergroups');
+	});
+	$('#jfu-cr-cl').click(function() {
+		_userCreateFormError.parent().hide();
+		_userCreateForm[0].reset();
+	});
+	$('#jfu-cr-cr').click(function() {
+		if (confirm("Are you sure you want to create this user?") == 0)
+			return;
+		_userCreateFormError.parent().hide();
+		judgeQueue('UC ' + _userCreateForm.serialize());
+	});
+
 
 	//------------ User Groups --------------
 	/*$('#usergroup-list li').click(function() {

@@ -72,9 +72,49 @@ block usergroup-edit
 				ul#user-list
 			p.center
 				a#user-create-lnk(href="/user/create") Create User
-	.block#users
+block user-create
+	#user-create
+		.block
+			p.header Create User
+			form#jfu-cr.judge-form(auto-complete="off")
+				input#jfu-cr-g(name="g", type="hidden")
+				.row
+					input#jfu-cr-n.judge-form-string(name="n", type="text", placeholder="Username", autocomplete="off")
+				.row
+					input#jfu-cr-p1.judge-form-string(name="p1", type="password", placeholder="Password", autocomplete="off", required)
+				.row
+					input#jfu-cr-p2.judge-form-string(name="p2", type="password", placeholder="Confirm Password", autocomplete="off", required)
+				.row
+					input#jfu-cr-d.judge-form-string(name="d", type="text", placeholder="Display Name", autocomplete="off")
+				.row
+					input#jfu-cr-cl.form-button(value="Clear", type="button")
+					input#jfu-cr-cr.form-button(value="Create", type="button")
+					input#jfu-cr-ca.form-button(value="Cancel", type="button")
+				.row.hidden
+					p#jfu-cr-er.form-error
+block user-edit
+		.block
+			p.header Edit User
+			form#jfu-ed.judge-form(auto-complete="off")
+				input#jfu-ed-g(name="i", type="hidden")
+				.row
+					input#jfu-ed-n.judge-form-string(name="n", type="text", placeholder="Username", autocomplete="off")
+				.row
+					input#jfu-ed-p1.judge-form-string(name="p1", type="password", placeholder="Password", autocomplete="off", required)
+				.row
+					input#jfu-ed-p2.judge-form-string(name="p2", type="password", placeholder="Confirm Password", autocomplete="off", required)
+				.row
+					input#jfu-ed-d.judge-form-string(name="d", type="text", placeholder="Display Name", autocomplete="off")
+				.row
+					input#jfu-ed-cl.form-button(value="Clear", type="button")
+					input#jfu-ed-up.form-button(value="Update", type="button")
+					input#jfu-ed-dl.form-button(value="Delete", type="button")
+					input#jfu-ed-ca.form-button(value="Cancel", type="button")
+				.row.hidden
+					p#jfu-ed-er.form-error
+	//.block#users
 		.actions
-			//.createUser
+			.createUser
 				p.header Create User
 				form#create-user-form.judge-form(auto-complete="off")
 					input.judge-form-string(name="n", type="text", placeholder="Username", autocomplete="off", required)
@@ -83,7 +123,7 @@ block usergroup-edit
 					input.form-button(value="Create User", type="submit")
 					input.form-button(value="Clear", type="button", onclick="parentNode.reset()")
 					p.form-error
-			//.editUser
+			.editUser
 				p.header Edit User
 				form#user-user-form.judge-form(auto-complete="off")
 					select#userlist(onchange="jUserUserSelect()")
