@@ -182,6 +182,35 @@ $('#jfp-ed-dl').click(function() {
 	judgeQueue('PD ' + $('#jfp-ed-s').serialize() + '&' + $('#jfp-ed-i').serialize());
 });
 
+// Description
+$('#jfp-upd-up').click(function() {
+	//if (confirm("Are you sure you want to upload this file?") == 0)
+		//return;
+
+	var f = $('#jfp-upd-f')[0].files[0];
+	console.log(f);
+
+	var xhr = new XMLHttpRequest();
+	//TODO: Compare filesize
+	if (xhr.upload) {
+		xhr.upload.addEventListener('progress', function(e) {
+			var pc = parseInt(100 - (e.loaded / e.total * 100));
+			console.log('UP: ' + pc);
+			//progress.style.backgroundPosition = pc + "% 0";
+		}, false);
+
+		xhr.onreadystatechange = function(e) {
+			if (xhr.readyState == 4) {
+				console.log('STATUS: ' + (xhr.status == 200 ? "success" : "failure"));
+			}
+		};
+
+		xhr.open('POST', '/upload/pd/3', true);
+		xhr.setRequestHeader('X-FILENAME', f.name);
+		xhr.send(f);
+	}
+});
+
 
 //----------- Problem Sets --------------
 

@@ -208,6 +208,23 @@ block problem-edit
 					input#jfp-ed-ca.form-button(value="Cancel", type="button")
 				.row.hidden
 					p#jfp-ed-er.form-error
+		.block
+			p.header Problem Description
+			form#jfp-upd.judge-form(auto-complete="off")
+				.row
+					input#jfp-upd-f(name="f", type="file")
+				.row
+					input#jfp-upd-vw.form-button(value="View", type="button")
+					input#jfp-upd-up.form-button(value="Upload", type="button")
+		.block
+			p.header Sample Test Files
+			form#jfp-upt.judge-form(auto-complete="off")
+				.row
+					input#jfp-upt-f(name="f", type="file")
+				.row
+					input#jfp-upt-vw.form-button(value="View", type="button")
+					input#jfp-upt-up.form-button(value="Upload", type="button")
+
 block content
 	block root
 	block scoreboard
