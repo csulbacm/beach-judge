@@ -126,6 +126,26 @@ block problemsets
 				ul#problemset-list
 			p.center
 				a#problemset-create-lnk(href="/problemset/create") Create Problem Set
+block problemset-create
+	#problemset-create
+		.block
+			p.header Create Problem Set
+			form#jfps-cr.judge-form(auto-complete="off")
+				.row
+					input#jfps-cr-n.judge-form-string(name="n", type="text", placeholder="Name", autocomplete="off")
+				.row
+					input#jfps-cr-s.judge-form-string(name="s", type="text", placeholder="Status", autocomplete="off")
+				.row
+					input#jfps-cr-t.judge-form-string(name="t", type="text", placeholder="Start Time", autocomplete="off")
+				.row
+					input#jfps-cr-d.judge-form-string(name="d", type="text", placeholder="Duration", autocomplete="off")
+				.row
+					input#jfps-cr-cl.form-button(value="Clear", type="button")
+					input#jfps-cr-cr.form-button(value="Create", type="button")
+					input#jfps-cr-ca.form-button(value="Cancel", type="button")
+				.row.hidden
+					p#jfps-cr-er.form-error
+				input#jfps-cr-o(name="o", type="hidden")
 block content
 	block root
 	block scoreboard
@@ -135,3 +155,4 @@ block content
 	block user-create
 	block user-edit
 	block problemsets
+	block problemset-create

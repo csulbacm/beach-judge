@@ -291,7 +291,7 @@ judge.onMsg['UGL'] = function(msg) {
 		h += '<li><a href="/usergroup/edit/' + msg.usergroups[a].i + '" i="' + msg.usergroups[a].i
 			+ '">' + msg.usergroups[a].n;
 		if (msg.usergroups[a].a == false)
-			h += '<span class="ia"> - Inactive</span>';
+			h += ' <span class="ia">- Inactive</span>';
 		h += '</a></li>';
 	}
 	_userGroupList.html(h);

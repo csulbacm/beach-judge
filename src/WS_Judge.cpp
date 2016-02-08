@@ -1,4 +1,5 @@
 #include <sstream>
+#include <algorithm>
 
 // beachJudge
 #include <Judge/WS_Judge.h>
@@ -73,6 +74,87 @@ void msg_populate(libwebsocket *w, psd_judge *p, char *m)
 
 void msg_problemSetCreate(libwebsocket *w, psd_judge *p, char *m)
 {
+	// Restrict action to judge
+	if (p->user->level < User::Admin) {
+		sprintf(p->msg, "\"msg\":\"ERR\"");
+		return;
+	}
+
+	//TODO: Define name length requirement
+	stringstream ss(m);
+	vector<string> args;
+	for (string e; getline(ss, e, '&'); args.push_back(e));
+
+	// Parse Arguments
+	{
+		const char *pat = "nstdo";
+		i16 len = strlen(pat);
+		bool e = false, l = true;
+		while (true) {
+			if (args.size() != len) { e = true; break; }
+			for (i16 a = 0; a < len; ++a) {
+				if (args[a].length() < 2) { l = false; return; }
+				if (args[a][1] != '=' || args[a][0] != pat[a]) { l = false; return; }
+				args[a] = args[a].substr(2);
+			}
+			break;
+		}
+		if (e) {
+			sprintf(p->msg, ""
+				"\"msg\":\"PSC\","
+				"\"err\":\"I\"");
+			return;
+		}
+	}
+
+	if (args[0].length() == 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PSC\","
+			"\"err\":\"N\"");
+		return;
+	}
+	transform(args[0].begin(), args[0].end(), args[0].begin(), ::tolower);
+
+	string &name = args[0];
+	i16 status;
+	string &startTimeStr = args[2];
+	printf("ST: %s\n", startTimeStr.c_str());
+	i32 duration, offset;
+
+	status = atoi(args[1].c_str());
+	if (status < 0 || status > 2) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PSC\","
+			"\"err\":\"S\"");
+		return;
+	}
+	duration = atoi(args[3].c_str());
+	if (duration < 0) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PSC\","
+			"\"err\":\"D\"");
+		return;
+	}
+	offset = atoi(args[4].c_str());
+	if (offset < -12 || offset > 14) {
+		sprintf(p->msg, ""
+			"\"msg\":\"PSC\","
+			"\"err\":\"O\"");
+		return;
+	}
+
+	//TODO: Convert to regex matching
+	u64 startTime = DateTimeEscToTimeStamp(startTimeStr.c_str(), offset);
+
+	//TODO: Debug text
+	ProblemSet *ps = new ProblemSet(name.c_str(), 0xFFFF, status, startTime, duration);
+	ps->SQL_Insert();
+	sprintf(p->msg, ""
+		"\"msg\":\"PSC\","
+		"\"i\":\"%d\","
+		"\"n\":\"%s\"",
+		ps->id,
+		ps->name.c_str());
 }
 
 void msg_problemSetDelete(libwebsocket *w, psd_judge *p, char *m)

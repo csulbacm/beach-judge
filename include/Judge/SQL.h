@@ -22,7 +22,28 @@ inline std::string TimeStampToDateTime(u64 &ts)
 	std::strftime(buffer, 32, "%Y-%m-%d %H:%M:%S", ptm); 
 	return std::string(buffer);
 }
-inline u64 DateTimeToTimeStamp(const char *dt)
+inline u64 DateTimeEscToTimeStamp(const char *dt, i32 offset)
+{
+	//TODO: Verify security
+	u16 Y, M, D, h, m, s;
+	std::sscanf(dt, "%d-%d-%d+%d%%3A%d%%3A%d", &Y, &M, &D, &h, &m, &s);
+	struct tm *ti;
+	time_t _s, ls, gs, t = 0;
+	std::time(&_s);
+	ti = std::localtime(&_s);
+	ls = std::mktime(ti);
+	ti = std::gmtime(&_s);
+	gs = std::mktime(ti);
+	ti = std::gmtime(&t);
+	ti->tm_year = Y - 1900;
+	ti->tm_mon = M - 1; ti->tm_mday = D;
+	ti->tm_hour = h;
+	ti->tm_min = m;
+	ti->tm_sec = s;
+	t = std::mktime(ti) + ls - gs;
+	return (u64)t - offset * 3600;
+}
+inline u64 DateTimeToTimeStamp(const char *dt, i32 offset = 0)
 {
 	//TODO: Verify security
 	u16 Y, M, D, h, m, s;
@@ -41,7 +62,7 @@ inline u64 DateTimeToTimeStamp(const char *dt)
 	ti->tm_min = m;
 	ti->tm_sec = s;
 	t = std::mktime(ti) + ls - gs;
-	return (u64)t;
+	return (u64)t - offset * 3600;
 }
 
 typedef struct SQL
