@@ -7,9 +7,8 @@
 namespace judge {
 
 //TODO: Simplify this function
-int ws_http(libwebsocket_context *context,
-	libwebsocket *wsi,
-	libwebsocket_callback_reasons reason, void *user,
+int ws_http(lws *wsi,
+	lws_callback_reasons reason, void *user,
 	void *in, size_t len)
 {
 	char buf[256];
@@ -68,7 +67,7 @@ int ws_http(libwebsocket_context *context,
 		pss->t = getRealTimeMS();
 
 		if (len < 1) {
-			libwebsockets_return_http_status(context, wsi,
+			lws_return_http_status(wsi,
 						HTTP_STATUS_BAD_REQUEST, NULL);
 			goto try_to_reuse;
 		}
@@ -94,7 +93,7 @@ int ws_http(libwebsocket_context *context,
 						"Content-Length: %d\r\n\r\n"
 						"%s",
 						2, "OK");
-					libwebsocket_write(wsi,
+					lws_write(wsi,
 						(unsigned char *)response,
 						strlen(response), LWS_WRITE_HTTP);
 
@@ -110,7 +109,7 @@ int ws_http(libwebsocket_context *context,
 		//TODO: Make favicon
 		if (strcmp((const char *)in, "/favicon.ico") == 0) {
 			printf("%p: GET %s %d\n", pss, (char *)in, HTTP_STATUS_NO_CONTENT);
-			libwebsockets_return_http_status(context, wsi,
+			lws_return_http_status(wsi,
 				HTTP_STATUS_NO_CONTENT, NULL);
 			return -1;
 		}
@@ -141,7 +140,7 @@ int ws_http(libwebsocket_context *context,
 				strcat(buf, "/");
 			/* this server has no concept of directories */
 			if (hasSlash) {
-				libwebsockets_return_http_status(context, wsi,
+				lws_return_http_status(wsi,
 							HTTP_STATUS_FORBIDDEN, NULL);
 				goto try_to_reuse;
 			}
@@ -155,7 +154,7 @@ int ws_http(libwebsocket_context *context,
 			struct stat fileExist;
 			if (stat(buf, &fileExist) != 0) {
 				printf("%p: GET %s %d\n", pss, (char *)in, HTTP_STATUS_NOT_FOUND);
-				libwebsockets_return_http_status(context, wsi,
+				lws_return_http_status(wsi,
 					HTTP_STATUS_NOT_FOUND, NULL);
 				return -1;
 			}
@@ -166,12 +165,12 @@ int ws_http(libwebsocket_context *context,
 		if (!mimetype) {
 			lwsl_err("Unknown mimetype for %s\n", buf);
 			printf("%p: GET %s %d\n", pss, (char *)in, HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE);
-			libwebsockets_return_http_status(context, wsi,
+			lws_return_http_status(wsi,
 				HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE, NULL);
 			return -1;
 		}
 
-		n = libwebsockets_serve_http_file(context, wsi, buf,
+		n = lws_serve_http_file(wsi, buf,
 						mimetype, other_headers, n);
 
 		printf("%p: GET %s 200 - %ld ms\n", pss, (char *)in, getRealTimeMS() - pss->t);
@@ -241,7 +240,7 @@ int ws_http(libwebsocket_context *context,
 							"Content-Length: %ld\r\n\r\n"
 							"%s",
 							strlen(sessionKey), sessionKey);
-						libwebsocket_write(wsi,
+						lws_write(wsi,
 							(unsigned char *)response,
 							strlen(response), LWS_WRITE_HTTP);
 					} else goto login_failed;
@@ -257,7 +256,7 @@ login_failed:
 			"Content-Length: %d\r\n\r\n"
 			"%s",
 			3, "ERR");
-		libwebsocket_write(wsi,
+		lws_write(wsi,
 			(unsigned char *)response,
 			strlen(response), LWS_WRITE_HTTP);
 
@@ -266,7 +265,7 @@ login_failed:
 	case LWS_CALLBACK_HTTP_BODY_COMPLETION:
 
 		/* the whole of the sent body arrived, close or reuse the connection */
-//		libwebsockets_return_http_status(context, wsi,
+//		lws_return_http_status(wsi,
 //						HTTP_STATUS_OK, NULL);
 //		goto try_to_reuse;
 		return 0;
@@ -312,7 +311,7 @@ login_failed:
 			 * is handled by the library itself if you sent a
 			 * content-length header
 			 */
-			m = libwebsocket_write(wsi,
+			m = lws_write(wsi,
 				buffer + LWS_SEND_BUFFER_PRE_PADDING,
 				n, LWS_WRITE_HTTP);
 			if (m < 0)
@@ -328,7 +327,7 @@ login_failed:
 					goto bail;
 
 			if (m) /* while still active, extend timeout */
-				libwebsocket_set_timeout(wsi,
+				lws_set_timeout(wsi,
 					PENDING_TIMEOUT_HTTP_CONTENT, 5);
 			
 			/* if we have indigestion, let him clear it before eating more */
@@ -338,12 +337,12 @@ login_failed:
 		} while (!lws_send_pipe_choked(wsi));
 
 later:
-		libwebsocket_callback_on_writable(context, wsi);
+		lws_callback_on_writable(wsi);
 		break;
 flush_bail:
 		/* true if still partial pending */
 		if (lws_partial_buffered(wsi)) {
-			libwebsocket_callback_on_writable(context, wsi);
+			lws_callback_on_writable(wsi);
 			break;
 		}
 		close(pss->fd);

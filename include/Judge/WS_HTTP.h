@@ -22,11 +22,11 @@ typedef struct psd_http {
 	char sessionID[65];
 } psd_http;
 
-int ws_http(libwebsocket_context *context,
-	libwebsocket *wsi,
-	libwebsocket_callback_reasons reason, void *user,
+int ws_http(lws *wsi,
+	lws_callback_reasons reason, void *user,
 	void *in, size_t len);
 
+extern lws_context *g_lws_context;
 
 }
 

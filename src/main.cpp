@@ -18,7 +18,7 @@ const char *judge::g_resourcePath = "../res";
 
 map<string, Session> Session::s_sessionMap = map<string, Session>();
 
-enum lws_protocols {
+enum PROTOCOLS {
 	PROTOCOL_HTTP = 0,
 	PROTOCOL_JUDGE,
 	LWS_PROTOCOL_COUNT
@@ -40,13 +40,16 @@ void sigHandler(int signo, siginfo_t *info, void *context)
 //-----------------------------------------
 //------------ Entry Function -------------
 
+namespace judge {
+	lws_context *g_lws_context;
+}
+
 int main(int argc, char *argv[])
 {
 	srand(time(NULL));
 
 	// Initialize LWS
-	libwebsocket_context *context;
-	libwebsocket_protocols protocols[] = {
+	lws_protocols protocols[] = {
 		{ // HTTP Handler
 			"http-only", //lname
 			ws_http, // callback
@@ -84,9 +87,9 @@ int main(int argc, char *argv[])
 		info.ssl_private_key_filepath = key_path;
 		info.options = LWS_SERVER_OPTION_ALLOW_NON_SSL_ON_SSL_PORT;
 #endif
-		context = libwebsocket_create_context(&info);
+		g_lws_context = lws_create_context(&info);
 	}
-	if (context == NULL) {
+	if (g_lws_context == NULL) {
 		lwsl_err("libwebsocket init failed\n");
 		return -1;
 	}
@@ -115,13 +118,13 @@ int main(int argc, char *argv[])
 		// Main Loop
 		i16 n = 0;
 		while (n >= 0 && !force_exit)
-			n = libwebsocket_service(context, 50);
+			n = lws_service(g_lws_context, 50);
 	}
 
 	// Cleanup
 	//TODO: Debug seg fault on from this line
 	printf("Server is shutting down...\n");
-	libwebsocket_context_destroy(context);
+	lws_context_destroy(g_lws_context);
 	User::Cleanup();
 	SQL::Cleanup();
 

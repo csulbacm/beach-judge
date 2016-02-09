@@ -17,7 +17,7 @@ struct a_message {
 };
 
 typedef struct psd_judge {
-	libwebsocket *wsi;
+	lws *wsi;
 	u16 ringbuffer_tail;
 	a_message ringbuffer[JUDGE_MAX_MESSAGE_QUEUE];
 	u16 ringbuffer_head;
@@ -32,12 +32,13 @@ typedef struct psd_judge {
 	User *user;
 } psd_judge;
 
-typedef void (*func_judge)(libwebsocket *wsi, psd_judge *pss, char *msgIn);
+typedef void (*func_judge)(lws *wsi, psd_judge *pss, char *msgIn);
 
-int ws_judge(libwebsocket_context *context,
-	libwebsocket *wsi,
-	libwebsocket_callback_reasons reason,
+int ws_judge(lws *wsi,
+	lws_callback_reasons reason,
 	void *user, void *in, size_t len);
+
+extern lws_context *g_lws_context;
 
 }
 

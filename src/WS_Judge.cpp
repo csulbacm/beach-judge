@@ -12,31 +12,31 @@ namespace judge {
 //-----------------------------------------
 //------------- Message Map ---------------
 
-void msg_populate(libwebsocket *w, psd_judge *p, char *m);
+void msg_populate(lws *w, psd_judge *p, char *m);
 
-void msg_problemCreate(libwebsocket *w, psd_judge *p, char *m);
-void msg_problemDelete(libwebsocket *w, psd_judge *p, char *m);
-void msg_problemInfo(libwebsocket *w, psd_judge *p, char *m);
-void msg_problemList(libwebsocket *w, psd_judge *p, char *m);
-void msg_problemUpdate(libwebsocket *w, psd_judge *p, char *m);
+void msg_problemCreate(lws *w, psd_judge *p, char *m);
+void msg_problemDelete(lws *w, psd_judge *p, char *m);
+void msg_problemInfo(lws *w, psd_judge *p, char *m);
+void msg_problemList(lws *w, psd_judge *p, char *m);
+void msg_problemUpdate(lws *w, psd_judge *p, char *m);
 
-void msg_problemSetCreate(libwebsocket *w, psd_judge *p, char *m);
-void msg_problemSetDelete(libwebsocket *w, psd_judge *p, char *m);
-void msg_problemSetInfo(libwebsocket *w, psd_judge *p, char *m);
-void msg_problemSetList(libwebsocket *w, psd_judge *p, char *m);
-void msg_problemSetUpdate(libwebsocket *w, psd_judge *p, char *m);
+void msg_problemSetCreate(lws *w, psd_judge *p, char *m);
+void msg_problemSetDelete(lws *w, psd_judge *p, char *m);
+void msg_problemSetInfo(lws *w, psd_judge *p, char *m);
+void msg_problemSetList(lws *w, psd_judge *p, char *m);
+void msg_problemSetUpdate(lws *w, psd_judge *p, char *m);
 
-void msg_userCreate(libwebsocket *w, psd_judge *p, char *m);
-void msg_userDelete(libwebsocket *w, psd_judge *p, char *m);
-void msg_userInfo(libwebsocket *w, psd_judge *p, char *m);
-void msg_userList(libwebsocket *w, psd_judge *p, char *m);
-void msg_userUpdate(libwebsocket *w, psd_judge *p, char *m);
+void msg_userCreate(lws *w, psd_judge *p, char *m);
+void msg_userDelete(lws *w, psd_judge *p, char *m);
+void msg_userInfo(lws *w, psd_judge *p, char *m);
+void msg_userList(lws *w, psd_judge *p, char *m);
+void msg_userUpdate(lws *w, psd_judge *p, char *m);
 
-void msg_userGroupCreate(libwebsocket *w, psd_judge *p, char *m);
-void msg_userGroupDelete(libwebsocket *w, psd_judge *p, char *m);
-void msg_userGroupInfo(libwebsocket *w, psd_judge *p, char *m);
-void msg_userGroupList(libwebsocket *w, psd_judge *p, char *m);
-void msg_userGroupUpdate(libwebsocket *w, psd_judge *p, char *m);
+void msg_userGroupCreate(lws *w, psd_judge *p, char *m);
+void msg_userGroupDelete(lws *w, psd_judge *p, char *m);
+void msg_userGroupInfo(lws *w, psd_judge *p, char *m);
+void msg_userGroupList(lws *w, psd_judge *p, char *m);
+void msg_userGroupUpdate(lws *w, psd_judge *p, char *m);
 
 map<string, func_judge> createMsgMap()
 {
@@ -75,7 +75,7 @@ map<string, func_judge> g_msgMap =
 //----------------------------------------------
 //------------- Message Handlers ---------------
 
-void msg_populate(libwebsocket *w, psd_judge *p, char *m)
+void msg_populate(lws *w, psd_judge *p, char *m)
 {
 	// Populate User Session Data
 	sprintf(p->msg, ""
@@ -84,7 +84,7 @@ void msg_populate(libwebsocket *w, psd_judge *p, char *m)
 		p->user->name.c_str());
 }
 
-void msg_problemCreate(libwebsocket *w, psd_judge *p, char *m)
+void msg_problemCreate(lws *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
 	if (p->user->level < User::Admin) {
@@ -137,7 +137,7 @@ void msg_problemCreate(libwebsocket *w, psd_judge *p, char *m)
 		pr->name.c_str());
 }
 
-void msg_problemDelete(libwebsocket *w, psd_judge *p, char *m)
+void msg_problemDelete(lws *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
 	if (p->user->level < User::Admin) {
@@ -183,7 +183,7 @@ void msg_problemDelete(libwebsocket *w, psd_judge *p, char *m)
 	delete pr;
 }
 
-void msg_problemInfo(libwebsocket *w, psd_judge *p, char *m)
+void msg_problemInfo(lws *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
 	if (p->user->level < User::Admin) {
@@ -228,7 +228,7 @@ void msg_problemInfo(libwebsocket *w, psd_judge *p, char *m)
 		pr->name.c_str());
 }
 
-void msg_problemList(libwebsocket *w, psd_judge *p, char *m)
+void msg_problemList(lws *w, psd_judge *p, char *m)
 {
 	char idStr[16];
 	i16 r = sscanf(m, "i=%[0-9]", idStr);
@@ -270,7 +270,7 @@ void msg_problemList(libwebsocket *w, psd_judge *p, char *m)
 		str.str().c_str());
 }
 
-void msg_problemUpdate(libwebsocket *w, psd_judge *p, char *m)
+void msg_problemUpdate(lws *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
 	if (p->user->level < User::Admin) {
@@ -344,7 +344,7 @@ void msg_problemUpdate(libwebsocket *w, psd_judge *p, char *m)
 		pr->name.c_str());
 }
 
-void msg_problemSetCreate(libwebsocket *w, psd_judge *p, char *m)
+void msg_problemSetCreate(lws *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
 	if (p->user->level < User::Admin) {
@@ -435,7 +435,7 @@ void msg_problemSetCreate(libwebsocket *w, psd_judge *p, char *m)
 		ps->name.c_str());
 }
 
-void msg_problemSetDelete(libwebsocket *w, psd_judge *p, char *m)
+void msg_problemSetDelete(lws *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
 	if (p->user->level < User::Admin) {
@@ -471,7 +471,7 @@ void msg_problemSetDelete(libwebsocket *w, psd_judge *p, char *m)
 	delete ps;
 }
 
-void msg_problemSetInfo(libwebsocket *w, psd_judge *p, char *m)
+void msg_problemSetInfo(lws *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
 	if (p->user->level < User::Admin) {
@@ -512,7 +512,7 @@ void msg_problemSetInfo(libwebsocket *w, psd_judge *p, char *m)
 		ps->duration);
 }
 
-void msg_problemSetList(libwebsocket *w, psd_judge *p, char *m)
+void msg_problemSetList(lws *w, psd_judge *p, char *m)
 {
 	// Populate Problem Data
 	stringstream str;
@@ -542,7 +542,7 @@ void msg_problemSetList(libwebsocket *w, psd_judge *p, char *m)
 		str.str().c_str());
 }
 
-void msg_problemSetUpdate(libwebsocket *w, psd_judge *p, char *m)
+void msg_problemSetUpdate(lws *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
 	if (p->user->level < User::Admin) {
@@ -668,7 +668,7 @@ void msg_problemSetUpdate(libwebsocket *w, psd_judge *p, char *m)
 		ps->name.c_str());
 }
 
-void msg_userCreate(libwebsocket *w, psd_judge *p, char *m)
+void msg_userCreate(lws *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
 	if (p->user->level < User::Admin) {
@@ -730,7 +730,7 @@ void msg_userCreate(libwebsocket *w, psd_judge *p, char *m)
 		user->name.c_str());
 }
 
-void msg_userDelete(libwebsocket *w, psd_judge *p, char *m)
+void msg_userDelete(lws *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
 	if (p->user->level < User::Admin) {
@@ -772,7 +772,7 @@ void msg_userDelete(libwebsocket *w, psd_judge *p, char *m)
 	delete user;
 }
 
-void msg_userInfo(libwebsocket *w, psd_judge *p, char *m)
+void msg_userInfo(lws *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
 	if (p->user->level < User::Admin) {
@@ -810,7 +810,7 @@ void msg_userInfo(libwebsocket *w, psd_judge *p, char *m)
 		user->display.c_str());
 }
 
-void msg_userList(libwebsocket *w, psd_judge *p, char *m)
+void msg_userList(lws *w, psd_judge *p, char *m)
 {
 	char idStr[16];
 	i16 r = sscanf(m, "i=%[0-9]", idStr);
@@ -852,7 +852,7 @@ void msg_userList(libwebsocket *w, psd_judge *p, char *m)
 		str.str().c_str());
 }
 
-void msg_userUpdate(libwebsocket *w, psd_judge *p, char *m)
+void msg_userUpdate(lws *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
 	if (p->user->level < User::Admin) {
@@ -945,7 +945,7 @@ void msg_userUpdate(libwebsocket *w, psd_judge *p, char *m)
 		user->name.c_str());
 }
 
-void msg_userGroupCreate(libwebsocket *w, psd_judge *p, char *m)
+void msg_userGroupCreate(lws *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
 	if (p->user->level < User::Admin) {
@@ -995,7 +995,7 @@ void msg_userGroupCreate(libwebsocket *w, psd_judge *p, char *m)
 		group->isActive);
 }
 
-void msg_userGroupDelete(libwebsocket *w, psd_judge *p, char *m)
+void msg_userGroupDelete(lws *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
 	if (p->user->level < User::Admin) {
@@ -1038,7 +1038,7 @@ void msg_userGroupDelete(libwebsocket *w, psd_judge *p, char *m)
 	delete group;
 }
 
-void msg_userGroupInfo(libwebsocket *w, psd_judge *p, char *m)
+void msg_userGroupInfo(lws *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
 	if (p->user->level < User::Admin) {
@@ -1075,7 +1075,7 @@ void msg_userGroupInfo(libwebsocket *w, psd_judge *p, char *m)
 		group->isActive);
 }
 
-void msg_userGroupList(libwebsocket *w, psd_judge *p, char *m)
+void msg_userGroupList(lws *w, psd_judge *p, char *m)
 {
 	// Populate User Group Data
 	stringstream str;
@@ -1096,7 +1096,7 @@ void msg_userGroupList(libwebsocket *w, psd_judge *p, char *m)
 		str.str().c_str());
 }
 
-void msg_userGroupUpdate(libwebsocket *w, psd_judge *p, char *m)
+void msg_userGroupUpdate(lws *w, psd_judge *p, char *m)
 {
 	// Restrict action to judge
 	if (p->user->level < User::Admin) {
@@ -1183,9 +1183,8 @@ void msg_userGroupUpdate(libwebsocket *w, psd_judge *p, char *m)
 //----------------------------------------------
 //------------ WebSocket Protocol --------------
 
-int ws_judge(libwebsocket_context *context,
-	libwebsocket *wsi,
-	libwebsocket_callback_reasons reason,
+int ws_judge(lws *wsi,
+	lws_callback_reasons reason,
 	void *user, void *in, size_t len)
 {
 	i16 n;
@@ -1271,7 +1270,7 @@ int ws_judge(libwebsocket_context *context,
 				(*g_msgMap[msgType])(wsi, pss, msgIn + strlen(msgType) + 1);
 			else
 				sprintf(pss->msg, "\"msg\":\"ERR\"");
-			libwebsocket_write(wsi,
+			lws_write(wsi,
 				(unsigned char *)pss->msg,
 				strlen(pss->msg), LWS_WRITE_TEXT);
 
@@ -1282,13 +1281,13 @@ int ws_judge(libwebsocket_context *context,
 
 			if (((pss->ringbuffer_head - pss->ringbuffer_tail) &
 					(JUDGE_MAX_MESSAGE_QUEUE - 1)) == (JUDGE_MAX_MESSAGE_QUEUE - 15))
-				libwebsocket_rx_flow_allow_all_protocol(
-								 libwebsockets_get_protocol(wsi));
+				lws_rx_flow_allow_all_protocol(g_lws_context,
+								 lws_get_protocol(wsi));
 
 //			lwsl_debug("tx fifo %d\n", (pss->ringbuffer_head - pss->ringbuffer_tail) & (JUDGE_MAX_MESSAGE_QUEUE - 1));
 
 			if (lws_partial_buffered(wsi) || lws_send_pipe_choked(wsi)) {
-				libwebsocket_callback_on_writable(context, wsi);
+				lws_callback_on_writable(wsi);
 				break;
 			}
 			/*
@@ -1331,12 +1330,12 @@ int ws_judge(libwebsocket_context *context,
 
 choke:
 		lwsl_debug("LWS_CALLBACK_RECEIVE: throttling %p\n", wsi);
-		libwebsocket_rx_flow_control(wsi, 0);
+		lws_rx_flow_control(wsi, 0);
 
 //		lwsl_debug("rx fifo %d\n", (pss->ringbuffer_head - pss->ringbuffer_tail) & (JUDGE_MAX_MESSAGE_QUEUE - 1));
 done:
-		libwebsocket_callback_on_writable_all_protocol(
-								 libwebsockets_get_protocol(wsi));
+		lws_callback_on_writable_all_protocol(g_lws_context,
+								 lws_get_protocol(wsi));
 		break;
 
 	default:
