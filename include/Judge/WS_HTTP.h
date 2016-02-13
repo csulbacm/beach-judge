@@ -20,6 +20,26 @@ typedef struct psd_http {
 	User *user;
 	Session *session;
 	char sessionID[65];
+	u32 targetLen, bodyLen;
+	char *target, *body;
+
+	psd_http() :
+		fd(0),
+		t(0),
+		user(0),
+		session(0),
+		target(0),
+		body(0),
+		targetLen(0),
+		bodyLen(0)
+	{
+	}
+
+	void Purge()
+	{
+		delete [] target;
+		delete [] body;
+	}
 } psd_http;
 
 int ws_http(lws *wsi,

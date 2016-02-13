@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 		{ // HTTP Handler
 			"http-only", //lname
 			ws_http, // callback
-			sizeof (psd_http), // per_session_data_size
+			sizeof(psd_http), // per_session_data_size
 			0, // max frame size / rx buffer
 		},
 		{ // beachJudge Protocol

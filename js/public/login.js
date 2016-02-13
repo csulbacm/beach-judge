@@ -13,7 +13,7 @@ $(document).ready(function() {
 		$('.login-error').hide();
 		$.ajax({
 			type: 'POST',
-			url: '/',
+			url: '/login',
 			data: $(this).serialize(),
 			success: function(result) {
 				if(result === 'ERR')
