@@ -49,6 +49,7 @@ npm_install("express")
 npm_install("body-parser")
 npm_install("async")
 npm_install("rethinkdb")
+npm_install("lodash")
 
 set(BABEL ${BUILD_DIR}/external/nodejs/babel)
 set(PID_FILE ${BUILD_DIR}/server.pid)
