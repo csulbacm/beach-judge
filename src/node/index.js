@@ -1,8 +1,9 @@
 var path = require('path');
 var fs = require('fs');
-var async = require('async');
 
 var config = require(path.resolve(__dirname, 'config.js'));
+var async = require(path.resolve(g_config.path_mods, 'async'));
+var r = require(path.resolve(g_config.path_mods, 'rethinkdb'));
 
 async.waterfall([
   function connect(callback) {
