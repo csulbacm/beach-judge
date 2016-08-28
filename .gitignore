@@ -50,7 +50,3 @@ res/*.css
 build
 debug
 bin
-
-# Generated Files
-include/Judge/Config.h
-tools/buildsock

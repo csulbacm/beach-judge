@@ -1,0 +1,11 @@
+# Normalize all text files to LF
+*.git* text eol=lf
+*.c text eol=lf
+*.h text eol=lf
+*.cpp text eol=lf
+*.hpp text eol=lf
+*.txt text eol=lf
+*.cmake text eol=lf
+*.bat text eol=lf
+*.sh text eol=lf
+*.js text eol=lf

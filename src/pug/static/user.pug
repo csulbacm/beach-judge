@@ -1,0 +1,14 @@
+extends ../layouts/default
+block head
+	link(rel="stylesheet", href="/user.min.css")
+	script(src="/common.min.js")
+	script(src="/user.min.js")
+block header
+	header: .container
+		ul.mainNav
+			li: a(href="javascript:nav('/')") beachJudge
+			li: a(href="javascript:nav('/scoreboard')") Scoreboard
+			li.logout: a(href="javascript:judgeLogout()") Logout
+block body
+	.container
+		p Team

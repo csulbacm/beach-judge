@@ -1,26 +1,19 @@
 cmake_minimum_required(VERSION 2.8)
 
 set(BEACHJUDGE_VERSION_MAJOR 0)
-set(BEACHJUDGE_VERSION_MINOR 02)
+set(BEACHJUDGE_VERSION_MINOR 3)
+set(BEACHJUDGE_VERSION_REVISION 0)
 
 set(TARGET "beachJudge")
 project(${TARGET})
 
-######### Compiler Configuration #########
-
-include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag("-std=c++11" S_CXX11)
-check_cxx_compiler_flag("-std=c++0x" S_CXX0X)
-if(S_CXX11)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-elseif(S_CXX0X)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-endif()
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
-
 ######### Paths #########
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+set(ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(BUILD_DIR ${CMAKE_BINARY_DIR})
+set(BUILD_EXT_DIR ${BUILD_DIR}/external)
+set(SOURCE_EXT_DIR ${ROOT_DIR}/external)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -29,152 +22,157 @@ set(STYLES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/styles)
 set(TEMPLATES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/templates)
 set(RES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res)
 
-
-######### Files #########
-
-set(INC
-	${INC_DIR}/Judge/Config.h
-	${INC_DIR}/Judge/Base.h
-	${INC_DIR}/Judge/Judge.h
-	${INC_DIR}/Judge/Persistence.h
-	${INC_DIR}/Judge/Problem.h
-	${INC_DIR}/Judge/Session.h
-	${INC_DIR}/Judge/Types.h
-	${INC_DIR}/Judge/User.h
-	${INC_DIR}/Judge/WS_HTTP.h
-	${INC_DIR}/Judge/WS_Judge.h
-)
-set(SRC
-	${SRC_DIR}/main.cpp
-	${SRC_DIR}/Persistence.cpp
-	${SRC_DIR}/Problem.cpp
-	${SRC_DIR}/SQL.cpp
-	${SRC_DIR}/User.cpp
-	${SRC_DIR}/WS_HTTP.cpp
-	${SRC_DIR}/WS_Judge.cpp
-)
-
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/Macros.cmake")
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/DependencyManifest.cmake")
 
 ######### Dependencies #########
 
 set(INCLUDE ${INC_DIR})
 set(LIB "")
 
-# libwebsockets
-include("${CMAKE_MODULE_PATH}/FetchLibWebSockets.cmake")
-fetch_libwebsockets()
-list(APPEND LIB ${LIBWEBSOCKETS_LIBRARIES} ssl crypto z)
-list(APPEND INCLUDE ${LIBWEBSOCKETS_INCLUDE_DIR} ${LIBWEBSOCKETS_INCLUDE_DIR}/..)
+# RethinkDB
+include("${CMAKE_MODULE_PATH}/FetchRethinkDB.cmake")
+fetch_rethinkdb()
 
-# sqlite
-include("${CMAKE_MODULE_PATH}/FetchSQLite.cmake")
-fetch_sqlite()
-list(APPEND LIB ${SQLITE_LIBRARIES} pthread dl)
-list(APPEND INCLUDE ${SQLITE_INCLUDE_DIR})
+# NodeJS
+include("${CMAKE_MODULE_PATH}/FetchNodeJS.cmake")
+fetch_nodejs()
 
-# SSL Cert/Key Generation
-#  Generation from libwebsockets
-find_package(OpenSSL)
-find_package(OpenSSLbins)
-if(OPENSSL_EXECUTABLE)
-	set(JUDGE_SSL_KEY "${PROJECT_BINARY_DIR}/beachJudge.key.pem")
-	set(JUDGE_SSL_CERT "${PROJECT_BINARY_DIR}/beachJudge.pem")
+npm_install("pug")
+npm_install("pug-cli")
+npm_install("less")
+npm_install("uglify-js")
+npm_install("less-plugin-clean-css")
+npm_install("ws")
+npm_install("babel-cli")
+npm_install("express")
+npm_install("body-parser")
+npm_install("async")
+npm_install("rethinkdb")
 
-	if(NOT EXISTS ${JUDGE_SSL_KEY} OR NOT EXISTS ${JUDGE_SSL_CERT})
-		message("Generating SSL certificate and key...")
-		execute_process(
-			COMMAND printf "GB\\nErewhon\\nAll around\\nbeachJudge\\n\\nlocalhost\\nnone@invalid.org\\n"
-			COMMAND "${OPENSSL_EXECUTABLE}"
-				req -new -newkey rsa:1024 -days 10000 -nodes -x509 -keyout "${JUDGE_SSL_KEY}" -out "${JUDGE_SSL_CERT}"
-			RESULT_VARIABLE OPENSSL_RETURN_CODE)
-	
-		if (OPENSSL_RETURN_CODE)
-			message(WARNING "!!! Failed to generate SSL certificate for Test Server!!!:\nOpenSSL return code = ${OPENSSL_RETURN_CODE}")
-		else()
-			message("SUCCESSFULLY generated SSL certificate")
-		endif()
-	endif()
-endif()
-
-
-######### Resource Compilation #########
-
-# Resource Compilation
-add_custom_target(res_dir COMMAND ${CMAKE_COMMAND} -E make_directory ${RES_DIR})
-set(RES res_dir)
+set(BABEL ${BUILD_DIR}/external/nodejs/babel)
+set(PID_FILE ${BUILD_DIR}/server.pid)
 
 # Less
-file(GLOB files "${STYLES_DIR}/*.less")
-file(GLOB common "${STYLES_DIR}/common/*.less")
-foreach(file ${files})
-	string(REPLACE ${STYLES_DIR} ${RES_DIR} res ${file})
-	string(REPLACE ".less" ".min.css" res ${res})
-	list(APPEND RES ${res})
-	add_custom_command(OUTPUT ${res} 
-		DEPENDS ${file} ${common}
-		COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/less.sh ${file} ${res})
+
+set(_F
+	${SRC_DIR}/less/admin.less
+	${SRC_DIR}/less/judge.less
+	${SRC_DIR}/less/public.less
+	${SRC_DIR}/less/user.less
+)
+source_group("Source\\Less" FILES ${_F})
+list(APPEND TARGET_SERVER_FILES ${_F})
+
+set(_F
+	${SRC_DIR}/less/common/form.less
+	${SRC_DIR}/less/common/layout.less
+	${SRC_DIR}/less/common/theme.less
+)
+source_group("Source\\Less\\Common" FILES ${_F})
+list(APPEND TARGET_SERVER_FILES ${_F})
+
+# Pug
+
+set(_F
+	${SRC_DIR}/pug/layouts/admin.pug
+	${SRC_DIR}/pug/layouts/default.pug
+	${SRC_DIR}/pug/layouts/judge.pug
+)
+source_group("Source\\Pug\\Layouts" FILES ${_F})
+list(APPEND TARGET_SERVER_FILES ${_F})
+
+set(_F
+	${SRC_DIR}/pug/static/admin.pug
+	${SRC_DIR}/pug/static/judge.pug
+	${SRC_DIR}/pug/static/login.pug
+	${SRC_DIR}/pug/static/user.pug
+)
+source_group("Source\\Pug\\Static" FILES ${_F})
+list(APPEND TARGET_SERVER_FILES ${_F})
+
+# JS
+
+set(_F
+	${SRC_DIR}/js/admin/problem.js
+	${SRC_DIR}/js/admin/userManagement.js
+)
+source_group("Source\\JS\\Admin" FILES ${_F})
+list(APPEND TARGET_SERVER_FILES ${_F})
+
+set(_F
+	${SRC_DIR}/js/common/common.js
+)
+source_group("Source\\JS\\Common" FILES ${_F})
+list(APPEND TARGET_SERVER_FILES ${_F})
+
+set(_F
+	${SRC_DIR}/js/judge/empty.js
+)
+source_group("Source\\JS\\Judge" FILES ${_F})
+list(APPEND TARGET_SERVER_FILES ${_F})
+
+set(_F
+	${SRC_DIR}/js/public/login.js
+)
+source_group("Source\\JS\\Public" FILES ${_F})
+list(APPEND TARGET_SERVER_FILES ${_F})
+
+# Node
+
+set(_F
+	${SRC_DIR}/node/config.js
+	${SRC_DIR}/node/index.js
+	${SRC_DIR}/node/generate-css.js
+	${SRC_DIR}/node/generate-database.js
+	${SRC_DIR}/node/generate-html.js
+	${SRC_DIR}/node/generate-js.js
+	${SRC_DIR}/node/http.js
+	${SRC_DIR}/node/server-process.js
+)
+source_group("Source\\Node" FILES ${_F})
+set(SOURCES_JS ${_F})
+list(APPEND TARGET_SERVER_FILES ${_F})
+
+set(_F "")
+foreach(FILE ${SOURCES_JS})
+	get_filename_component(NAME ${FILE} NAME_WE)
+	get_filename_component(EXT ${FILE} EXT)
+	string(SUBSTRING ${EXT} 1 -1 EXT)
+	set(GENFILE ${BUILD_DIR}/node/${NAME}.${EXT})
+	list(APPEND _F ${GENFILE})
 endforeach()
+source_group("Generated\\Node" FILES ${_F})
+list(APPEND TARGET_SERVER_FILES ${_F})
+add_custom_command(OUTPUT ${_F}
+		COMMAND ${BABEL} ${SRC_DIR}/node --out-dir ${BUILD_DIR}/node WORKING_DIRECTORY ${T_NODEJS_PATH}
+		DEPENDS ${SOURCES_JS})
 
-# Jade
-file(GLOB files "${TEMPLATES_DIR}/views/*.jade")
-foreach(file ${files})
-	string(REPLACE ${TEMPLATES_DIR}/views ${RES_DIR} res ${file})
-	string(REPLACE ".jade" ".html" res ${res})
-	#TODO: Remove -P when finalized
-	list(APPEND RES ${res})
-	add_custom_command(OUTPUT ${res} 
-		DEPENDS ${file}
-		COMMAND jade -P -p ${TEMPLATES_DIR}/file < ${file} > ${res})
-endforeach()
+# CMake
 
-# Javascript
-#TODO: Remove -b flag when finalized
-set(UGFLAG "-b")
-file(GLOB files "${JS_DIR}/admin/*.js")
-set(res ${RES_DIR}/admin.min.js)
-list(APPEND RES ${res})
-add_custom_command(OUTPUT ${res} 
-	DEPENDS ${files}
-	COMMAND cat ${files} | uglifyjs ${UGFLAG} > ${res})
-file(GLOB files "${JS_DIR}/judge/*.js")
-set(res ${RES_DIR}/judge.min.js)
-list(APPEND RES ${res})
-add_custom_command(OUTPUT ${res} 
-	DEPENDS ${files}
-	COMMAND cat ${files} | uglifyjs ${UGFLAG} > ${res})
-file(GLOB files "${JS_DIR}/public/*.js")
-set(res ${RES_DIR}/public.min.js)
-list(APPEND RES ${res})
-add_custom_command(OUTPUT ${res} 
-	DEPENDS ${files}
-	COMMAND cat ${files} | uglifyjs ${UGFLAG} > ${res})
-file(GLOB files "${JS_DIR}/common/*.js")
-set(res ${RES_DIR}/common.min.js)
-list(APPEND RES ${res})
-add_custom_command(OUTPUT ${res} 
-	DEPENDS ${files}
-	COMMAND cat ${files} | uglifyjs ${UGFLAG} > ${res})
+set(_F
+	${ROOT_DIR}/CMakeLists.txt
+	${ROOT_DIR}/cmake/Macros.cmake
+	${ROOT_DIR}/cmake/DependencyManifest.cmake
+)
+source_group("Source\\CMake" FILES ${_F})
+list(APPEND TARGET_SERVER_FILES ${_F})
 
-add_custom_target(resources ALL DEPENDS ${RES})
+set(_F
+	${ROOT_DIR}/cmake/Modules/FetchNodeJS.cmake
+	${ROOT_DIR}/cmake/Modules/FetchRethinkDB.cmake
+)
+source_group("Source\\CMake\\Modules" FILES ${_F})
+list(APPEND TARGET_SERVER_FILES ${_F})
 
+# Targets
 
-######### Finalization #########
-
-configure_file(${INC_DIR}/Judge/Config.h.in ${INC_DIR}/Judge/Config.h)
-include_directories(${INCLUDE})
-
-add_executable(${TARGET} ${SRC} ${INC})
-set_target_properties(${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-set_target_properties(${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/bin)
-set_target_properties(${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/bin)
-target_link_libraries(${TARGET} ${LIB})
-set_target_properties(${TARGET} PROPERTIES DEBUG_POSTFIX -d)
-add_dependencies(${TARGET} resources)
-
-
-######### Development Hook #########
-
-#TODO: Remove this for release
-if(UNIX)
-	add_custom_target(r COMMAND bash -c ${PROJECT_SOURCE_DIR}/tools/tsock.sh DEPENDS ${TARGET})
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	add_custom_target(ServerStop COMMAND ${NODEJS} ${ROOT_DIR}/tools/stop-server-win.js)
 endif()
+
+add_custom_target(ServerGeneration SOURCES ${TARGET_SERVER_FILES} DEPENDS ServerStop)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+add_custom_target(ServerStart COMMAND ${NODEJS} ${ROOT_DIR}/tools/start-server-win.js DEPENDS ServerGeneration BYPRODUCTS ${PID_FILE} USES_TERMINAL)
+endif()
+add_custom_target(Dummy DEPENDS ServerStart)
