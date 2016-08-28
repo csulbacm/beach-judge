@@ -14,7 +14,7 @@ var index = path.resolve(__dirname, '../build/node/index.js');
 var rethinkdbExe = path.resolve(__dirname, '../build/external/rethinkdb/rethinkdb.exe');
 
 
-var rethinkchild = cp.spawn(rethinkdbExe, [], { detached: true, stdio: [ 'ignore', 'ignore', 'ignore' ] });
+var rethinkchild = cp.spawn(rethinkdbExe, ['--http-port', 8081], { detached: true, stdio: [ 'ignore', 'ignore', 'ignore' ] });
 
 var path_rethinkdbPIDFile = path.resolve(__dirname, '../build/rethinkdb.pid');
 fs.writeFile(path_rethinkdbPIDFile, rethinkchild.pid, (err) => { if (err) throw err; });
