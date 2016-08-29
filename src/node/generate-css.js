@@ -1,6 +1,8 @@
+require.cache[__filename].paths = require.cache[__filename].parent.paths;
+
 var path = require('path');
 var fs = require('fs');
-var less = require(path.resolve(g_config.path_mods, 'less'));
+var less = require('less');
 
 var path_lessFiles = path.resolve(g_config.path_root, 'src/less');
 var less_options = {

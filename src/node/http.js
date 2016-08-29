@@ -1,8 +1,10 @@
+require.cache[__filename].paths = require.cache[__filename].parent.paths;
+
 var url = require('url');
 var qs = require('querystring');
 var path = require('path');
-var express = require(path.resolve(g_config.path_mods, 'express'));
-var bodyParser = require(path.resolve(g_config.path_mods, 'body-parser'));
+var express = require('express');
+var bodyParser = require('body-parser');
 
 var app = express();
 global.g_app = app;

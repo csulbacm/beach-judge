@@ -1,9 +1,15 @@
 var path = require('path');
-var fs = require('fs');
-
 var config = require(path.resolve(__dirname, 'config.js'));
-var async = require(path.resolve(g_config.path_mods, 'async'));
-var r = require(path.resolve(g_config.path_mods, 'rethinkdb'));
+require.main.paths.push(path.resolve(g_config.path_root, 'build/external/nodejs/node_modules'));
+
+//console.log(require('less'));
+//console.log(require('uglify-js'));
+var fs = require('fs');
+var async = require('async');
+var r = require('rethinkdb');
+
+
+require('./generate-js.js');
 
 async.waterfall([
   function connect(callback) {
@@ -59,11 +65,11 @@ async.waterfall([
 	
 	}
 
-	require(path.resolve(__dirname, 'server-process.js'));
-	require(path.resolve(__dirname, 'generate-css.js'));
-	require(path.resolve(__dirname, 'generate-js.js'));
-	require(path.resolve(__dirname, 'generate-html.js'));
-	require(path.resolve(__dirname, 'http.js'));
+	require('./server-process.js');
+	require('./generate-css.js');
+	require('./generate-js.js');
+	require('./generate-html.js');
+	require('./http.js');
 
 //	startExpress(connection);
 });
