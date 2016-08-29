@@ -3,7 +3,6 @@ import path from 'path';
 import cp from 'child_process';
 
 // Launch Rethink
-<<<<<<< HEAD
 (() => {
   const child = cp.spawn(
     path.resolve(__dirname, '../../external/rethinkdb/rethinkdb.exe'),
