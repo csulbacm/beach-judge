@@ -11,14 +11,15 @@ const uglifyjs_options = {
 
 if (global.g_files == null) global.g_files = {};
 
-function minify(filepath)
+function render(target)
 {
-	var files = fs.readdirSync(filepath);
+  var key = `/${target}.min.js`;
+  var filepath = path.resolve(config.path_root, `src/js/${target}`);
+  var files = fs.readdirSync(filepath);
 	for (var a in files)
 		files[a] = path.resolve(filepath, files[a]);
-
 	if (DO_MINIFY) {
-		return uglifyjs.minify(files, uglifyjs_options).code;
+	  g_files[key] = uglifyjs.minify(files, uglifyjs_options).code;
 	} else {
 		var buffer = '';
 		for (var a in files) {
@@ -26,11 +27,16 @@ function minify(filepath)
 			if (buffer.charAt(buffer.length - 1) !== '\n')
 				buffer += '\n';
 		}
-		return buffer;
+		g_files[key] = buffer;
 	}
 }
 
-g_files['/admin.min.js'] = minify(path.resolve(config.path_root, 'src/js/admin'));
-g_files['/common.min.js'] = minify(path.resolve(config.path_root, 'src/js/common'));
-g_files['/judge.min.js'] = minify(path.resolve(config.path_root, 'src/js/judge'));
-g_files['/public.min.js'] = minify(path.resolve(config.path_root, 'src/js/public'));
+const targets = [
+   'admin',
+   'common',
+   'judge',
+   'public'
+];
+
+for (var target in targets)
+  render(targets[target]);

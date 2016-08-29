@@ -14,15 +14,18 @@ const less_options = {
 
 if (global.g_files == null) global.g_files = {};
 
-less.render(fs.readFileSync(path.resolve(path_lessFiles, 'public.less'), 'utf8'), less_options, function (e, output) {
-	g_files['/public.min.css'] = output.css
-});
-less.render(fs.readFileSync(path.resolve(path_lessFiles, 'user.less'), 'utf8'), less_options, function (e, output) {
-	g_files['/user.min.css'] = output.css
-});
-less.render(fs.readFileSync(path.resolve(path_lessFiles, 'judge.less'), 'utf8'), less_options, function (e, output) {
-	g_files['/judge.min.css'] = output.css
-});
-less.render(fs.readFileSync(path.resolve(path_lessFiles, 'admin.less'), 'utf8'), less_options, function (e, output) {
-	g_files['/admin.min.css'] = output.css
-});
+function render(target) {
+  less.render(fs.readFileSync(path.resolve(path_lessFiles, `${target}.less`), 'utf8'), less_options, function (e, output) {
+    g_files[`/${target}.min.css`] = output.css;
+  });
+}
+
+const targets = [
+   'admin',
+   'judge',
+   'public',
+   'user'
+];
+
+for (var target in targets)
+  render(targets[target]);
