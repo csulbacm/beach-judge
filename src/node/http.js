@@ -1,5 +1,3 @@
-require.cache[__filename].paths = require.cache[__filename].parent.paths;
-
 var url = require('url');
 var qs = require('querystring');
 var path = require('path');

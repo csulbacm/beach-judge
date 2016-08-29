@@ -1,4 +1,7 @@
 @echo off
 %~dp0/../build/external/nodejs/node.exe %~dp0/../build/node/index.js
-pause
+echo %errorLevel%
+if errorlevel 1 (
+	pause
+)
 exit

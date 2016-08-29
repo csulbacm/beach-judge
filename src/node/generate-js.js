@@ -1,5 +1,3 @@
-require.cache[__filename].paths = require.cache[__filename].parent.paths;
-
 const DO_MINIFY = false;
 
 var path = require('path');
