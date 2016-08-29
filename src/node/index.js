@@ -1,3 +1,6 @@
+
+var path = require('path');
+var config = require(path.resolve(__dirname, 'config.js'));
 var fs = require('fs');
 var async = require('async');
 var r = require('rethinkdb');
