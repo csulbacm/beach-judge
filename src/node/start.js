@@ -3,6 +3,8 @@ import path from 'path';
 import { spawn, exec } from 'child_process';
 import isRunning from 'is-running';
 
+var startBeachJudge = null;
+
 // Launch Rethink
 (() => {
   const path_rethinkdb_pid = path.resolve(__dirname, '../../rethinkdb.pid');
@@ -34,6 +36,7 @@ import isRunning from 'is-running';
     );
     child.unref();
     console.log(`Started Rethinkdb (${child.pid})`);
+    startBeachJudge();
   }
 
   fs.exists(path_rethinkdb_pid, exists => {
@@ -58,6 +61,7 @@ import isRunning from 'is-running';
 
 // Launch BeachJudge
 (() => {
+  startBeachJudge = function() {
   const out = fs.openSync(path.resolve(__dirname, '../../beachjudge_out.log'), 'a');
   const err = fs.openSync(path.resolve(__dirname, '../../beachjudge_err.log'), 'a');
   const server = path.resolve(__dirname, '../../generated/node/index.js');
@@ -74,6 +78,7 @@ import isRunning from 'is-running';
         stdio: ['ignore', out, err]
       }
     );
+    console.log(`Started BeachJudge`);
   }
   else {
     child = spawn(
@@ -91,4 +96,5 @@ import isRunning from 'is-running';
     console.log(`Started BeachJudge (${child.pid})`);
   }
   child.unref();
+}
 })();
