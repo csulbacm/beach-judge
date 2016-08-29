@@ -10,6 +10,8 @@ var startBeachJudge = null;
   const path_rethinkdb_pid = path.resolve(__dirname, '../../rethinkdb.pid');
   function startRethinkDB() {
     const path_rethinkdb = process.platform === 'win32' ? '../../external/rethinkdb/rethinkdb' : '../../external/rethinkdb/build/release/rethinkdb';
+    const out = fs.openSync(path.resolve(__dirname, '../../rethinkdb_out.log'), 'a');
+    const err = fs.openSync(path.resolve(__dirname, '../../rethinkdb_err.log'), 'a');
     const child = spawn(
       path.resolve(__dirname, path_rethinkdb),
       ['--http-port', 8081],
@@ -17,10 +19,8 @@ var startBeachJudge = null;
         detached: true,
         stdio: [
           'ignore',
-          'ignore',
-          // fs.openSync(path.resolve(__dirname, '../../rethinkdb_out.log'), 'a'),
-          'ignore',
-          // fs.openSync(path.resolve(__dirname, '../../rethinkdb_err.log'), 'a'),
+          out,
+          err
         ],
       }
     );

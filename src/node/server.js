@@ -3,9 +3,11 @@ import qs from 'querystring';
 import path from 'path';
 import express from 'express';
 import bodyParser from 'body-parser';
+import async from 'async';
 
 import config from './config';
 import generate_html from './generate-html';
+import generate_database from './generate-database';
 import generate_css from './generate-css';
 import generate_js from './generate-js';
 
@@ -15,10 +17,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true
 }));
-
-app.listen(config.port_html, () => {
-  console.log(`Starting Express on Port ${config.port_html}...`);
-});
 
 app.get('/*', function(req, res) {
   console.log('GET: ' + req.url);
@@ -40,3 +38,19 @@ app.post('/login', function(req, res) {
 });
 
 export default app;
+
+// Startup Process
+
+async.auto({
+  init_database: function(callback) {
+    generate_database(callback);
+  }, 
+  start_express: ['init_database', function(results, callback) {
+    app.listen(config.port_html, () => {
+      console.log(`Starting Express on Port ${config.port_html}...`);
+      callback(null);
+    });
+  }], 
+  finish: ['start_express', function(results, callback) {
+  }]
+});

@@ -139,6 +139,7 @@ foreach(FILE ${SOURCES_JS})
 endforeach()
 source_group("Generated\\Node" FILES ${_F})
 list(APPEND TARGET_SERVER_FILES ${_F})
+set_source_files_properties(${_F} PROPERTIES GENERATED TRUE)
 
 # CMake
 
