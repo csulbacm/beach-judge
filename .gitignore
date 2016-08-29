@@ -50,3 +50,4 @@ res/*.css
 build
 debug
 bin
+node_modules
