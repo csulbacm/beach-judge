@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "asdadas",
-    "stop": "asdadas",
+    "start": "node ./build/generated/node/start.js",
+    "stop": "node ./build/generated/node/stop.js",
     "build": "babel ./src/node --out-dir ./build/generated/node && babel ./src/js --out-dir ./build/generated/js",
     "redeploy": "npm run build && npm start",
     "restart": "asdadas"
