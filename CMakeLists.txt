@@ -116,13 +116,12 @@ list(APPEND TARGET_SERVER_FILES ${_F})
 
 set(_F
 	${SRC_DIR}/node/config.js
-	${SRC_DIR}/node/index.js
 	${SRC_DIR}/node/generate-css.js
 	${SRC_DIR}/node/generate-database.js
 	${SRC_DIR}/node/generate-html.js
 	${SRC_DIR}/node/generate-js.js
-	${SRC_DIR}/node/http.js
-	${SRC_DIR}/node/server-process.js
+	${SRC_DIR}/node/index.js
+	${SRC_DIR}/node/server.js
 	${SRC_DIR}/node/start.js
 	${SRC_DIR}/node/stop.js
 )
@@ -135,15 +134,11 @@ foreach(FILE ${SOURCES_JS})
 	get_filename_component(NAME ${FILE} NAME_WE)
 	get_filename_component(EXT ${FILE} EXT)
 	string(SUBSTRING ${EXT} 1 -1 EXT)
-	set(GENFILE ${BUILD_DIR}/node/${NAME}.${EXT})
+	set(GENFILE ${BUILD_DIR}/generated/node/${NAME}.${EXT})
 	list(APPEND _F ${GENFILE})
 endforeach()
 source_group("Generated\\Node" FILES ${_F})
 list(APPEND TARGET_SERVER_FILES ${_F})
-#add_custom_command(OUTPUT ${_F}
-#		COMMAND ${NODEJS} ${ROOT_DIR}/tools/babel.js ${SRC_DIR}/node ${BUILD_DIR}/node WORKING_DIRECTORY ${T_NODEJS_PATH}
-#		COMMAND ${BABEL} --presets="es2015" --moduleRoot="${T_NODEJS_PATH}/node_modules" ${SRC_DIR}/node --out-dir ${BUILD_DIR}/node WORKING_DIRECTORY ${T_NODEJS_PATH}
-#		DEPENDS ${SOURCES_JS} ${ROOT_DIR}/tools/babel.js)
 
 # CMake
 
@@ -165,7 +160,7 @@ list(APPEND TARGET_SERVER_FILES ${_F})
 # Targets
 
 add_custom_target(ServerStop COMMAND ${NPM} run stop)
-add_custom_target(ServerGeneration SOURCES COMMAND ${NPM} run build ${TARGET_SERVER_FILES} DEPENDS ServerStop)
+add_custom_target(ServerGeneration SOURCES ${TARGET_SERVER_FILES} COMMAND ${NPM} run build DEPENDS ServerStop)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 add_custom_target(ServerStart COMMAND ${NPM} start DEPENDS ServerGeneration BYPRODUCTS ${PID_FILE} USES_TERMINAL)
 endif()

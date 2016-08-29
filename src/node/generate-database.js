@@ -1,24 +1,22 @@
+import fs from 'fs';
+import async from 'async';
+import r from 'rethinkdb';
 
 import config from './config';
 
-var fs = require('fs');
-var async = require('async');
-var r = require('rethinkdb');
-
-require('./generate-js.js');
-
+/*
 async.waterfall([
   function connect(callback) {
-    r.connect(g_config.rethinkdb, callback);
+    r.connect(config.rethinkdb, callback);
   },
   function createDatabase(connection, callback) {
     //Create the database if needed.
-    r.dbList().contains(g_config.rethinkdb.db).do(function(containsDb) {
+    r.dbList().contains(config.rethinkdb.db).do(function(containsDb) {
       return r.branch(
         containsDb, {
           created: 0
         },
-        r.dbCreate(g_config.rethinkdb.db)
+        r.dbCreate(config.rethinkdb.db)
       );
     }).run(connection, function(err) {
       callback(err, connection);
@@ -72,3 +70,4 @@ async.waterfall([
 
   //	startExpress(connection);
 });
+*/

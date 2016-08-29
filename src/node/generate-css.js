@@ -1,9 +1,11 @@
-var path = require('path');
-var fs = require('fs');
-var less = require('less');
+import path from 'path';
+import fs from 'fs';
+import less from 'less';
 
-var path_lessFiles = path.resolve(g_config.path_root, 'src/less');
-var less_options = {
+import config from './config';
+
+const path_lessFiles = path.resolve(config.path_root, 'src/less');
+const less_options = {
 	paths: [path_lessFiles],
 	doctype: 'html',
 	filename: 'public.less',

@@ -1,11 +1,13 @@
-var path = require('path');
-var fs = require('fs');
-var pug = require('pug');
+import path from 'path';
+import fs from 'fs';
+import pug from 'pug';
 
-var path_pugStaticFiles = path.resolve(g_config.path_root, 'src/pug/static');
-var path_pugDynamicFiles = path.resolve(g_config.path_root, 'src/pug/dynamic');
+import config from './config';
 
-var pug_options = {
+const path_pugStaticFiles = path.resolve(config.path_root, 'src/pug/static');
+const path_pugDynamicFiles = path.resolve(config.path_root, 'src/pug/dynamic');
+
+const pug_options = {
 	doctype: 'html',
 	pretty: true
 };

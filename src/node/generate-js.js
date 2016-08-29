@@ -1,10 +1,12 @@
 const DO_MINIFY = false;
 
-var path = require('path');
-var fs = require('fs');
-var uglifyjs = require('uglify-js');
+import path from 'path';
+import fs from 'fs';
+import uglifyjs from 'uglify-js';
 
-var uglifyjs_options = {
+import config from './config';
+
+const uglifyjs_options = {
 };
 
 if (global.g_files == null) global.g_files = {};
@@ -28,7 +30,7 @@ function minify(filepath)
 	}
 }
 
-g_files['/admin.min.js'] = minify(path.resolve(g_config.path_root, 'src/js/admin'));
-g_files['/common.min.js'] = minify(path.resolve(g_config.path_root, 'src/js/common'));
-g_files['/judge.min.js'] = minify(path.resolve(g_config.path_root, 'src/js/judge'));
-g_files['/public.min.js'] = minify(path.resolve(g_config.path_root, 'src/js/public'));
+g_files['/admin.min.js'] = minify(path.resolve(config.path_root, 'src/js/admin'));
+g_files['/common.min.js'] = minify(path.resolve(config.path_root, 'src/js/common'));
+g_files['/judge.min.js'] = minify(path.resolve(config.path_root, 'src/js/judge'));
+g_files['/public.min.js'] = minify(path.resolve(config.path_root, 'src/js/public'));
