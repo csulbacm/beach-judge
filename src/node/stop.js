@@ -7,11 +7,10 @@ const path_root = path.resolve(__dirname, '../../../');
 function kill(path_pid) {
   fs.exists(path_pid, (exists) => {
     if (exists) {
-      fs.readFile(path_pid, (err, data) => {
+      fs.readFile(path_pid, (err, pid) => {
         if (err) {
           throw err;
         }
-        const pid = parseInt(data);
         const cb = (error, stdout, stderr) => {
           if (error) {
             return console.error(`Failed to kill ${path_pid} (${pid})`, error);

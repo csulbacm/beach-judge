@@ -1,12 +1,12 @@
 import fs from 'fs';
 import path from 'path';
-import { spawn } from 'child_process';
+import { spawn, exec } from 'child_process';
 
 // Launch Rethink
 (() => {
-  const rethinkdbPath = process.platform === 'win32' ? '../../external/rethinkdb/rethinkdb' : '../../external/rethinkdb/build/release/rethinkdb';
+  const path_rethinkdb = process.platform === 'win32' ? '../../external/rethinkdb/rethinkdb' : '../../external/rethinkdb/build/release/rethinkdb';
   const child = spawn(
-    path.resolve(__dirname, rethinkdbPath),
+    path.resolve(__dirname, path_rethinkdb),
     ['--http-port', 8081],
     {
       detached: true,
@@ -34,19 +34,19 @@ import { spawn } from 'child_process';
 })();
 
 
-// Launch beachJudge
+// Launch BeachJudge
 (() => {
   const out = fs.openSync(path.resolve(__dirname, '../../beachjudge_out.log'), 'a');
   const err = fs.openSync(path.resolve(__dirname, '../../beachjudge_err.log'), 'a');
-  const index = path.resolve(__dirname, '../../generated/node/server.js');
-  const nodePath = process.platform === 'win32' ? '../../external/nodejs/node' : '../../external/nodejs/bin/node';
-  const exe = path.resolve(__dirname, nodePath);
+  const server = path.resolve(__dirname, '../../generated/node/index.js');
+  const path_node = process.platform === 'win32' ? '../../external/nodejs/node' : '../../external/nodejs/bin/node';
+  const node = path.resolve(__dirname, path_node);
 
   let child;
   if (process.platform === 'win32') {
     child = spawn(
       'cmd.exe',
-      ['/c', exe, index],
+      ['/c', node, server],
       {
         detached: true,
         stdio: ['ignore', out, err]
@@ -55,8 +55,8 @@ import { spawn } from 'child_process';
   }
   else {
     child = spawn(
-      exe,
-      [index],
+      node,
+      [server],
       {
         detached: true,
         stdio: [
@@ -66,21 +66,7 @@ import { spawn } from 'child_process';
         ],
       }
     );
-  }
-  if (process.platform !== 'win32') {
-    fs.writeFile(
-      path.resolve(__dirname, '../../beachjudge.pid'),
-      child.pid,
-      (err) => {
-        if (err) {
-          throw err;
-        }
-      }
-    );
     console.log(`Started BeachJudge (${child.pid})`);
-  } else {
-    console.log(`Started BeachJudge`);
   }
-  // TODO: Capture errors from script execution and display them to this script's stdout stream
   child.unref();
 })();
