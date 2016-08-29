@@ -1,7 +1,6 @@
 @echo off
-echo %cd%
 pushd %~dp0\..
-echo %cd%
-set PATH=%PATH%;./build/external/nodejs
+set PATH=%PATH%;./build/external/python2;./build/external/nodejs
+set PYTHON=%~dp0/../build/external/python2/python.exe
 npm i
 popd

@@ -23,6 +23,7 @@
   "homepage": "https://github.com/csulbacm/beach-judge#readme",
   "dependencies": {
     "async": "^2.0.1",
+    "bcrypt": "^0.8.7",
     "bluebird": "^3.4.3",
     "body-parser": "^1.15.2",
     "express": "^4.14.0",

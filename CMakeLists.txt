@@ -38,6 +38,12 @@ fetch_rethinkdb()
 include("${CMAKE_MODULE_PATH}/FetchNodeJS.cmake")
 fetch_nodejs()
 
+# Python2
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+include("${CMAKE_MODULE_PATH}/FetchPython2.cmake")
+fetch_python2()
+endif()
+
 set(BABEL ${BUILD_DIR}/external/nodejs/babel)
 set(PID_FILE ${BUILD_DIR}/server.pid)
 

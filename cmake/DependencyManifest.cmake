@@ -32,3 +32,13 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	set(T_${T}_CK_FILE "Makefile")
 	set(T_${T}_CK_BIN "build/release/rethinkdb")
 endif()
+
+# Python2
+set(T "PYTHON2")
+set(T_${T}_NAME "python2")
+set(T_${T}_PATH "${BUILD_EXT_DIR}/python2")
+set(T_${T}_DL_FILE "python-2.7.11.amd64.msi")
+set(T_${T}_DL_FOLDER "python-2.7.11.amd64.msi")
+set(T_${T}_DL_MD5 "25acca42662d4b02682eee0df3f3446d")
+set(T_${T}_DL_URI "https://www.python.org/ftp/python/2.7.11/python-2.7.11.amd64.msi")
+set(T_${T}_CK_FILE "python.exe")
