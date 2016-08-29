@@ -4,6 +4,7 @@ import merge from 'lodash/merge';
 
 // get config
 const path_root = path.resolve(__dirname, '../../../');
+const path_build = path.resolve(path_root, './build');
 const path_config = path.resolve(path_root, 'config.json');
 
 let config;
@@ -16,6 +17,7 @@ catch (e) {
 
 // default config
 const defaultConfig = {
+  path_beachjudge_pid: path.resolve(path_build, './beachjudge.pid'),
   port_html: 8080,
   rethinkdb: {
     host: 'localhost',
@@ -33,6 +35,6 @@ config = merge(
 export default config;
 
 // save merged config
-fs.writeFileSync(path_config, JSON.stringify(config, null, '\t'), 'utf-8');
+fs.writeFileSync(path_config, JSON.stringify(config, null, '  '), 'utf-8');
 
 config.path_root = path_root;

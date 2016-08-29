@@ -26,6 +26,7 @@
     "bluebird": "^3.4.3",
     "body-parser": "^1.15.2",
     "express": "^4.14.0",
+    "is-running": "^2.1.0",
     "lodash": "^4.15.0",
     "rethinkdb": "^2.3.2",
     "rethinkdbdash": "^2.3.21",
