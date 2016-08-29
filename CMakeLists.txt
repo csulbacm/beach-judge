@@ -38,22 +38,6 @@ fetch_rethinkdb()
 include("${CMAKE_MODULE_PATH}/FetchNodeJS.cmake")
 fetch_nodejs()
 
-npm_install("pug")
-npm_install("pug-cli")
-npm_install("less")
-npm_install("uglify-js")
-npm_install("less-plugin-clean-css")
-npm_install("ws")
-npm_install("babel-cli")
-npm_install("babel-core")
-npm_install("express")
-npm_install("body-parser")
-npm_install("async")
-npm_install("rethinkdb")
-npm_install("lodash")
-npm_install("bcrypt")
-npm_install("babel-preset-es2015")
-
 set(BABEL ${BUILD_DIR}/external/nodejs/babel)
 set(PID_FILE ${BUILD_DIR}/server.pid)
 
@@ -150,7 +134,7 @@ source_group("Generated\\Node" FILES ${_F})
 list(APPEND TARGET_SERVER_FILES ${_F})
 add_custom_command(OUTPUT ${_F}
 		COMMAND ${NODEJS} ${ROOT_DIR}/tools/babel.js ${SRC_DIR}/node ${BUILD_DIR}/node WORKING_DIRECTORY ${T_NODEJS_PATH}
-#		COMMAND ${BABEL} --presets="es2015" --moduleRoot="${T_NODEJS_PATH}/node_modules" ${SRC_DIR}/node --out-dir ${BUILD_DIR}/node WORKING_DIRECTORY ${T_NODEJS_PATH}
+		COMMAND ${BABEL} --presets="es2015" --moduleRoot="${T_NODEJS_PATH}/node_modules" ${SRC_DIR}/node --out-dir ${BUILD_DIR}/node WORKING_DIRECTORY ${T_NODEJS_PATH}
 		DEPENDS ${SOURCES_JS} ${ROOT_DIR}/tools/babel.js)
 
 # CMake

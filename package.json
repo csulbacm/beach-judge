@@ -4,6 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "asdadas",
+    "build": "asdansdkijansdas",
+    "build:start": "npm run build && npm start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -35,5 +38,8 @@
     "pug": "^2.0.0-beta6",
     "pug-cli": "^1.0.0-alpha6",
     "uglify-js": "^2.7.3"
+  },
+  "babel": {
+    "presets": ["es2015"]
   }
 }
