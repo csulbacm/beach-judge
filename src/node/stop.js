@@ -18,7 +18,7 @@ function kill(path_pid) {
           }
           console.log(`Killed ${path_pid} (${pid})`);
         };
-        if (process.platform === 'windows') {
+        if (process.platform === 'win32') {
           exec(`taskkill /f /pid ${pid}`, cb);
         }
         else {

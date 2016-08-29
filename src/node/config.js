@@ -11,7 +11,7 @@ try {
   config = require(path_config);
 }
 catch (e) {
-  config = undefined;
+  config = {};
 }
 
 // default config
@@ -26,10 +26,13 @@ const defaultConfig = {
 };
 
 // assign config over default config
-export default merge(
+config = merge(
   defaultConfig,
   config
 );
+export default config;
 
 // save merged config
 fs.writeFileSync(path_config, JSON.stringify(config, null, '\t'), 'utf-8');
+
+config.path_root = path_root;

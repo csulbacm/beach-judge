@@ -3,8 +3,12 @@ import qs from 'querystring';
 import path from 'path';
 import express from 'express';
 import bodyParser from 'body-parser';
+import fs from 'fs';
 
 import config from './config';
+
+if (process.platform === 'win32')
+	fs.writeFile(path.resolve(config.path_root, 'build/beachjudge.pid'), process.pid, (err) => { if (err) throw err; });
 
 const app = express();
 

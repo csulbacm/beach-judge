@@ -7,8 +7,8 @@
     "start": "node ./build/generated/node/start.js",
     "stop": "node ./build/generated/node/stop.js",
     "build": "babel ./src/node --out-dir ./build/generated/node && babel ./src/js --out-dir ./build/generated/js",
-    "redeploy": "npm run build && npm start",
-    "restart": "asdadas"
+    "redeploy": "npm run stop && npm run build && npm start",
+    "restart": "npm run stop && npm start"
   },
   "repository": {
     "type": "git",
@@ -23,7 +23,6 @@
   "homepage": "https://github.com/csulbacm/beach-judge#readme",
   "dependencies": {
     "async": "^2.0.1",
-    "bcrypt": "^0.8.7",
     "bluebird": "^3.4.3",
     "body-parser": "^1.15.2",
     "express": "^4.14.0",
