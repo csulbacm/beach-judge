@@ -132,10 +132,10 @@ foreach(FILE ${SOURCES_JS})
 endforeach()
 source_group("Generated\\Node" FILES ${_F})
 list(APPEND TARGET_SERVER_FILES ${_F})
-add_custom_command(OUTPUT ${_F}
-		COMMAND ${NODEJS} ${ROOT_DIR}/tools/babel.js ${SRC_DIR}/node ${BUILD_DIR}/node WORKING_DIRECTORY ${T_NODEJS_PATH}
-		COMMAND ${BABEL} --presets="es2015" --moduleRoot="${T_NODEJS_PATH}/node_modules" ${SRC_DIR}/node --out-dir ${BUILD_DIR}/node WORKING_DIRECTORY ${T_NODEJS_PATH}
-		DEPENDS ${SOURCES_JS} ${ROOT_DIR}/tools/babel.js)
+#add_custom_command(OUTPUT ${_F}
+#		COMMAND ${NODEJS} ${ROOT_DIR}/tools/babel.js ${SRC_DIR}/node ${BUILD_DIR}/node WORKING_DIRECTORY ${T_NODEJS_PATH}
+#		COMMAND ${BABEL} --presets="es2015" --moduleRoot="${T_NODEJS_PATH}/node_modules" ${SRC_DIR}/node --out-dir ${BUILD_DIR}/node WORKING_DIRECTORY ${T_NODEJS_PATH}
+#		DEPENDS ${SOURCES_JS} ${ROOT_DIR}/tools/babel.js)
 
 # CMake
 
@@ -156,15 +156,9 @@ list(APPEND TARGET_SERVER_FILES ${_F})
 
 # Targets
 
+add_custom_target(ServerStop COMMAND ${NPM} run stop)
+add_custom_target(ServerGeneration SOURCES COMMAND ${NPM} run build ${TARGET_SERVER_FILES} DEPENDS ServerStop)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	add_custom_target(ServerStop COMMAND ${NODEJS} ${ROOT_DIR}/tools/stop-server-win.js)
-endif()
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	add_custom_target(ServerStop COMMAND echo "")
-endif()
-
-add_custom_target(ServerGeneration SOURCES ${TARGET_SERVER_FILES} DEPENDS ServerStop)
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-add_custom_target(ServerStart COMMAND ${NODEJS} ${ROOT_DIR}/tools/start-server-win.js DEPENDS ServerGeneration BYPRODUCTS ${PID_FILE} USES_TERMINAL)
+add_custom_target(ServerStart COMMAND ${NPM} start DEPENDS ServerGeneration BYPRODUCTS ${PID_FILE} USES_TERMINAL)
 endif()
 add_custom_target(Dummy DEPENDS ServerStart)
