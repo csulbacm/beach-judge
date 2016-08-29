@@ -53,3 +53,4 @@ bin
 node_modules
 rethinkdb_data
 npm-debug.log
+config.json

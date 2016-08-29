@@ -4,8 +4,9 @@ import cp from 'child_process';
 
 // Launch Rethink
 (() => {
+  const rethinkdbPath = process.platform === 'windows' ? '../../external/rethinkdb/rethinkdb' : '../../external/rethinkdb/build/release/rethinkdb';
   const child = cp.spawn(
-    path.resolve(__dirname, '../../external/rethinkdb/rethinkdb.exe'),
+    path.resolve(__dirname, rethinkdbPath),
     ['--http-port', 8081],
     {
       detached: true,
@@ -29,15 +30,17 @@ import cp from 'child_process';
     }
   );
   child.unref();
+  console.log('Started Rethinkdb');
 })();
 
 
 // Launch beachJudge
 (() => {
-  const out = fs.openSync(path.resolve(__dirname, '../../beachjudge_out.log.log'), 'a');
-  const err = fs.openSync(path.resolve(__dirname, '../../beachjudge_err.log.log'), 'a');
+  const out = fs.openSync(path.resolve(__dirname, '../../beachjudge_out.log'), 'a');
+  const err = fs.openSync(path.resolve(__dirname, '../../beachjudge_err.log'), 'a');
   const index = path.resolve(__dirname, '../../generated/node/server.js');
-  const exe = path.resolve(__dirname, '../../external/nodejs/node');
+  const nodePath = process.platform === 'windows' ? '../../external/nodejs/node' : '../../external/nodejs/bin/node';
+  const exe = path.resolve(__dirname, nodePath);
 
   let child;
   if (process.platform === 'windows') {
@@ -66,4 +69,5 @@ import cp from 'child_process';
   }
   // TODO: Capture errors from script execution and display them to this script's stdout stream
   child.unref();
+  console.log('Started BeachJudge');
 })();
