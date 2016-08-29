@@ -51,3 +51,4 @@ build
 debug
 bin
 node_modules
+rethinkdb_data
