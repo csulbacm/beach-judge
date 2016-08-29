@@ -21,8 +21,8 @@ const defaultConfig = {
     host: 'localhost',
     port: 28015,
     authkey: '',
-    db: 'beachjudge'
-  }
+    db: 'beachjudge',
+  },
 };
 
 // assign config over default config

@@ -1,20 +1,20 @@
-var url = require('url');
-var qs = require('querystring');
-var path = require('path');
-var express = require('express');
-var bodyParser = require('body-parser');
+import url from 'url';
+import qs from 'querystring';
+import path from 'path';
+import express from 'express';
+import bodyParser from 'body-parser';
 
 import config from './config';
 
-var app = express();
+const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true
 }));
 
-app.listen(config.port_html, function() {
-  console.log('Starting Express on Port ' + config.port_html + '...');
+app.listen(config.port_html, () => {
+  console.log(`Starting Express on Port ${config.port_html}...`);
 });
 
 // app.get('/*', function(req, res) {

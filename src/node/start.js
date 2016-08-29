@@ -1,11 +1,11 @@
 import fs from 'fs';
 import path from 'path';
-import cp from 'child_process';
+import { spawn } from 'child_process';
 
 // Launch Rethink
 (() => {
   const rethinkdbPath = process.platform === 'windows' ? '../../external/rethinkdb/rethinkdb' : '../../external/rethinkdb/build/release/rethinkdb';
-  const child = cp.spawn(
+  const child = spawn(
     path.resolve(__dirname, rethinkdbPath),
     ['--http-port', 8081],
     {
@@ -44,7 +44,7 @@ import cp from 'child_process';
 
   let child;
   if (process.platform === 'windows') {
-    child = cp.spawn(
+    child = spawn(
       'cmd.exe',
       ['/c', 'start', '/min', exe, index],
       {
@@ -54,7 +54,7 @@ import cp from 'child_process';
     );
   }
   else {
-    child = cp.spawn(
+    child = spawn(
       exe,
       [index],
       {
