@@ -2,25 +2,27 @@ var fs = require('fs');
 var path = require('path');
 var cp = require('child_process');
 
-var out = fs.openSync('./out.log', 'a');
-var err = fs.openSync('./out.log', 'a');
-var out2 = fs.openSync('./out3.log', 'a');
-var err2 = fs.openSync('./out3.log', 'a');
-var nodeExe = path.resolve(__dirname, '../build/external/nodejs/node.exe');
-//var index = path.resolve(__dirname, '../src/node/index.js');
-var index = path.resolve(__dirname, '../build/node/index.js');
-//var rethinkWrapper = path.resolve(__dirname, './wrapper-rethinkdb-win.js');
+// Launch Rethink
+{
+	var out = fs.openSync(path.resolve(__dirname, '../build/rethinkdb_out.log'), 'a');
+	var err = fs.openSync(path.resolve(__dirname, '../build/rethinkdb_err.log'), 'a');
+	var exe = path.resolve(__dirname, '../build/external/rethinkdb/rethinkdb.exe');
+	var child = cp.spawn(exe, ['--http-port', 8081], { detached: true, stdio: [ 'ignore', 'ignore', 'ignore' ] });
 
-var rethinkdbExe = path.resolve(__dirname, '../build/external/rethinkdb/rethinkdb.exe');
+	var pidFile = path.resolve(__dirname, '../build/rethinkdb.pid');
+	fs.writeFile(pidFile, child.pid, (err) => { if (err) throw err; });
+	child.unref();
+}
 
-var rethinkchild = cp.spawn(rethinkdbExe, ['--http-port', 8081], { detached: true, stdio: [ 'ignore', 'ignore', 'ignore' ] });
+// Launch beachJudge
+{
+	var out = fs.openSync(path.resolve(__dirname, '../build/beachjudge_out.log'), 'a');
+	var err = fs.openSync(path.resolve(__dirname, '../build/beachjudge_err.log'), 'a');
+	var index = path.resolve(__dirname, '../build/node/generated/index.js');
+	var exe = path.resolve(__dirname, '../build/external/nodejs/node.exe');
 
-var path_rethinkdbPIDFile = path.resolve(__dirname, '../build/rethinkdb.pid');
-fs.writeFile(path_rethinkdbPIDFile, rethinkchild.pid, (err) => { if (err) throw err; });
-rethinkchild.unref();
-
-
-var child = cp.spawn('cmd.exe', ['/c', 'start', '/min', path.resolve(__dirname, '../tools/run-server.bat')], { detached: true, stdio: [ 'ignore', 'ignore', 'ignore' ] });
-//var child = cp.spawn('cmd.exe', ['/c', 'start', '/min', nodeExe, index, ';', 'pause'], { detached: true, stdio: [ 'ignore', 'ignore', 'ignore' ] });
-// TODO: Capture errors from script execution and display them to this script's stdout stream
-child.unref();
+	//var child = cp.spawn('cmd.exe', ['/c', 'start', '/min', path.resolve(__dirname, '../tools/run-server.bat')], { detached: true, stdio: [ 'ignore', 'ignore', 'ignore' ] });
+	var child = cp.spawn('cmd.exe', ['/c', 'start', '/min', exe, index], { detached: true, stdio: [ 'ignore', out, err ] });
+	// TODO: Capture errors from script execution and display them to this script's stdout stream
+	child.unref();
+}
