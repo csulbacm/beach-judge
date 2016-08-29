@@ -117,6 +117,8 @@ set(_F
 	${SRC_DIR}/node/generate-js.js
 	${SRC_DIR}/node/http.js
 	${SRC_DIR}/node/server-process.js
+	${SRC_DIR}/node/start.js
+	${SRC_DIR}/node/stop.js
 )
 source_group("Source\\Node" FILES ${_F})
 set(SOURCES_JS ${_F})
