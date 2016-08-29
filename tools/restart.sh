@@ -1,3 +1,3 @@
 #!/bin/bash
 export PATH=$PATH:'./build/external/nodejs/bin'
-npm i
+npm run restart

@@ -7,7 +7,7 @@
     "start": "node ./build/generated/node/start.js",
     "stop": "node ./build/generated/node/stop.js",
     "build": "babel ./src/node --out-dir ./build/generated/node && babel ./src/js --out-dir ./build/generated/js",
-    "redeploy": "npm run stop && npm run build && npm start",
+    "redeploy": "npm run build && npm run stop && npm start",
     "restart": "npm run stop && npm start"
   },
   "repository": {
