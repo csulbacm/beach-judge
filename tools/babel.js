@@ -11,8 +11,11 @@ var options = {
 
 };
 
+
 var args = process.argv.slice(2);
 var files = fs.readdirSync(args[0]);
+if (fs.statSync(args[1]).isDirectory() == false)
+	fs.mkdirSync(args[1]);
 for (var a in files) {
 	var inPath = path.resolve(args[0], files[a]);
 	var outPath = path.resolve(args[1], files[a]);

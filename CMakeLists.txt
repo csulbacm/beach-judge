@@ -160,7 +160,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	add_custom_target(ServerStop COMMAND ${NODEJS} ${ROOT_DIR}/tools/stop-server-win.js)
 endif()
 
-add_custom_target(ServerGeneration SOURCES ${TARGET_SERVER_FILES} DEPENDS ServerStop)
+add_custom_target(ServerGeneration SOURCES ${TARGET_SERVER_FILES})# DEPENDS ServerStop)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 add_custom_target(ServerStart COMMAND ${NODEJS} ${ROOT_DIR}/tools/start-server-win.js DEPENDS ServerGeneration BYPRODUCTS ${PID_FILE} USES_TERMINAL)
 endif()
