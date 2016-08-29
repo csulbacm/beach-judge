@@ -13,7 +13,6 @@ var index = path.resolve(__dirname, '../build/node/index.js');
 
 var rethinkdbExe = path.resolve(__dirname, '../build/external/rethinkdb/rethinkdb.exe');
 
-
 var rethinkchild = cp.spawn(rethinkdbExe, ['--http-port', 8081], { detached: true, stdio: [ 'ignore', 'ignore', 'ignore' ] });
 
 var path_rethinkdbPIDFile = path.resolve(__dirname, '../build/rethinkdb.pid');
@@ -21,6 +20,7 @@ fs.writeFile(path_rethinkdbPIDFile, rethinkchild.pid, (err) => { if (err) throw 
 rethinkchild.unref();
 
 
-var child = cp.spawn('cmd.exe', ['/c', 'start', '/min', nodeExe, index], { detached: true, stdio: [ 'ignore', 'ignore', 'ignore' ] });
+var child = cp.spawn('cmd.exe', ['/c', 'start', '/min', path.resolve(__dirname, '../tools/run-server.bat')], { detached: true, stdio: [ 'ignore', 'ignore', 'ignore' ] });
+//var child = cp.spawn('cmd.exe', ['/c', 'start', '/min', nodeExe, index, ';', 'pause'], { detached: true, stdio: [ 'ignore', 'ignore', 'ignore' ] });
 // TODO: Capture errors from script execution and display them to this script's stdout stream
 child.unref();

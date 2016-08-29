@@ -2,8 +2,6 @@ var path = require('path');
 var config = require(path.resolve(__dirname, 'config.js'));
 require.main.paths.push(path.resolve(g_config.path_root, 'build/external/nodejs/node_modules'));
 
-//console.log(require('less'));
-//console.log(require('uglify-js'));
 var fs = require('fs');
 var async = require('async');
 var r = require('rethinkdb');

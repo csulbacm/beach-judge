@@ -1,9 +1,9 @@
 require.cache[__filename].paths = require.cache[__filename].parent.paths;
 
-var path = require('path');
-var fs = require('fs');
 const DO_MINIFY = false;
 
+var path = require('path');
+var fs = require('fs');
 var uglifyjs = require('uglify-js');
 
 var uglifyjs_options = {
