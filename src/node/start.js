@@ -30,7 +30,7 @@ import cp from 'child_process';
     }
   );
   child.unref();
-  console.log('Started Rethinkdb');
+  console.log(`Started Rethinkdb (${child.pid})`);
 })();
 
 
@@ -67,7 +67,16 @@ import cp from 'child_process';
       }
     );
   }
+  fs.writeFile(
+    path.resolve(__dirname, '../../beachjudge.pid'),
+    child.pid,
+    (err) => {
+      if (err) {
+        throw err;
+      }
+    }
+  );
   // TODO: Capture errors from script execution and display them to this script's stdout stream
   child.unref();
-  console.log('Started BeachJudge');
+  console.log(`Started BeachJudge (${child.pid})`);
 })();

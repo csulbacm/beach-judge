@@ -1,29 +1,33 @@
-var path = require('path');
-var fs = require('fs');
-var exec = require('child_process').exec;
+import path from 'path';
+import fs from 'fs';
+import { exec } from 'child_process';
 
-var rootPath = path.resolve(__dirname, '..');
-var pidFilePath = path.resolve(rootPath, 'build/server.pid');
-var rethinkdbPIDFilePath = path.resolve(rootPath, 'build/rethinkdb.pid');
+const path_root = path.resolve(__dirname, '../../../');
 
-fs.exists(pidFilePath, (exists) => {
-	if (exists) {
-		fs.readFile(pidFilePath, (err, data) => {
-			if (err) throw err;
-			var pid = parseInt(data);
-			exec('taskkill /f /pid ' + pid, function(error, stdout, stderr) {
-			});
-		});
-	}
-});
+function kill(path_pid) {
+  fs.exists(path_pid, (exists) => {
+    if (exists) {
+      fs.readFile(path_pid, (err, data) => {
+        if (err) {
+          throw err;
+        }
+        const pid = parseInt(data);
+        const cb = (error, stdout, stderr) => {
+          if (error) {
+            return console.error(`Failed to kill ${path_pid} (${pid})`, error);
+          }
+          console.log(`Killed ${path_pid} (${pid})`);
+        };
+        if (process.platform === 'windows') {
+          exec(`taskkill /f /pid ${pid}`, cb);
+        }
+        else {
+          exec(`kill -9 ${pid}`, cb);
+        }
+      });
+    }
+  });
+}
 
-fs.exists(rethinkdbPIDFilePath, (exists) => {
-	if (exists) {
-		fs.readFile(rethinkdbPIDFilePath, (err, data) => {
-			if (err) throw err;
-			var pid = parseInt(data);
-			exec('taskkill /f /pid ' + pid, function(error, stdout, stderr) {
-			});
-		});
-	}
-});
+kill(path.resolve(path_root, 'build/beachjudge.pid'));
+kill(path.resolve(path_root, 'build/rethinkdb.pid'));
